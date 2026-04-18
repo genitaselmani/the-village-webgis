@@ -743,6 +743,8 @@
             overflow-y: auto;
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
         }
         .bizniset-personalize > summary {
             list-style: none;
@@ -1053,6 +1055,75 @@
         #panel-layers .section-label {
             flex-shrink: 0;
         }
+
+        .webgis-pass-dialog {
+            border: none;
+            border-radius: 18px;
+            padding: 0;
+            max-width: min(400px, calc(100vw - 32px));
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+            background: #fff;
+            font-family: inherit;
+        }
+        .webgis-pass-dialog::backdrop {
+            background: rgba(15, 20, 30, 0.42);
+        }
+        .webgis-pass-dialog__inner {
+            padding: 20px 18px 18px;
+        }
+        .webgis-pass-dialog__title {
+            margin: 0 0 8px;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--mall-text);
+        }
+        .webgis-pass-dialog__text {
+            margin: 0 0 14px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--mall-muted);
+        }
+        .webgis-pass-dialog__label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--mall-text);
+            margin-bottom: 14px;
+        }
+        .webgis-pass-dialog__label input {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--mall-border);
+            font-size: 15px;
+            font-family: inherit;
+        }
+        .webgis-pass-dialog__actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .webgis-pass-dialog__actions button {
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--mall-border);
+            background: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .webgis-pass-dialog__actions button.webgis-pass-dialog__btn-primary {
+            background: var(--mall-blue);
+            color: #fff;
+            border-color: var(--mall-blue);
+        }
+
         .problem-report-block {
             flex-shrink: 0;
             margin-top: 12px;
@@ -1370,6 +1441,12 @@
                 transform: translate3d(0, 0, 0);
             }
 
+            /* Personalizim: trup i scrollueshëm në telefon (paneli i poshtëm është i ulët) */
+            .bizniset-personalize[open] .bizniset-personalize-body {
+                max-height: min(62vh, 520px);
+                min-height: 0;
+            }
+
             #main-container {
                 padding-bottom: env(safe-area-inset-bottom, 0);
             }
@@ -1565,6 +1642,20 @@
             <div id="bizniset-list"></div>
         </div>
     </aside>
+
+    <dialog class="webgis-pass-dialog" id="problem-report-password-dialog" aria-labelledby="problem-report-password-title" aria-modal="true">
+        <div class="webgis-pass-dialog__inner">
+            <h2 id="problem-report-password-title" class="webgis-pass-dialog__title">Raporto problem</h2>
+            <p class="webgis-pass-dialog__text">Shkruani fjalëkalimin për të aktivizuar modalitetin e raportimit të problemit në hartë.</p>
+            <label class="webgis-pass-dialog__label" for="problem-report-password-input">Fjalëkalimi
+                <input type="password" id="problem-report-password-input" name="problem-report-pw" autocomplete="current-password" inputmode="numeric" maxlength="32" />
+            </label>
+            <div class="webgis-pass-dialog__actions">
+                <button type="button" id="problem-report-password-cancel">Anulo</button>
+                <button type="button" class="webgis-pass-dialog__btn-primary" id="problem-report-password-submit">Vazhdo</button>
+            </div>
+        </div>
+    </dialog>
 </div>
 
 <footer style="background-color: #e8f0fc;">
@@ -2221,22 +2312,9 @@
     }
 
     function initProblemReportUi() {
-        var tgl = document.getElementById("problem-report-toggle");
-        if (!tgl) return;
-        tgl.addEventListener("click", function() {
-            if (problemReportMode) {
-                problemReportReopenLock = true;
-                map.closePopup();
-                problemReportReopenLock = false;
-                problemReportMode = false;
-                if (problemDraftMarker) {
-                    map.removeLayer(problemDraftMarker);
-                    problemDraftMarker = null;
-                }
-                updateProblemReportToggleUi();
-                syncMapCursorAfterProblemExit();
-                return;
-            }
+        var PROBLEM_REPORT_PASSWORD = "1234";
+
+        function activateProblemReportMode() {
             problemReportMode = true;
             if (typeof isMeasuring !== "undefined" && isMeasuring && typeof toggleMeasure === "function") {
                 toggleMeasure();
@@ -2246,7 +2324,79 @@
             }
             updateProblemReportToggleUi();
             map.getContainer().style.cursor = "crosshair";
-        });
+        }
+
+        function closeProblemReportPasswordDialog() {
+            var dlg = document.getElementById("problem-report-password-dialog");
+            if (!dlg) return;
+            try {
+                if (dlg.close) dlg.close();
+            } catch (e1) {}
+            dlg.removeAttribute("open");
+        }
+
+        function openProblemReportPasswordDialog() {
+            var dlg = document.getElementById("problem-report-password-dialog");
+            var inp = document.getElementById("problem-report-password-input");
+            if (!dlg || !inp) return;
+            inp.value = "";
+            try {
+                if (dlg.showModal) dlg.showModal();
+                else dlg.setAttribute("open", "");
+            } catch (e2) {}
+            setTimeout(function() {
+                inp.focus();
+            }, 30);
+        }
+
+        function tryProblemReportPasswordThenActivate() {
+            var inp = document.getElementById("problem-report-password-input");
+            if (!inp) return;
+            if (String(inp.value || "").trim() === PROBLEM_REPORT_PASSWORD) {
+                closeProblemReportPasswordDialog();
+                activateProblemReportMode();
+            } else {
+                alert("Fjalëkalim i gabuar.");
+                inp.focus();
+                inp.select();
+            }
+        }
+
+        var tgl = document.getElementById("problem-report-toggle");
+        var btnOk = document.getElementById("problem-report-password-submit");
+        var btnCancel = document.getElementById("problem-report-password-cancel");
+        var problemReportPwInput = document.getElementById("problem-report-password-input");
+
+        if (tgl) {
+            tgl.addEventListener("click", function() {
+                if (problemReportMode) {
+                    problemReportReopenLock = true;
+                    map.closePopup();
+                    problemReportReopenLock = false;
+                    problemReportMode = false;
+                    if (problemDraftMarker) {
+                        map.removeLayer(problemDraftMarker);
+                        problemDraftMarker = null;
+                    }
+                    updateProblemReportToggleUi();
+                    syncMapCursorAfterProblemExit();
+                    return;
+                }
+                openProblemReportPasswordDialog();
+            });
+        }
+
+        if (btnOk) btnOk.addEventListener("click", tryProblemReportPasswordThenActivate);
+        if (btnCancel) btnCancel.addEventListener("click", closeProblemReportPasswordDialog);
+        if (problemReportPwInput) {
+            problemReportPwInput.addEventListener("keydown", function(ev) {
+                if (ev.key === "Enter") {
+                    ev.preventDefault();
+                    tryProblemReportPasswordThenActivate();
+                }
+            });
+        }
+
         loadProblemReportsFromStorage();
     }
 
