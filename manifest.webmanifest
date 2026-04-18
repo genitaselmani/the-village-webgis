@@ -2,7 +2,7 @@
   "name": "The Village — WebGIS",
   "short_name": "The Village",
   "description": "Sistemi i navigimit dhe hartës për The Village Luxury Outlet",
-  "start_url": "./prova2.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
