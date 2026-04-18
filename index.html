@@ -1578,6 +1578,32 @@
 <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
 <script>
+    /** ERR_NGROK_6024: kërkesat fetch() drejt ngrok duhet header (img-tiles trajtohen nga sw.js). */
+    (function() {
+        var origFetch = window.fetch;
+        window.fetch = function(input, init) {
+            var url = typeof input === "string" ? input : input && input.url;
+            if (
+                url &&
+                (url.indexOf("ngrok-free.dev") !== -1 ||
+                    url.indexOf("ngrok-free.app") !== -1 ||
+                    url.indexOf("ngrok.io") !== -1)
+            ) {
+                init = init ? Object.assign({}, init) : {};
+                var headers = new Headers(
+                    init.headers || (input instanceof Request ? input.headers : undefined)
+                );
+                headers.set("ngrok-skip-browser-warning", "true");
+                init.headers = headers;
+                if (input instanceof Request) {
+                    return origFetch(new Request(input, init));
+                }
+                return origFetch(input, init);
+            }
+            return origFetch.apply(this, arguments);
+        };
+    })();
+
     /** KOSOVAREF01 / Balkans zone 7 — replace MGI Balkans z.7 në Kosovë; përdorim me WGS84 (shiko EPSG:9144). */
     proj4.defs("EPSG:9141", "+proj=tmerc +lat_0=0 +lon_0=21 +k=0.9999 +x_0=7500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
     proj4.defs("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");
@@ -1587,9 +1613,9 @@
      * geoserverOws = WFS/WMS përmes OWS (GetFeature = veçoritë/attributes si GeoJSON).
      * Attributes nga shapefile: në GeoServer shfaqen si fushat e properties në çdo GeoJSON feature.
      */
-    var geoserverUrl = "http://localhost:8080/geoserver/thevillage_webgis/wms";
-    var geoserverOws = "http://localhost:8080/geoserver/thevillage_webgis/ows";
-    var geoserverOrigin = "http://localhost:8080";
+    var geoserverUrl = "https://darkish-feast-osmosis.ngrok-free.dev/geoserver/thevillage_webgis/wms";
+    var geoserverOws = "https://darkish-feast-osmosis.ngrok-free.dev/geoserver/thevillage_webgis/ows";
+    var geoserverOrigin = "https://darkish-feast-osmosis.ngrok-free.dev";
     var biznisetSelectedCardEl = null;
     var lastHighlightedBiznisetFeature = null;
 
@@ -2609,18 +2635,6 @@
         };
         if (dash) style.dashArray = dash;
         return style;
-    }
-
-    /** E njëjta mbushje si theksimi i zgjedhjes, pa kufi (hover mbi poligonin Bizneset_ndara). */
-    function getBizBuildingHoverStyleFromUI() {
-        var s = getBizHighlightStyleFromUI();
-        return {
-            fillColor: s.fillColor,
-            fillOpacity: s.fillOpacity,
-            color: s.fillColor,
-            weight: 0,
-            opacity: 0
-        };
     }
 
     function saveBizHighlightPrefs() {
@@ -3901,10 +3915,7 @@
     var isNavActive = false;
     var destinationMarker = null;
     var routeLine = null;
-    var highlightLayer = null; // Layer për të shfaqur highlight në hover (Bizneset_ndara)
-    var bizNdaraHoverTimer = null;
-    var bizNdaraHoverLastEvent = null;
-    var bizNdaraHoverFetchId = 0;
+    var highlightLayer = null; // Theksim vizual (pastrohet nga clearBiznisetSelectionUI; pa WMS hover)
 
     initProblemReportUi();
 
@@ -4401,7 +4412,7 @@
     }
 
     map.on('mousemove', function(e) {
-        // Përditëso koordinatat në footer (EPSG:9141 — KOSOVAREF01 / Balkans zone 7)
+        // Vetëm koordinatat në footer (proj4 lokal — pa kërkesa GeoServer)
         try {
             var pFooter = proj4("EPSG:4326", "EPSG:9141", [e.latlng.lng, e.latlng.lat]);
             document.getElementById("coords-text").innerHTML =
@@ -4412,11 +4423,6 @@
         }
 
         if (problemReportMode) {
-            if (bizNdaraHoverTimer) {
-                clearTimeout(bizNdaraHoverTimer);
-                bizNdaraHoverTimer = null;
-            }
-            bizNdaraHoverLastEvent = null;
             if (highlightLayer) {
                 map.removeLayer(highlightLayer);
                 highlightLayer = null;
@@ -4426,11 +4432,6 @@
         }
 
         if (isMeasuring) {
-            if (bizNdaraHoverTimer) {
-                clearTimeout(bizNdaraHoverTimer);
-                bizNdaraHoverTimer = null;
-            }
-            bizNdaraHoverLastEvent = null;
             if (highlightLayer) {
                 map.removeLayer(highlightLayer);
                 highlightLayer = null;
@@ -4439,64 +4440,14 @@
             return;
         }
 
-        // Hover në Bizneset_ndara në çdo kohë (jo vetëm gjatë navigimit); throttling për mos të tepruar GeoServer-in
-        bizNdaraHoverLastEvent = e;
-        if (bizNdaraHoverTimer) return;
-        bizNdaraHoverTimer = setTimeout(function() {
-            bizNdaraHoverTimer = null;
-            var ev = bizNdaraHoverLastEvent;
-            if (!ev) return;
-
-            var wmsUrl = buildBiznesetNdaraGetFeatureInfoUrlFromLatLng(ev.latlng);
-
-            var fetchId = ++bizNdaraHoverFetchId;
-            fetch(wmsUrl)
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if (fetchId !== bizNdaraHoverFetchId) return;
-                    if (data.features && data.features.length > 0) {
-                        map.getContainer().style.cursor = "pointer";
-
-                        var feature = data.features[0];
-                        if (typeof window.__geoDebugHoverLogged === "undefined") {
-                            window.__geoDebugHoverLogged = true;
-                            console.log("[GetFeatureInfo hover] shembull attributes:", feature.properties);
-                        }
-
-                        if (highlightLayer) {
-                            map.removeLayer(highlightLayer);
-                        }
-
-                        if (feature.geometry) {
-                            highlightLayer = L.geoJSON(feature.geometry, {
-                                style: getBizBuildingHoverStyleFromUI(),
-                                interactive: false
-                            }).addTo(map);
-                        }
-                    } else {
-                        if (highlightLayer) {
-                            map.removeLayer(highlightLayer);
-                            highlightLayer = null;
-                        }
-                        map.getContainer().style.cursor = isNavActive ? "crosshair" : "";
-                    }
-                })
-                .catch(function() {
-                    if (fetchId !== bizNdaraHoverFetchId) return;
-                    if (highlightLayer) {
-                        map.removeLayer(highlightLayer);
-                        highlightLayer = null;
-                    }
-                    map.getContainer().style.cursor = isNavActive ? "crosshair" : "";
-                });
-        }, 70);
+        map.getContainer().style.cursor = isNavActive ? "crosshair" : "";
     });
 
     /** PWA: regjistro service worker (instalim “Si aplikacion” në Android Chrome; iOS: Shto në ekranin kryesor). */
     if ("serviceWorker" in navigator) {
         window.addEventListener("load", function() {
             navigator.serviceWorker
-                .register("./sw.js", { scope: "./" })
+                .register("./sw.js?v=ngrok6024", { scope: "./" })
                 .then(function(reg) {
                     console.log("[PWA] Service worker u regjistrua:", reg.scope);
                 })
