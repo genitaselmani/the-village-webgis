@@ -2334,22 +2334,116 @@
         updateWhenZooming: 1, updateInterval: 1, noWrap: 1
     };
 
+    /** <img src> nuk dërgon header-in e ngrok; në mobile shpesh SW nuk e kap GetMap. Ngarkojmë pllaka me fetch + blob. */
+    function isNgrokGeoserverWmsUrl() {
+        try {
+            return (
+                typeof geoserverUrl === "string" &&
+                (geoserverUrl.indexOf("ngrok-free.dev") !== -1 ||
+                    geoserverUrl.indexOf("ngrok-free.app") !== -1 ||
+                    geoserverUrl.indexOf("ngrok.io") !== -1)
+            );
+        } catch (e) {
+            return false;
+        }
+    }
+
+    var NGROK_TILE_CACHE_MAX = 180;
+    var ngrokTileBlobCache = new Map();
+    var ngrokTileInflight = new Map();
+
+    function fetchNgrokTileBlobOnce(url) {
+        if (ngrokTileBlobCache.has(url)) {
+            return Promise.resolve(ngrokTileBlobCache.get(url));
+        }
+        var pending = ngrokTileInflight.get(url);
+        if (pending) return pending;
+
+        pending = fetch(url, {
+            mode: "cors",
+            credentials: "omit",
+            cache: "default",
+            headers: { "ngrok-skip-browser-warning": "true" }
+        })
+            .then(function(r) {
+                if (!r.ok) throw new Error("WMS tile " + r.status);
+                return r.blob();
+            })
+            .then(function(blob) {
+                ngrokTileInflight.delete(url);
+                if (ngrokTileBlobCache.size >= NGROK_TILE_CACHE_MAX) {
+                    var oldest = ngrokTileBlobCache.keys().next().value;
+                    if (oldest !== undefined) ngrokTileBlobCache.delete(oldest);
+                }
+                ngrokTileBlobCache.set(url, blob);
+                return blob;
+            })
+            .catch(function(err) {
+                ngrokTileInflight.delete(url);
+                throw err;
+            });
+
+        ngrokTileInflight.set(url, pending);
+        return pending;
+    }
+
+    function patchWmsTileLayerForNgrok(lyr) {
+        if (!lyr || !isNgrokGeoserverWmsUrl()) return;
+        lyr.createTile = function(coords, done) {
+            var tile = document.createElement("img");
+            tile.alt = "";
+            tile.setAttribute("role", "presentation");
+            var url = this.getTileUrl(coords);
+            fetchNgrokTileBlobOnce(url)
+                .then(function(blob) {
+                    var blobUrl = URL.createObjectURL(blob);
+                    var cleaned = false;
+                    function cleanup() {
+                        if (cleaned) return;
+                        cleaned = true;
+                        try {
+                            URL.revokeObjectURL(blobUrl);
+                        } catch (rev) {}
+                    }
+                    tile.onload = function() {
+                        cleanup();
+                        done(null, tile);
+                    };
+                    tile.onerror = function() {
+                        cleanup();
+                        done(new Error("tile decode"), tile);
+                    };
+                    tile.src = blobUrl;
+                })
+                .catch(function(err) {
+                    done(err, tile);
+                });
+            return tile;
+        };
+    }
+
     function getWMS(layer, style, extra) {
         extra = extra || {};
-        var lyr = L.tileLayer.wms(geoserverUrl, Object.assign({
+        var defaults = {
             layers: layer,
             styles: style || "",
             format: "image/png",
             transparent: true,
             version: "1.1.1",
             maxZoom: MAP_MAX_ZOOM
-        }, extra));
+        };
+        if (isNgrokGeoserverWmsUrl()) {
+            defaults.updateWhenZooming = false;
+            defaults.updateInterval = 280;
+        }
+        var lyr = L.tileLayer.wms(geoserverUrl, Object.assign(defaults, extra));
         if (lyr.wmsParams) {
             var k;
             for (k in LEAFLET_WMS_PARAM_JUNK) {
                 if (Object.prototype.hasOwnProperty.call(lyr.wmsParams, k)) delete lyr.wmsParams[k];
             }
         }
+        patchWmsTileLayerForNgrok(lyr);
         return lyr;
     }
 
@@ -3976,6 +4070,22 @@
         window.setAppSidebarOpen = setSidebarOpen;
     }
     initMobileShell();
+
+    window.addEventListener("load", function() {
+        setTimeout(function() {
+            if (typeof map !== "undefined" && map) map.invalidateSize();
+        }, 250);
+    });
+    window.addEventListener("orientationchange", function() {
+        setTimeout(function() {
+            if (typeof map !== "undefined" && map) map.invalidateSize();
+        }, 450);
+    });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", function() {
+            if (typeof map !== "undefined" && map) map.invalidateSize();
+        });
+    }
     
     function calculateDistance(lat1, lon1, lat2, lon2) {
         var R = 6371e3;
