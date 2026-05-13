@@ -418,9 +418,19 @@
             margin-bottom: 10px;
         }
 
+        /* Titulli i legjendës në skedën „Shtresat“ (si në UI referencë). */
+        #panel-layers .layers-legend-heading {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #8a8a8a;
+            text-transform: uppercase;
+            margin: 6px 0 12px;
+        }
+
         .layers-strip-wrap {
             position: relative;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             flex: 1 1 auto;
             min-height: 120px;
             display: flex;
@@ -429,31 +439,32 @@
         #layers-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             overflow-x: hidden;
             overflow-y: auto;
             flex: 1 1 auto;
             min-height: 0;
-            padding: 4px 2px 8px;
-            margin: 0 -2px;
+            padding: 2px 4px 10px 2px;
+            margin: 0;
             -webkit-overflow-scrolling: touch;
             scroll-behavior: smooth;
         }
-        #layers-list::-webkit-scrollbar { width: 6px; }
-        #layers-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+        #layers-list::-webkit-scrollbar { width: 5px; }
+        #layers-list::-webkit-scrollbar-track { background: transparent; }
+        #layers-list::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 4px; }
 
         .legend-list .legend-filter-row,
         .legend-bizneset-wrap {
-            margin-bottom: 6px;
+            margin-bottom: 0;
         }
         .legend-row {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 10px;
+            padding: 10px 12px;
             margin: 0;
-            border-radius: 10px;
-            border: 1px solid var(--mall-border);
+            border-radius: 12px;
+            border: 1px solid #e6e6e6;
             background: #fafafa;
             cursor: pointer;
             font-size: 13px;
@@ -465,9 +476,9 @@
         .legend-row:hover,
         .legend-filter-row:focus-within,
         .legend-bizneset-wrap .legend-row--parent:focus-within {
-            background: var(--mall-tint-hover);
-            border-color: var(--mall-tint-hover-border);
-            box-shadow: 0 1px 8px var(--mall-tint-shadow);
+            background: #f0f4ff;
+            border-color: #c5d4f5;
+            box-shadow: 0 1px 6px rgba(43, 110, 255, 0.12);
         }
         .legend-row input[type="checkbox"] {
             width: 16px;
@@ -550,6 +561,23 @@
             width: 20px;
             height: auto;
         }
+        .pika-informuese-leaflet-marker {
+            background: transparent !important;
+            border: none !important;
+        }
+        .pika-informuese-leaflet-marker .pika-informuese-hit {
+            box-sizing: border-box;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+        }
+
+        .leaflet-container .leaflet-popup.pika-informuese-popup .leaflet-popup-content {
+            margin: 12px 16px;
+            line-height: 1.35;
+            text-align: center;
+        }
+
         .legend-sym--rail {
             background-color: #eceff1;
             border: 1px solid #546e7a;
@@ -595,15 +623,18 @@
             flex-shrink: 0;
         }
         .legend-bizneset-wrap {
-            border: 1px solid var(--mall-border);
-            border-radius: 12px;
-            padding: 0 0 6px;
+            border: 1px solid #e8e8e8;
+            border-radius: 14px;
+            padding: 0 0 8px;
             background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
         .legend-bizneset-wrap .legend-row--parent {
             cursor: pointer;
-            margin: 6px;
-            border-radius: 10px;
+            margin: 8px 8px 6px;
+            border-radius: 12px;
+            background: #f5f5f5;
+            border: 1px solid #e8e8e8;
         }
         .legend-collapse-btn {
             flex-shrink: 0;
@@ -628,15 +659,19 @@
             line-height: 1.4;
         }
         .legend-bizneset-subs {
-            padding: 0 8px 4px 12px;
+            padding: 0 10px 6px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
         .legend-bizneset-subs.is-collapsed { display: none; }
         .legend-row--sub {
-            padding: 6px 8px;
-            margin: 0 0 4px;
+            padding: 8px 10px;
+            margin: 0;
             font-size: 12px;
-            background: #f8f9fb;
-            border-style: dashed;
+            background: #f9fafb;
+            border: 1px dashed #bdbdbd;
+            border-radius: 10px;
         }
         .legend-row--sub .legend-name {
             font-weight: 600;
@@ -660,29 +695,31 @@
 
         .sidebar-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 14px;
+            gap: 6px;
+            margin-bottom: 12px;
             flex-shrink: 0;
         }
         .sidebar-tab {
             flex: 1;
-            padding: 10px 12px;
-            border-radius: 12px;
-            border: 1px solid var(--mall-border);
+            padding: 11px 14px;
+            border-radius: 14px;
+            border: 1px solid #e0e0e0;
             background: #fff;
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
             font-family: inherit;
-            color: var(--mall-text);
+            color: #1a1a1a;
             transition: background 0.2s, color 0.2s, border-color 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
         .sidebar-tab:hover,
-        .sidebar-tab:focus-visible { background: var(--mall-bg-hover); }
+        .sidebar-tab:focus-visible { background: #f0f0f0; }
         .sidebar-tab.is-active {
             background: var(--mall-blue);
             color: #fff;
             border-color: var(--mall-blue);
+            box-shadow: 0 2px 8px rgba(43, 110, 255, 0.35);
         }
 
         .sidebar-panel { display: flex; flex-direction: column; min-height: 0; }
@@ -1123,6 +1160,44 @@
             color: #fff;
             border-color: var(--mall-blue);
         }
+        .webgis-pass-dialog__actions.webgis-pass-dialog__actions--stack {
+            justify-content: stretch;
+            flex-direction: column;
+            align-items: stretch;
+            margin-top: 8px;
+        }
+        .webgis-pass-dialog__actions.webgis-pass-dialog__actions--stack button {
+            width: 100%;
+            justify-content: center;
+        }
+        .problem-compose-recipient {
+            margin: 0 0 16px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: linear-gradient(165deg, rgba(43, 110, 255, 0.08) 0%, rgba(43, 110, 255, 0.03) 100%);
+            border: 1px solid rgba(43, 110, 255, 0.22);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
+        }
+        .problem-compose-recipient__label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--mall-muted);
+            margin-bottom: 8px;
+        }
+        .problem-compose-recipient__email {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--mall-blue);
+            word-break: break-all;
+            line-height: 1.35;
+            user-select: all;
+            -webkit-user-select: all;
+            font-variant-numeric: tabular-nums;
+        }
 
         .problem-report-block {
             flex-shrink: 0;
@@ -1551,7 +1626,7 @@
         
             <!-- <button type="button" class="btn-sidebar-geojson" id="geojson-download-btn-sidebar" onclick="downloadWebgisGeoJSON()">⬇ Shkarko GeoJSON (të gjitha shtresat)</button> -->
 
-            <div class="section-label" style="margin-top:4px;">Legjenda · shtresat</div>
+            <div class="section-label layers-legend-heading">Legjenda · shtresat</div>
             <div class="layers-strip-wrap">
                 <div id="layers-list" class="legend-list" role="list" aria-label="Shtresat dhe legjenda e bizneseve"></div>
             </div>
@@ -1653,6 +1728,19 @@
             <div class="webgis-pass-dialog__actions">
                 <button type="button" id="problem-report-password-cancel">Anulo</button>
                 <button type="button" class="webgis-pass-dialog__btn-primary" id="problem-report-password-submit">Vazhdo</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="webgis-pass-dialog" id="problem-report-compose-dialog" aria-labelledby="problem-report-compose-title" aria-modal="true">
+        <div class="webgis-pass-dialog__inner">
+            <h2 id="problem-report-compose-title" class="webgis-pass-dialog__title">Raport përmes Gmail</h2>
+            <div class="problem-compose-recipient" aria-describedby="problem-report-compose-title">
+                <span class="problem-compose-recipient__label">Marrësi (Tek / To)</span>
+                <span class="problem-compose-recipient__email" id="problem-compose-recipient-email"></span>
+            </div>
+            <div class="webgis-pass-dialog__actions webgis-pass-dialog__actions--stack">
+                <button type="button" class="webgis-pass-dialog__btn-primary" id="problem-compose-open-gmail">Gmail në shfletues</button>
+                <button type="button" id="problem-compose-close-dialog">Mbyll</button>
             </div>
         </div>
     </dialog>
@@ -1817,6 +1905,7 @@
     ];
 
     var bizLegendEnabled = {};
+    // Lexon nga localStorage cilësimet e legjendës së bizneseve (çfarë kategorish janë të aktivizuara).
     function initBizLegendEnabled() {
         var def = { other: true };
         var i;
@@ -1833,11 +1922,13 @@
         } catch (e) {}
         bizLegendEnabled = def;
     }
+    // Ruan në localStorage gjendjen e kutizave të legjendës së bizneseve.
     function saveBizLegendEnabled() {
         try {
             localStorage.setItem(BIZ_LEGEND_STORAGE_KEY, JSON.stringify(bizLegendEnabled));
         } catch (e) {}
     }
+    // Përcakton ID-në e rreshtit të legjendës (kategori) për një biznes sipas atributeve të tij.
     function bizLegendRowIdForProps(props) {
         if (!props) return "other";
         var raw = categoryFromBiznisetProps(props);
@@ -1859,11 +1950,13 @@
         }
         return "other";
     }
+    // Tregon nëse një veçori biznesi duhet të shfaqet sipas filtrit të legjendës.
     function isBizFeatureEnabledByLegend(props) {
         var id = bizLegendRowIdForProps(props);
         if (bizLegendEnabled[id] === false) return false;
         return true;
     }
+    // Kontrollon nëse ndonjë kategori biznesi është çaktivizuar në legjendë.
     function legendHasAnyDisabled() {
         var k;
         for (k in bizLegendEnabled) {
@@ -1891,6 +1984,7 @@
     ];
     var LOCAL_LOGO_MATCH_MIN_SCORE = 0.48;
 
+    // Kthen URL të plotë për një rrugë logo nga GeoServer ose URL absolute.
     function resolveLogoUrl(path) {
         if (!path || typeof path !== "string") return null;
         var p = path.trim();
@@ -1900,7 +1994,7 @@
         return geoserverOrigin + "/geoserver/" + p.replace(/^\/+/, "");
     }
 
-    /** Log përgjigjen e një kërkese GeoServer (JSON ose tekst/XML). */
+    // Shkruan në konsol përgjigjen e një kërkese GeoServer (debug).
     function logGeoServerResponse(label, url, response, bodyPreview) {
         console.log("[GeoServer] " + label);
         console.log("  URL:", url);
@@ -1911,7 +2005,7 @@
         }
     }
 
-    /** WMS GetCapabilities + WFS GetCapabilities (shfaqen shtresat dhe shërbimet). */
+    // Merr dhe logon WMS/WFS GetCapabilities për diagnostikë të shërbimit GeoServer.
     function logGeoServerCapabilities() {
         var wmsCap = geoserverUrl + "?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.1.1";
         fetch(wmsCap)
@@ -1932,10 +2026,7 @@
             .catch(function(err) { console.error("[GeoServer] WFS GetCapabilities error:", err); });
     }
 
-    /**
-     * Shembull WFS: një feature nga një shtresë — logon të gjitha çelësat e attributes (shapefile fields).
-     * typeName: p.sh. thevillage_webgis:Bizneset_ndara
-     */
+    // Merr një shembull WFS nga një typeName dhe logon çelësat e atributeve (për debug).
     function logWfsFeatureAttributesSample(typeName, label) {
         var url = geoserverOws +
             "?service=WFS&version=1.0.0&request=GetFeature&typeName=" + encodeURIComponent(typeName) +
@@ -1957,6 +2048,9 @@
     window.logWfsFeatureAttributesSample = logWfsFeatureAttributesSample;
 
     var pikaNisjes = null; // Do të merret nga GeoServer
+    /** Marker për klik + popup „Ti je këtu!“ në të njëjtin grup me shtresën WMS «Pika Informuese». */
+    var pikaInformueseMarker = null;
+    var pikaInformueseLayerGroup = null;
     var roadNetwork = null; // Rrjeti i rrugëve nga GeoServer
     var isMeasuring = false; // Gjendja e matjes
     var measurePoints = []; // Pikat e matjes
@@ -1975,6 +2069,7 @@
         minZoom: MAP_INITIAL_ZOOM
     });
 
+    // Shton kontrollin vizual „N“ (veri lart) në cepin e hartës.
     (function addNorthIconControl() {
         var northCtrl = L.control({ position: "topright" });
         northCtrl.onAdd = function() {
@@ -1998,6 +2093,7 @@
 
     L.control.zoom({ position: 'topright' }).addTo(map);
 
+    // Përditëson shkallën nominale 1:N në footer sipas zoom-it aktual të hartës.
     function updateScaleDisplayFinal() {
         try {
             var centerY = map.getSize().y / 2;
@@ -2034,6 +2130,7 @@
     var problemReportReopenLock = false;
     var PROBLEMS_STORAGE_KEY = "webgis_thevillage_map_problems_v1";
 
+    // Pastron tekstin për popup raportesh (mbrojtje nga XSS).
     function escapeHtmlProblem(s) {
         if (s == null) return "";
         return String(s)
@@ -2043,6 +2140,7 @@
             .replace(/"/g, "&quot;");
     }
 
+    // Formaton koordinatat e një pike në EPSG:9141 (Kosovaref01) për formularin e raportit.
     function formatProblemCoordsKosovareref01(latlng) {
         try {
             var p = proj4("EPSG:4326", "EPSG:9141", [latlng.lng, latlng.lat]);
@@ -2052,6 +2150,115 @@
         }
     }
 
+    /** Adresa së cilës dërgon përdoruesi nga llagaria e vet (faqe statike nuk dërgon nga server). */
+    var PROBLEM_REPORT_EMAIL_TO = "genita.selmani@student.uni-pr.edu";
+
+    /** Përdoren nga dialogu «Gmail». Trup i plotë ruhet gjithmonë në clipboard. */
+    var problemReportComposeUrls = {
+        gmail: "",
+        clipboardText: ""
+    };
+
+    function problemReportComposeCopyClipboard(txt) {
+        if (!txt) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).catch(function() {});
+        }
+    }
+
+    function openProblemReportUserEmailCompose(latlng, type, desc, dateStr) {
+        var coordKos = formatProblemCoordsKosovareref01(latlng);
+        var wgs84 =
+            "φ = " + latlng.lat.toFixed(6) + "°, λ = " + latlng.lng.toFixed(6) + "° (WGS84)";
+        var subject = "Raport problemi — The Village WebGIS";
+        var headerPart =
+            "Lloji i problemit: " +
+            type +
+            "\nData: " +
+            dateStr +
+            "\nKoordinatat (Kosovaref01): " +
+            coordKos +
+            "\nKoordinatat (WGS84): " +
+            wgs84 +
+            "\n\nPërshkrimi:\n";
+        var clipDesc = desc ? String(desc).trim() : "";
+        if (!clipDesc) clipDesc = "(pa përshkrim)";
+        var clipboardText =
+            "Për (To): " +
+            PROBLEM_REPORT_EMAIL_TO +
+            "\r\nSubjekt: " +
+            subject +
+            "\r\n\r\n" +
+            headerPart +
+            clipDesc;
+
+        function hrefGmail(bodyText) {
+            return (
+                "https://mail.google.com/mail/?view=cm&fs=1&tf=cm&to=" +
+                encodeURIComponent(PROBLEM_REPORT_EMAIL_TO) +
+                "&su=" +
+                encodeURIComponent(subject) +
+                "&body=" +
+                encodeURIComponent(bodyText)
+            );
+        }
+
+        var suffixTrunc =
+            "\n...(trupi në lidhje u shkurua — teksti i plotë është kopjuar; ngjiteni me Ctrl+V nëse është i nevojshëm)";
+        var md = clipDesc;
+        var combined = headerPart + md;
+        var gH = hrefGmail(combined);
+        var maxLen = 9500;
+
+        while (gH.length > maxLen && md.length > 50) {
+            md =
+                md.slice(0, Math.floor(md.length * 0.72)).trim() + suffixTrunc;
+            combined = headerPart + md;
+            gH = hrefGmail(combined);
+        }
+
+        problemReportComposeUrls.gmail = gH;
+        problemReportComposeUrls.clipboardText = clipboardText;
+
+        problemReportComposeCopyClipboard(problemReportComposeUrls.clipboardText);
+
+        var dlg = document.getElementById("problem-report-compose-dialog");
+        var toEl = document.getElementById("problem-compose-recipient-email");
+        if (toEl) {
+            toEl.textContent = PROBLEM_REPORT_EMAIL_TO;
+        }
+
+        if (dlg && dlg.showModal) {
+            try {
+                dlg.showModal();
+                var gmailBtn = document.getElementById("problem-compose-open-gmail");
+                if (gmailBtn) setTimeout(function() { gmailBtn.focus(); }, 50);
+            } catch (eDlg) {}
+        }
+    }
+
+    function initProblemReportComposeDialog() {
+        var dlg = document.getElementById("problem-report-compose-dialog");
+        if (!dlg) return;
+        function closeCompose() {
+            try {
+                if (dlg.close) dlg.close();
+            } catch (ec) {}
+            dlg.removeAttribute("open");
+        }
+
+        var gMail = document.getElementById("problem-compose-open-gmail");
+        var closeBt = document.getElementById("problem-compose-close-dialog");
+
+        if (gMail) {
+            gMail.addEventListener("click", function() {
+                window.open(problemReportComposeUrls.gmail, "_blank", "noopener,noreferrer");
+            });
+        }
+        if (closeBt) closeBt.addEventListener("click", closeCompose);
+    }
+
+    // Përditëson pamjen e butonit „Raporto problem“ dhe tekstin ndihmës sipas modit.
     function updateProblemReportToggleUi() {
         var btn = document.getElementById("problem-report-toggle");
         var hint = document.getElementById("problem-report-hint");
@@ -2074,6 +2281,7 @@
         }
     }
 
+    // Vendos kursorin e hartës pas daljes nga modi i raportit (matje/navigim ose normal).
     function syncMapCursorAfterProblemExit() {
         var c = map.getContainer();
         if (isMeasuring) c.style.cursor = "crosshair";
@@ -2081,16 +2289,19 @@
         else c.style.cursor = "";
     }
 
+    // Ruan listën e raporteve të problemit në localStorage.
     function persistProblemReportsList(list) {
         try {
             localStorage.setItem(PROBLEMS_STORAGE_KEY, JSON.stringify(list));
         } catch (e) {}
     }
 
+    // Gjeneron një ID unik për një raport problemi.
     function generateProblemReportId() {
         return "pr-" + Date.now() + "-" + Math.random().toString(36).slice(2, 11);
     }
 
+    // Ngarkon raportet e ruajtura dhe i shfaq si markera në hartë.
     function loadProblemReportsFromStorage() {
         try {
             var raw = localStorage.getItem(PROBLEMS_STORAGE_KEY);
@@ -2113,6 +2324,7 @@
         } catch (e) {}
     }
 
+    // Hiq një raport nga memoria lokale dhe nga shtresa e hartës.
     function removeProblemReportById(id, marker) {
         if (!id) return;
         var list = [];
@@ -2138,6 +2350,7 @@
         }
     }
 
+    // Shton një marker të kuq për një raport të ruajtur dhe lidh popup-in me veprimin „Hiq“.
     function addPersistedProblemMarker(item) {
         if (!item.id) item.id = generateProblemReportId();
         var ll = L.latLng(item.lat, item.lng);
@@ -2186,6 +2399,7 @@
         });
     }
 
+    // Hap formularin Leaflet për raportim problemi në një vendndodhje të klikuar në hartë.
     function openProblemReportAt(latlng) {
         problemReportReopenLock = true;
         map.closePopup();
@@ -2288,6 +2502,7 @@
             list.push(record);
             persistProblemReportsList(list);
             addPersistedProblemMarker(record);
+            openProblemReportUserEmailCompose(latlng, type, desc, dt);
 
             if (problemDraftMarker) {
                 map.removeLayer(problemDraftMarker);
@@ -2311,9 +2526,11 @@
         });
     }
 
+    // Lidh butonin e raportit, dialogun e fjalëkalimit dhe ngarkimin e raporteve të vjetra.
     function initProblemReportUi() {
         var PROBLEM_REPORT_PASSWORD = "1234";
 
+        // Aktivizon modin e raportimit (kursor kryq, fik matjen/navigimin nëse janë aktive).
         function activateProblemReportMode() {
             problemReportMode = true;
             if (typeof isMeasuring !== "undefined" && isMeasuring && typeof toggleMeasure === "function") {
@@ -2326,6 +2543,7 @@
             map.getContainer().style.cursor = "crosshair";
         }
 
+        // Mbyll dialogun modal të fjalëkalimit për raportim.
         function closeProblemReportPasswordDialog() {
             var dlg = document.getElementById("problem-report-password-dialog");
             if (!dlg) return;
@@ -2335,6 +2553,7 @@
             dlg.removeAttribute("open");
         }
 
+        // Hap dialogun e fjalëkalimit dhe pastron fushën e hyrjes.
         function openProblemReportPasswordDialog() {
             var dlg = document.getElementById("problem-report-password-dialog");
             var inp = document.getElementById("problem-report-password-input");
@@ -2349,6 +2568,7 @@
             }, 30);
         }
 
+        // Verifikon fjalëkalimin; në sukses aktivizon modin e raportimit.
         function tryProblemReportPasswordThenActivate() {
             var inp = document.getElementById("problem-report-password-input");
             if (!inp) return;
@@ -2400,7 +2620,7 @@
         loadProblemReportsFromStorage();
     }
 
-    // Merr pikën "TI JE KËTU" nga GeoServer (vetëm koordinatat, pa marker)
+    // Merr pikën "TI JE KËTU" nga GeoServer (WMS) + zonë kliki Leaflet për popup.
     function fetchStartingPoint() {
         // Kërko të dhënat në WGS84 (EPSG:4326) direkt nga GeoServer
         var wfsUrl = geoserverOws + "?service=WFS&version=1.0.0&request=GetFeature&typeName=thevillage_webgis:Pike_informuse&outputFormat=application/json&srsName=EPSG:4326";
@@ -2430,6 +2650,9 @@
                         map.setView(pikaNisjes, 17, {animate: true});
                         console.log("📍 Harta e centruar në The Village");
                     }, 500);
+                    setTimeout(function() {
+                        ensurePikaInformueseMarker();
+                    }, 0);
                 }
             })
             .catch(err => {
@@ -2437,6 +2660,9 @@
                 console.warn("⚠ Përdor koordinata default.");
                 // Përdor koordinatat e sakta nga debug click
                 pikaNisjes = [42.37252418042841, 21.148660685091816];
+                setTimeout(function() {
+                    ensurePikaInformueseMarker();
+                }, 0);
             });
     }
     
@@ -2484,7 +2710,7 @@
         updateWhenZooming: 1, updateInterval: 1, noWrap: 1
     };
 
-    /** <img src> nuk dërgon header-in e ngrok; në mobile shpesh SW nuk e kap GetMap. Ngarkojmë pllaka me fetch + blob. */
+    // Tregon nëse URL-i WMS të GeoServer-it është host ngrok (për trajtim të veçantë të pllakave).
     function isNgrokGeoserverWmsUrl() {
         try {
             return (
@@ -2502,6 +2728,7 @@
     var ngrokTileBlobCache = new Map();
     var ngrokTileInflight = new Map();
 
+    // Merr një pllakë WMS përmes fetch (me header ngrok), me cache dhe një kërkesë për URL të njëjtë.
     function fetchNgrokTileBlobOnce(url) {
         if (ngrokTileBlobCache.has(url)) {
             return Promise.resolve(ngrokTileBlobCache.get(url));
@@ -2537,6 +2764,7 @@
         return pending;
     }
 
+    // Zëvendëson ngarkimin e pllakave WMS me fetch+blob që të funksionojë me kufizimet e ngrok-ut.
     function patchWmsTileLayerForNgrok(lyr) {
         if (!lyr || !isNgrokGeoserverWmsUrl()) return;
         lyr.createTile = function(coords, done) {
@@ -2548,6 +2776,7 @@
                 .then(function(blob) {
                     var blobUrl = URL.createObjectURL(blob);
                     var cleaned = false;
+                    // Heq blob URL pas ngarkimit të imazhit të pllakës (shmang rrjedhje memorie).
                     function cleanup() {
                         if (cleaned) return;
                         cleaned = true;
@@ -2572,6 +2801,7 @@
         };
     }
 
+    // Krijon një shtresë Leaflet WMS për GeoServer, pastron parametra të padëshiruar dhe aplikon patch për ngrok.
     function getWMS(layer, style, extra) {
         extra = extra || {};
         var defaults = {
@@ -2600,6 +2830,7 @@
     var biznisetWmsLayer = getWMS("thevillage_webgis:Bizniset", "", { zIndex: 480, detectRetina: false });
     var biznisetDisplayGroup = L.layerGroup().addTo(map);
 
+    // Lexon nga localStorage nëse bizneset shfaqen me WMS apo me simbole të personalizuara (WFS).
     function getBiznisetRenderMode() {
         try {
             return localStorage.getItem(BIZ_RENDER_MODE_KEY) === "custom" ? "custom" : "wms";
@@ -2607,12 +2838,14 @@
             return "wms";
         }
     }
+    // Ruan mënyrën e renderimit të bizneseve (wms ose custom) në localStorage.
     function setBiznisetRenderMode(mode) {
         try {
             localStorage.setItem(BIZ_RENDER_MODE_KEY, mode === "custom" ? "custom" : "wms");
         } catch (e) {}
     }
 
+    // Në nisje zgjedh WMS ose grupin e simboleve sipas legjendës dhe preferencave të ruajtura.
     (function bootstrapBiznisetDisplay() {
         var useCustom = false;
         try {
@@ -2646,10 +2879,47 @@
             zIndex: 360
         }).addTo(map),
         "Bizneset": biznisetDisplayGroup,
-        "Pika Informuese": getWMS("thevillage_webgis:Pike_informuse", "Pike_informuse", { zIndex: 520 }).addTo(map),
+        "Pika Informuese": (function() {
+            var wmsPi = getWMS("thevillage_webgis:Pike_informuse", "Pike_informuse", { zIndex: 520 });
+            pikaInformueseLayerGroup = L.layerGroup([wmsPi]).addTo(map);
+            return pikaInformueseLayerGroup;
+        })(),
         "Hekurudha": getWMS("thevillage_webgis:RailLines_FR", "RailLines_FR", { zIndex: 240 }).addTo(map)
     };
 
+    /** Vendos markerin e klikueshëm mbi të njëjtat koordinata si Pike_informuse (popup «Ti je këtu!»). */
+    function ensurePikaInformueseMarker() {
+        if (!pikaInformueseLayerGroup || !pikaNisjes || pikaNisjes.length !== 2) return;
+        if (pikaInformueseMarker) {
+            try {
+                pikaInformueseLayerGroup.removeLayer(pikaInformueseMarker);
+            } catch (eRem) {}
+            pikaInformueseMarker = null;
+        }
+        var pinHtml = '<div class="pika-informuese-hit" role="presentation" aria-hidden="true"></div>';
+        pikaInformueseMarker = L.marker(pikaNisjes, {
+            icon: L.divIcon({
+                className: "pika-informuese-leaflet-marker",
+                html: pinHtml,
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+                popupAnchor: [0, -20]
+            }),
+            interactive: true,
+            keyboard: true,
+            title: "Pika informuese — kliko",
+            zIndexOffset: 800
+        });
+        pikaInformueseMarker.bindPopup("<strong>Ti je këtu!</strong>", {
+            maxWidth: 240,
+            className: "pika-informuese-popup",
+            closeButton: true,
+            autoPanPadding: [20, 20]
+        });
+        pikaInformueseLayerGroup.addLayer(pikaInformueseMarker);
+    }
+
+    // Gjeneron ID të sigurt DOM për një checkbox legjende nga emri i shtresës.
     function layerIdForKey(key) {
         return 'layer-cb-' + key.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
     }
@@ -2672,6 +2942,7 @@
         "Hekurudha": "legend-sym--rail"
     };
 
+    // Krijon elementin vizual të simbolit në legjendë për një shtresë të caktuar.
     function buildLegendSwatchElForLayer(key) {
         var symC = LAYER_LEGEND_SYM[key] || "legend-sym--road";
         var symEl = document.createElement("span");
@@ -2692,6 +2963,7 @@
         return symEl;
     }
 
+    // Lidh checkbox-in e legjendës me shtimin/heqjen e shtresës në hartë.
     function wireLayerCheckbox(inputEl, mapKey) {
         inputEl.checked = true;
         inputEl.onchange = function() {
@@ -2699,6 +2971,7 @@
         };
     }
 
+    // Aktivizon ose çaktivizon nën-kategoritë e legjendës së bizneseve kur shtresa kryesore fiket.
     function setBiznesetSubsDisabled(disabled) {
         var subs = document.querySelectorAll(".legend-biz-subcb");
         subs.forEach(function(cb) {
@@ -2846,6 +3119,7 @@
     var biznisetFeaturesLoadPromise = null;
     var biznisetTypeName = "thevillage_webgis:Bizniset";
 
+    // Kthen titullin e lexueshëm të një biznesi nga atributet GeoJSON.
     function biznisetFeatureTitle(props, index) {
         if (!props) return "Veçoria #" + (index + 1);
         var raw = props.Emri || props.emri || props.EMRI || props.Name || props.name || props.NAME;
@@ -2857,6 +3131,7 @@
     var biznesetNdaraLoadPromise = null;
     var biznisetListSelectionLayer = null;
 
+    // Lexon nga UI stilin Leaflet për theksimin e poligonit të biznesit (ngjyra, vijë, transparencë).
     function getBizHighlightStyleFromUI() {
         var fillEl = document.getElementById("biz-fill-color");
         var strokeEl = document.getElementById("biz-stroke-color");
@@ -2881,6 +3156,7 @@
         return style;
     }
 
+    // Ruan preferencat e theksimit të biznesit në localStorage.
     function saveBizHighlightPrefs() {
         try {
             var fillEl = document.getElementById("biz-fill-color");
@@ -2899,6 +3175,7 @@
         } catch (e) {}
     }
 
+    // Ngarkon preferencat e theksimit nga localStorage dhe i vendos në kontrollet e formularit.
     function loadBizHighlightPrefsToUI() {
         var d = Object.assign({}, BIZ_HIGHLIGHT_DEFAULTS);
         try {
@@ -2921,6 +3198,7 @@
         updateBizHighlightPrefLabels();
     }
 
+    // Përditëson etiketat e përqindjes së mbushjes dhe gjerësisë së vijës sipas rrëshqitësve.
     function updateBizHighlightPrefLabels() {
         var opEl = document.getElementById("biz-fill-opacity");
         var wEl = document.getElementById("biz-stroke-weight");
@@ -2930,6 +3208,7 @@
         if (wEl && wLab) wLab.textContent = wEl.value + " px";
     }
 
+    // Thirret kur ndryshojnë kontrollet e theksimit: ruan dhe rifreskon theksimin në hartë nëse ka zgjedhje.
     function onBizHighlightPrefChanged() {
         updateBizHighlightPrefLabels();
         saveBizHighlightPrefs();
@@ -2938,6 +3217,7 @@
         }
     }
 
+    // Lidh kontrollet e panelit „theksimi i biznesit“ dhe butonin e rivendosjes.
     function initBizHighlightPersonalization() {
         loadBizHighlightPrefsToUI();
         var fill = document.getElementById("biz-fill-color");
@@ -2971,6 +3251,7 @@
         }
     }
 
+    // Lexon formën, madhësinë dhe ngjyrat e pikës së biznesit nga UI.
     function getBizPointStyleFromUI() {
         var def = bizPointServerDefaults;
         var shapeEl = document.getElementById("biz-point-shape");
@@ -2991,12 +3272,14 @@
         };
     }
 
+    // Krahason dy objekte stili pikë për barazi të plotë.
     function bizPointStyleEquals(a, b) {
         if (!a || !b) return false;
         return a.shape === b.shape && a.size === b.size && a.fill === b.fill &&
             a.stroke === b.stroke && a.strokeW === b.strokeW;
     }
 
+    // Fsheh ose shfaq butonin „Rivendos pikën“ në varësi nëse stili ndryshon nga default-i i serverit.
     function updateBizPointResetButtonVisibility() {
         var btn = document.getElementById("biz-point-reset");
         if (!btn) return;
@@ -3004,6 +3287,7 @@
         btn.hidden = bizPointStyleEquals(cur, bizPointServerDefaults);
     }
 
+    // Ruan ose fshin stilin e pikës së biznesit në localStorage.
     function saveBizPointPrefs() {
         try {
             var st = getBizPointStyleFromUI();
@@ -3015,6 +3299,7 @@
         } catch (e) {}
     }
 
+    // Ngarkon preferencat e simbolit të pikës dhe i aplikon në kontrollet e personalizimit.
     function loadBizPointPrefsToUI() {
         var d = Object.assign({}, bizPointServerDefaults);
         try {
@@ -3036,6 +3321,7 @@
         updateBizPointResetButtonVisibility();
     }
 
+    // Përditëson etiketat numerike për madhësinë e pikës dhe trashësinë e kufirit.
     function updateBizPointLabels() {
         var sizeEl = document.getElementById("biz-point-size");
         var swEl = document.getElementById("biz-point-stroke-w");
@@ -3045,6 +3331,7 @@
         if (swEl && swl) swl.textContent = swEl.value + " px";
     }
 
+    // Ndërton një string SVG për simbolin e pikës së biznesit (rreth, katror, yll, etj.).
     function buildBizPointSymbolSvg(style) {
         var defSz = BIZ_POINT_DEFAULTS.size;
         var s = Math.max(6, Math.min(50, style.size != null ? style.size : defSz));
@@ -3085,6 +3372,7 @@
         return '<svg xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" viewBox="0 0 ' + s + " " + s + '">' + inner + "</svg>";
     }
 
+    // Kthen një L.divIcon Leaflet që përdor SVG-në e ndërtuar për shfaqje në hartë.
     function buildBiznisetSymbolIcon(style) {
         var defSz = BIZ_POINT_DEFAULTS.size;
         var s = Math.max(6, Math.min(50, style.size != null ? style.size : defSz));
@@ -3097,6 +3385,7 @@
         });
     }
 
+    // Normalizon një emër kategorie për krahasim (pa thekse, hapësira të pastra).
     function normalizeCategoryKey(str) {
         if (!str || typeof str !== "string") return "";
         var s = foldDiacritics(str).toLowerCase().trim();
@@ -3105,6 +3394,7 @@
         return s;
     }
 
+    // Nxjerr vlerën e kategorisë së biznesit nga atributet e ndryshme të mundshme të GeoJSON.
     function categoryFromBiznisetProps(props) {
         if (!props) return "";
         var direct = props.Kategoria || props.kategoria || props.KATEGORI ||
@@ -3121,13 +3411,14 @@
         return "";
     }
 
+    // Zgjedh një ngjyrë të qëndrueshme nga paleta duke hash-uar një string.
     function colorFromStringHash(str) {
         var h = 0;
         for (var i = 0; i < str.length; i++) h = ((h << 5) - h) + str.charCodeAt(i);
         return BIZ_CATEGORY_PALETTE[Math.abs(h) % BIZ_CATEGORY_PALETTE.length];
     }
 
-    /** Nxjerr ngjyrë nga WFS nëse GeoServer e eksporton si atribut (hex / rgb). */
+    // Konverton një vlerë ngjyre CSS (hex ose rgb) në formë #rrggbb ose kthen null.
     function parseCssColorString(s) {
         if (!s || typeof s !== "string") return null;
         s = s.trim();
@@ -3148,6 +3439,7 @@
         return null;
     }
 
+    // Kërkon në atribute një ngjyrë të eksportuar nga serveri (për simbolizim sipas të dhënave).
     function readServerColorFromProps(props) {
         if (!props) return null;
         var preferredKeys = [
@@ -3173,6 +3465,7 @@
         return null;
     }
 
+    // Përcakton ngjyrën e mbushjes së pikës së biznesit: server, legjendë, tabelë kategorish ose hash.
     function fillColorForBiznisetProps(props) {
         var fromServer = readServerColorFromProps(props);
         if (fromServer) return fromServer;
@@ -3194,6 +3487,7 @@
         return colorFromStringHash(key);
     }
 
+    // Nxjerr koordinata Leaflet LatLng nga një GeoJSON feature (pikë ose qendër poligoni).
     function latlngsFromBiznisetFeature(f) {
         var g = f.geometry;
         if (!g) return [];
@@ -3209,6 +3503,7 @@
         return [];
     }
 
+    // Rindërton të gjithë markerët e simboleve WFS sipas legjendës dhe stilit të pikës.
     function rebuildBiznisetSymbolsLayer() {
         if (!biznisetSymbolsLayer) return;
         if (typeof legendHasAnyDisabled === "function" && legendHasAnyDisabled() && getBiznisetRenderMode() === "wms") {
@@ -3231,6 +3526,7 @@
         });
     }
 
+    // Kalon midis shtresës WMS dhe grupit të simboleve të personalizuara dhe i rifreskon ato.
     function syncBiznisetPointRendering() {
         if (!biznisetDisplayGroup) return;
         if (typeof legendHasAnyDisabled === "function" && legendHasAnyDisabled()) {
@@ -3246,7 +3542,7 @@
         rebuildBiznisetSymbolsLayer();
     }
 
-    /** Legjenda: me WMS nuk mund të fshihen kategoritë një e një — kalon në WFS (pika) dhe rindërton. */
+    // Aplikon filtrin e legjendës së bizneseve në hartë (WMS ose WFS sipas nevojës).
     function applyBizLegendToMap() {
         if (typeof syncBiznisetPointRendering !== "function") return;
         if (!legendHasAnyDisabled()) {
@@ -3266,6 +3562,7 @@
         }
     }
 
+    // Kur ndryshon personalizimi i pikës: ruan, kalon në mod custom dhe rindërton simbolet.
     function onBizPointPrefChanged() {
         updateBizPointLabels();
         saveBizPointPrefs();
@@ -3274,6 +3571,7 @@
         updateBizPointResetButtonVisibility();
     }
 
+    // Inicializon kontrollet e formës së pikës së biznesit dhe butonin e rivendosjes.
     function initBizPointPersonalization() {
         loadBizPointPrefsToUI();
         try {
@@ -4162,6 +4460,7 @@
     var highlightLayer = null; // Theksim vizual (pastrohet nga clearBiznisetSelectionUI; pa WMS hover)
 
     initProblemReportUi();
+    initProblemReportComposeDialog();
 
     (function initBizLegendMapIfNeeded() {
         if (typeof applyBizLegendToMap !== "function") return;
