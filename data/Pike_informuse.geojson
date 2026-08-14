@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","id":"Pike_informuse.1","geometry":{"type":"Point","coordinates":[21.14865953,42.37257324]},"geometry_name":"the_geom","properties":{"id":1}}],"totalFeatures":1,"numberMatched":1,"numberReturned":1,"timeStamp":"2026-08-14T19:34:40.272Z","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}}}

@@ -1,0 +1,15 @@
+.claude/
+.vscode/
+node_modules/
+Thumbs.db
+.DS_Store
+
+# Skedarë personalë / skica — jo pjesë e faqes së publikuar
+Dokumentimi/
+Foto/
+aa/
+Ushtrime.txt
+index2.html
+prov.html
+provaprova.html
+WhatsApp Image*.jpeg
