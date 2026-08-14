@@ -4429,35 +4429,25 @@
         var minDist = Infinity;
         var nearestPoint = null;
         var nearestSegment = null;
-        var nearestLine = null; // vija konkrete [lng,lat] e pjesës më të afërt (për MultiLineString)
 
-        function scanLine(coords, feature) {
-            for (var i = 0; i < coords.length; i++) {
-                var roadLat = coords[i][1];
-                var roadLng = coords[i][0];
-                var dist = calculateDistance(lat, lng, roadLat, roadLng);
-
-                if (dist < minDist) {
-                    minDist = dist;
-                    nearestPoint = [roadLat, roadLng];
-                    nearestSegment = feature;
-                    nearestLine = coords;
-                }
-            }
-        }
-
-        // Rruget.geojson eksporton MultiLineString (jo LineString e thjeshtë) — duhen mbështetur të dyja.
         roadNetwork.features.forEach(function(feature) {
-            var geom = feature.geometry;
-            if (!geom) return;
-            if (geom.type === 'LineString') {
-                scanLine(geom.coordinates, feature);
-            } else if (geom.type === 'MultiLineString') {
-                geom.coordinates.forEach(function(part) { scanLine(part, feature); });
+            if (feature.geometry.type === 'LineString') {
+                var coords = feature.geometry.coordinates;
+                for (var i = 0; i < coords.length; i++) {
+                    var roadLat = coords[i][1];
+                    var roadLng = coords[i][0];
+                    var dist = calculateDistance(lat, lng, roadLat, roadLng);
+
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nearestPoint = [roadLat, roadLng];
+                        nearestSegment = feature;
+                    }
+                }
             }
         });
 
-        return { point: nearestPoint, distance: minDist, segment: nearestSegment, line: nearestLine };
+        return { point: nearestPoint, distance: minDist, segment: nearestSegment };
     }
 
     // Ndërto rrugën duke përdorur rrjetin e brendshëm
@@ -4465,25 +4455,29 @@
         var startRoad = findNearestPointOnRoad(start[0], start[1]);
         var endRoad = findNearestPointOnRoad(end[0], end[1]);
 
-        if (!startRoad || !endRoad || !startRoad.point || !endRoad.point) return null;
+        if (!startRoad || !endRoad) return null;
 
         // Nëse të dyja pikat janë afër rrjetit të brendshëm (<50m)
         if (startRoad.distance < 50 && endRoad.distance < 50) {
             console.log("✓ Përdoret rrjeti i brendshëm i rrugëve");
 
-            // Routing i thjeshtë: start -> pika më e afërt në rrugë -> vija e rrugës -> pika më e afërt te fundi -> end
+            // Routing i thjeshtë: start -> nearest road point -> end road point -> end
             var route = [start];
 
+            // Shto pikën më të afërt në rrugë nga fillimi
             if (startRoad.distance > 5) {
                 route.push(startRoad.point);
             }
 
-            if (startRoad.line) {
-                startRoad.line.forEach(function(c) {
+            // Shto të gjitha pikat e segmentit të rrugës
+            if (startRoad.segment && startRoad.segment.geometry.coordinates) {
+                var coords = startRoad.segment.geometry.coordinates;
+                coords.forEach(function(c) {
                     route.push([c[1], c[0]]);
                 });
             }
 
+            // Shto pikën më të afërt në rrugë nga fundi
             if (endRoad.distance > 5 && endRoad.point[0] !== startRoad.point[0]) {
                 route.push(endRoad.point);
             }
