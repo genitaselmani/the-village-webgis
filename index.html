@@ -243,6 +243,96 @@
             background: #7e271e;
             border-color: #6b2119;
         }
+        .map-tool-btn--state-measure-menu.map-tool-btn--on {
+            background: #34495e;
+            border-color: #2c3e50;
+            color: #fff;
+            box-shadow: none;
+        }
+        .map-tool-btn--state-measure-menu.map-tool-btn--on:hover,
+        .map-tool-btn--state-measure-menu.map-tool-btn--on:focus-visible {
+            background: #212f3c;
+            border-color: #1a252f;
+        }
+        .map-tool-menu {
+            position: relative;
+            pointer-events: auto;
+        }
+        .measure-menu-panel {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 196px;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 1002;
+        }
+        .measure-menu-panel[hidden] { display: none; }
+        .measure-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border: none;
+            background: none;
+            border-radius: 7px;
+            font: inherit;
+            font-size: 13.5px;
+            color: #383838;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+        }
+        .measure-menu-item svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+        .measure-menu-item:hover,
+        .measure-menu-item:focus-visible {
+            background: #eef1f4;
+        }
+        .measure-menu-item.is-active {
+            background: #eaf2fb;
+            color: #1b4f72;
+            font-weight: 600;
+        }
+        .measure-popup {
+            position: relative;
+            padding-right: 18px;
+        }
+        .measure-popup-close {
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            width: 18px;
+            height: 18px;
+            border: none;
+            background: none;
+            color: #888;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        .measure-popup-close:hover,
+        .measure-popup-close:focus-visible {
+            background: #f0e0e0;
+            color: #922b21;
+        }
         .map-tool-btn--problem.is-mode-on {
             background: #c0392b;
             border-color: #922b21;
@@ -1571,15 +1661,27 @@
             aria-label="Shkarkoni shtresat si GeoJSON">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
         </button>
-        <button type="button" class="map-tool-btn map-tool-btn--state-measure" id="measure-btn" onclick="toggleMeasure()"
-            title="Mat distanca në hartë"
-            aria-label="Mat distanca në hartë"
-            aria-pressed="false">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="2.5" y="10" width="19" height="6" rx="1.25" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M7 11.5v3M12 11v4M17 11.5v3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-            </svg>
-        </button>
+        <div class="map-tool-menu" id="measure-menu">
+            <button type="button" class="map-tool-btn map-tool-btn--state-measure-menu" id="measure-menu-btn" onclick="toggleMeasureMenu()"
+                title="Vegla e matjes (distancë / sipërfaqe)"
+                aria-label="Vegla e matjes (distancë / sipërfaqe)"
+                aria-haspopup="true" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="2.5" y="10" width="19" height="6" rx="1.25" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M7 11.5v3M12 11v4M17 11.5v3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="measure-menu-panel" id="measure-menu-panel" hidden role="menu" aria-label="Opsionet e matjes">
+                <button type="button" class="measure-menu-item" id="measure-menu-distance" role="menuitemradio" aria-checked="false" onclick="selectMeasureMenuOption('distance')">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="10" width="19" height="6" rx="1.25"/><path d="M7 11.5v3M12 11v4M17 11.5v3" stroke-linecap="round"/></svg>
+                    Mat distancën
+                </button>
+                <button type="button" class="measure-menu-item" id="measure-menu-area" role="menuitemradio" aria-checked="false" onclick="selectMeasureMenuOption('area')">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8 12 4l8 4-2 10H6z" stroke-linejoin="round"/></svg>
+                    Mat sipërfaqen
+                </button>
+            </div>
+        </div>
         <button type="button" class="map-tool-btn map-tool-btn--outline map-tool-btn--danger map-tool-btn--problem" id="problem-report-toggle"
             title="Raporto problem në hartë"
             aria-label="Raporto problem në hartë"
@@ -1972,8 +2074,10 @@
     var pikaInformueseLayerGroup = null;
     var roadNetwork = null; // Rrjeti i rrugëve nga data/Rruget.geojson
     var isMeasuring = false; // Gjendja e matjes
+    var measureMode = 'distance'; // 'distance' ose 'area'
     var measurePoints = []; // Pikat e matjes
-    var measureLine = null; // Vija e matjes
+    var measureLine = null; // Vija e matjes (distancë, ose kontura para se të mbyllet poligoni)
+    var measurePolygon = null; // Poligoni i sipërfaqes (kur measureMode === 'area')
     var measureMarkers = []; // Marker-at e matjes
 
     // Koordinatat fillestare të The Village (Prishtina, Kosovo)
@@ -4626,76 +4730,207 @@
         });
     }
     
-    // FUNKSIONI PËR MATJEN E DISTANCËS
-    function toggleMeasure() {
-        var turningMeasureOn = !isMeasuring;
-        if (turningMeasureOn && problemReportMode) {
+    // FUNKSIONET PËR MATJEN E DISTANCËS DHE SIPËRFAQES
+    // Hap/mbyll panelin e menysë së matjes; forceOpen (true/false) e detyron gjendjen, përndryshe e kthen (toggle).
+    function toggleMeasureMenu(forceOpen) {
+        var panel = document.getElementById('measure-menu-panel');
+        var btn = document.getElementById('measure-menu-btn');
+        if (!panel || !btn) return;
+        var open = forceOpen != null ? forceOpen : panel.hidden;
+        panel.hidden = !open;
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    function closeMeasureMenu() {
+        toggleMeasureMenu(false);
+    }
+    // Thirret nga një zë i menysë së matjes: fillon/ndërron mënyrën ('distance' ose 'area') dhe mbyll menynë.
+    function selectMeasureMenuOption(mode) {
+        toggleMeasureMode(mode);
+        closeMeasureMenu();
+    }
+    // Mbyll menynë e matjes kur klikohet jashtë saj.
+    document.addEventListener('click', function(ev) {
+        var menu = document.getElementById('measure-menu');
+        if (menu && !menu.contains(ev.target)) closeMeasureMenu();
+    });
+    document.addEventListener('keydown', function(ev) {
+        if (ev.key === 'Escape') closeMeasureMenu();
+    });
+
+    // Përditëson pamjen (buton kryesor + zërat e menysë) sipas measureMode/isMeasuring aktuale.
+    function updateMeasureButtonsUi() {
+        var menuBtn = document.getElementById('measure-menu-btn');
+        if (menuBtn) {
+            menuBtn.classList.toggle("map-tool-btn--on", isMeasuring);
+            menuBtn.title = isMeasuring ?
+                (measureMode === 'area' ? "Vegla e matjes — sipërfaqja aktive" : "Vegla e matjes — distanca aktive") :
+                "Vegla e matjes (distancë / sipërfaqe)";
+            menuBtn.setAttribute("aria-label", menuBtn.title);
+        }
+        var distItem = document.getElementById('measure-menu-distance');
+        if (distItem) {
+            var onDist = isMeasuring && measureMode === 'distance';
+            distItem.classList.toggle("is-active", onDist);
+            distItem.setAttribute("aria-checked", onDist ? "true" : "false");
+        }
+        var areaItem = document.getElementById('measure-menu-area');
+        if (areaItem) {
+            var onArea = isMeasuring && measureMode === 'area';
+            areaItem.classList.toggle("is-active", onArea);
+            areaItem.setAttribute("aria-checked", onArea ? "true" : "false");
+        }
+    }
+
+    // Çaktivizon plotësisht modin e matjes (çfarëdo mënyre) dhe pastron vizatimin.
+    function stopMeasuring() {
+        if (!isMeasuring) return;
+        isMeasuring = false;
+        clearMeasurement();
+        map.getContainer().style.cursor = "";
+        updateMeasureButtonsUi();
+    }
+
+    // Aktivizon matjen në një mënyrë ('distance' ose 'area'); nëse mënyra e njëjtë është tashmë aktive, e mbyll.
+    function toggleMeasureMode(mode) {
+        if (isMeasuring && measureMode === mode) {
+            stopMeasuring();
+            return;
+        }
+        if (!isMeasuring && problemReportMode) {
             problemReportReopenLock = true;
             map.closePopup();
             problemReportReopenLock = false;
         }
-        isMeasuring = !isMeasuring;
-        var btn = document.getElementById('measure-btn');
-        if (!btn) return;
-
-        if (isMeasuring) {
-            if (isNavActive) {
-                toggleNav();
-            }
-            btn.classList.add("map-tool-btn--on");
-            btn.setAttribute("aria-pressed", "true");
-            btn.title = "Mbyll matjen";
-            btn.setAttribute("aria-label", "Mbyll matjen e distancës");
-            map.getContainer().style.cursor = "crosshair";
-            measurePoints = [];
-            console.log("📏 Moda e matjes aktivizuar. Kliko për të shtuar pika.");
-        } else {
-            btn.classList.remove("map-tool-btn--on");
-            btn.setAttribute("aria-pressed", "false");
-            btn.title = "Mat distanca në hartë";
-            btn.setAttribute("aria-label", "Mat distanca në hartë");
-            map.getContainer().style.cursor = "";
-            clearMeasurement();
+        if (isNavActive) {
+            toggleNav();
         }
+        measureMode = mode;
+        isMeasuring = true;
+        clearMeasurement();
+        map.getContainer().style.cursor = "crosshair";
+        updateMeasureButtonsUi();
+        console.log(mode === 'area' ?
+            "📐 Moda e matjes së sipërfaqes aktivizuar. Kliko për të shtuar kulme (min. 3)." :
+            "📏 Moda e matjes së distancës aktivizuar. Kliko për të shtuar pika.");
     }
-    
+
+    // Përdoret nga vende të tjera të kodit (p.sh. aktivizimi i raportit të problemit) për të fikur matjen pavarësisht mënyrës.
+    function toggleMeasure() {
+        if (isMeasuring) stopMeasuring();
+        else toggleMeasureMode('distance');
+    }
+
+    // Fshin vizatimin aktual të matjes (vijë/poligon + markerët e kulmeve) pa e fikur modin e matjes.
     function clearMeasurement() {
-        // Fshij vijën e matjes
         if (measureLine) {
             map.removeLayer(measureLine);
             measureLine = null;
         }
-        
-        // Fshij të gjithë marker-at
+        if (measurePolygon) {
+            map.removeLayer(measurePolygon);
+            measurePolygon = null;
+        }
         measureMarkers.forEach(function(marker) {
             map.removeLayer(marker);
         });
         measureMarkers = [];
         measurePoints = [];
+        map.closePopup();
     }
-    
+
+    // Sipërfaqja e një poligoni (m²): projeksion lokal ekuirektangular rreth gjerësisë mesatare + formula "shoelace".
+    function calculatePolygonArea(latlngs) {
+        if (!latlngs || latlngs.length < 3) return 0;
+        var R = 6371e3;
+        var meanLat = latlngs.reduce(function(s, p) { return s + p.lat; }, 0) / latlngs.length;
+        var meanLatRad = meanLat * Math.PI / 180;
+        var pts = latlngs.map(function(p) {
+            return {
+                x: R * (p.lng * Math.PI / 180) * Math.cos(meanLatRad),
+                y: R * (p.lat * Math.PI / 180)
+            };
+        });
+        var area = 0;
+        var i, j;
+        for (i = 0; i < pts.length; i++) {
+            j = (i + 1) % pts.length;
+            area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+        }
+        return Math.abs(area) / 2;
+    }
+
+    // Formaton një sipërfaqe (m²) si m² ose hektarë, sipas madhësisë.
+    function formatArea(m2) {
+        return m2 >= 10000 ? (m2 / 10000).toFixed(2) + " ha" : m2.toFixed(1) + " m²";
+    }
+
+    // Përmbajtja e popup-it të rezultatit të matjes, me buton "×" që fshin matjen (jo vetëm mbyll popup-in).
+    function buildMeasurePopupContent(innerHtml) {
+        return '<div class="measure-popup">' +
+            '<button type="button" class="measure-popup-close" onclick="clearMeasurement()" aria-label="Fshij matjen" title="Fshij matjen">×</button>' +
+            innerHtml +
+            '</div>';
+    }
+
     function addMeasurePoint(latlng) {
         measurePoints.push(latlng);
-        
-        // Shto marker
+
+        var vertexColor = measureMode === 'area' ? '#2980b9' : '#e74c3c';
         var marker = L.circleMarker(latlng, {
             radius: 6,
-            fillColor: '#e74c3c',
+            fillColor: vertexColor,
             color: '#fff',
             weight: 2,
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(map);
-        
         measureMarkers.push(marker);
-        
-        // Nëse ka më shumë se një pikë, vizato vijën
+
+        if (measureMode === 'area') {
+            if (measureLine) {
+                map.removeLayer(measureLine);
+                measureLine = null;
+            }
+            if (measurePolygon) {
+                map.removeLayer(measurePolygon);
+                measurePolygon = null;
+            }
+            if (measurePoints.length === 2) {
+                // Vetëm 2 kulme ende — shfaq konturën si vijë derisa të shtohet e treta.
+                measureLine = L.polyline(measurePoints, {
+                    color: vertexColor,
+                    weight: 3,
+                    opacity: 0.7,
+                    dashArray: '5, 10'
+                }).addTo(map);
+                return;
+            }
+            if (measurePoints.length < 3) return;
+
+            measurePolygon = L.polygon(measurePoints, {
+                color: vertexColor,
+                weight: 3,
+                opacity: 0.8,
+                fillColor: vertexColor,
+                fillOpacity: 0.2,
+                dashArray: '5, 10'
+            }).addTo(map);
+
+            var area = calculatePolygonArea(measurePoints);
+            L.popup({ closeButton: false })
+                .setLatLng(latlng)
+                .setContent(buildMeasurePopupContent(`<b>Sipërfaqja totale:</b><br>${formatArea(area)}`))
+                .openOn(map);
+            console.log("📐 Sipërfaqja:", formatArea(area));
+            return;
+        }
+
+        // Mënyra "distance" (ekzistuese)
         if (measurePoints.length > 1) {
             if (measureLine) {
                 map.removeLayer(measureLine);
             }
-            
-            // Llogarit distancën totale
+
             var totalDistance = 0;
             for (var i = 0; i < measurePoints.length - 1; i++) {
                 totalDistance += calculateDistance(
@@ -4703,20 +4938,19 @@
                     measurePoints[i+1].lat, measurePoints[i+1].lng
                 );
             }
-            
+
             measureLine = L.polyline(measurePoints, {
-                color: '#e74c3c',
+                color: vertexColor,
                 weight: 3,
                 opacity: 0.7,
                 dashArray: '5, 10'
             }).addTo(map);
-            
-            // Shfaq distancën në popup
-            var popup = L.popup()
+
+            L.popup({ closeButton: false })
                 .setLatLng(latlng)
-                .setContent(`<b>Distanca totale:</b><br>${totalDistance.toFixed(2)} metra`)
+                .setContent(buildMeasurePopupContent(`<b>Distanca totale:</b><br>${totalDistance.toFixed(2)} metra`))
                 .openOn(map);
-            
+
             console.log("📏 Distanca:", totalDistance.toFixed(2), "metra");
         }
     }
