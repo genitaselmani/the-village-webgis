@@ -28,23 +28,25 @@
             --mobile-breakpoint: 768px;
             --safe-bottom: env(safe-area-inset-bottom, 0px);
             --safe-top: env(safe-area-inset-top, 0px);
-            --mall-blue: #2b6eff;
-            --mall-blue-hover: #0a3da8;
-            --mall-bg-hover: #b8b8b8;
-            --mall-tint-hover: #9eb3e8;
-            --mall-tint-hover-border: #3d5596;
-            --mall-tint-shadow: rgba(20, 50, 120, 0.35);
-            --mall-bg: #f2f2f2;
-            --mall-border: #e8e8e8;
-            --mall-text: #1a1a1a;
-            --mall-muted: #6b6b6b;
-            --chip-gray: #e5e5e5;
-            --chip-gray-dark: #d0d0d0;
-            --accent: #e67e22;
+            /* Paleta "Fshati/The Village": jeshile pishe (natyra, gjelbërimi) + tokë/tulla e ngrohtë (komuniteti, tregtia). */
+            --mall-blue: #1f6f5c;
+            --mall-blue-hover: #123f34;
+            --mall-bg-hover: #ded7c4;
+            --mall-tint-hover: #bfe0d4;
+            --mall-tint-hover-border: #2e7d68;
+            --mall-tint-shadow: rgba(20, 80, 65, 0.28);
+            --mall-bg: #f5f3ee;
+            --mall-border: #e5e0d3;
+            --mall-text: #211e18;
+            --mall-muted: #756c5c;
+            --chip-gray: #ece7db;
+            --chip-gray-dark: #d8d1bf;
+            --accent: #c8763a;
+            --accent-soft: #f5e6d8;
             --primary: var(--mall-blue);
-            --header-bg: #e8f0fc;
-            --header-border: rgba(43, 110, 255, 0.2);
-            --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.75) inset, 0 1px 4px rgba(15, 45, 100, 0.08);
+            --header-bg: #eef2ea;
+            --header-border: rgba(31, 111, 92, 0.22);
+            --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.75) inset, 0 1px 4px rgba(20, 60, 50, 0.08);
         }
         html {
             height: 100%;
@@ -129,7 +131,7 @@
             font-weight: 700;
             letter-spacing: 0.03em;
             text-transform: uppercase;
-            color: #0f2847;
+            color: #0f3d32;
         }
         .header-academic-meta {
             margin: 0;
@@ -205,12 +207,12 @@
         .map-tool-btn--outline {
             background: rgba(255, 255, 255, 0.96);
             color: var(--mall-blue);
-            border-color: rgba(43, 110, 255, 0.22);
+            border-color: rgba(31, 111, 92, 0.24);
         }
         .map-tool-btn--outline:hover,
         .map-tool-btn--outline:focus-visible {
-            background: #e8eefc;
-            border-color: rgba(43, 110, 255, 0.4);
+            background: #e6f1ec;
+            border-color: rgba(31, 111, 92, 0.4);
         }
         .map-tool-btn--danger {
             color: #b03a2e;
@@ -222,30 +224,19 @@
             border-color: rgba(192, 57, 43, 0.5);
         }
         .map-tool-btn--state-nav.map-tool-btn--on {
-            background: #219a52;
-            border-color: #1a7a41;
+            background: #c8763a;
+            border-color: #a05d29;
             color: #fff;
             box-shadow: none;
         }
         .map-tool-btn--state-nav.map-tool-btn--on:hover,
         .map-tool-btn--state-nav.map-tool-btn--on:focus-visible {
-            background: #146b38;
-            border-color: #0f542b;
-        }
-        .map-tool-btn--state-measure.map-tool-btn--on {
-            background: #e74c3c;
-            border-color: #c0392b;
-            color: #fff;
-            box-shadow: none;
-        }
-        .map-tool-btn--state-measure.map-tool-btn--on:hover,
-        .map-tool-btn--state-measure.map-tool-btn--on:focus-visible {
-            background: #7e271e;
-            border-color: #6b2119;
+            background: #8f5527;
+            border-color: #74451f;
         }
         .map-tool-btn--state-measure-menu.map-tool-btn--on {
-            background: #34495e;
-            border-color: #2c3e50;
+            background: #3a5568;
+            border-color: #2c4152;
             color: #fff;
             box-shadow: none;
         }
@@ -302,8 +293,8 @@
             background: #eef1f4;
         }
         .measure-menu-item.is-active {
-            background: #eaf2fb;
-            color: #1b4f72;
+            background: #e7edf1;
+            color: #2c4152;
             font-weight: 600;
         }
         .measure-popup {
@@ -566,9 +557,9 @@
         .legend-row:hover,
         .legend-filter-row:focus-within,
         .legend-bizneset-wrap .legend-row--parent:focus-within {
-            background: #f0f4ff;
-            border-color: #c5d4f5;
-            box-shadow: 0 1px 6px rgba(43, 110, 255, 0.12);
+            background: #eef4f0;
+            border-color: #c3ddd2;
+            box-shadow: 0 1px 6px rgba(31, 111, 92, 0.12);
         }
         .legend-row input[type="checkbox"] {
             width: 16px;
@@ -588,13 +579,13 @@
         }
         /* Përafrohen me stilet WMS tipike: kufi = zonë e çelët, ndërtesa = gri, parkim = P blu, etj. */
         .legend-sym--kufi-v {
-            background: #f2e8d8;
-            border: 1px solid #c9b89a;
+            background: #eaf3f0;
+            border: 2px dashed #1f6f5c;
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
         }
         .legend-sym--parking {
-            background: #1565c0;
-            border: 1px solid #0d47a1;
+            background: #3c6b63;
+            border: 1px solid #2c4f49;
             border-radius: 3px;
             display: flex;
             align-items: center;
@@ -609,25 +600,25 @@
         }
         .legend-sym--road {
             background: #fff;
-            border: 1px solid #90a4ae;
+            border: 1px solid #a89f8a;
             background-image:
-                linear-gradient(#7b8794, #7b8794),
-                linear-gradient(#7b8794, #7b8794);
+                linear-gradient(#8f8672, #8f8672),
+                linear-gradient(#8f8672, #8f8672);
             background-size: 85% 3px, 85% 3px;
             background-position: center 32%, center 68%;
             background-repeat: no-repeat;
         }
         .legend-sym--ndara {
-            background: #a8a8a8;
-            border: 1px solid #5f5f5f;
+            background: #e7dcc8;
+            border: 1px solid #a9895f;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
         }
         .legend-sym--biz-cluster {
             border: none;
             background:
-                radial-gradient(circle, #7f8c8d 2.5px, transparent 2.5px),
-                radial-gradient(circle, #7f8c8d 2.5px, transparent 2.5px),
-                radial-gradient(circle, #7f8c8d 2.5px, transparent 2.5px);
+                radial-gradient(circle, #8a7b63 2.5px, transparent 2.5px),
+                radial-gradient(circle, #8a7b63 2.5px, transparent 2.5px),
+                radial-gradient(circle, #8a7b63 2.5px, transparent 2.5px);
             background-size: 7px 7px;
             background-position: 1px 50%, 50% 50%, calc(100% - 1px) 50%;
             background-repeat: no-repeat;
@@ -669,18 +660,18 @@
         }
 
         .legend-sym--rail {
-            background-color: #eceff1;
-            border: 1px solid #546e7a;
+            background-color: #efece2;
+            border: 1px solid #6b6353;
             background-image:
                 repeating-linear-gradient(
                     90deg,
                     transparent 0px,
                     transparent 4px,
-                    #37474f 4px,
-                    #37474f 5px
+                    #c8763a 4px,
+                    #c8763a 5px
                 ),
-                linear-gradient(#263238, #263238),
-                linear-gradient(#263238, #263238);
+                linear-gradient(#221f18, #221f18),
+                linear-gradient(#221f18, #221f18);
             background-size: 100% 6px, 80% 2px, 80% 2px;
             background-position: center, center 28%, center 72%;
             background-repeat: no-repeat;
@@ -809,7 +800,7 @@
             background: var(--mall-blue);
             color: #fff;
             border-color: var(--mall-blue);
-            box-shadow: 0 2px 8px rgba(43, 110, 255, 0.35);
+            box-shadow: 0 2px 8px rgba(31, 111, 92, 0.35);
         }
 
         .sidebar-panel { display: flex; flex-direction: column; min-height: 0; }
@@ -988,7 +979,7 @@
         }
         .bizniset-card.is-selected {
             border-color: var(--mall-blue);
-            background: #eef3ff;
+            background: #e7f2ec;
         }
         .bizniset-card-title {
             margin: 0 0 8px;
@@ -1049,7 +1040,7 @@
             width: 22px;
             height: 22px;
             opacity: 0.4;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b6eff' stroke-width='1.5'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / contain no-repeat;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f6f5c' stroke-width='1.5'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / contain no-repeat;
         }
         .bizniset-card-main {
             flex: 1;
@@ -1064,7 +1055,7 @@
             margin-bottom: 12px;
             border-radius: 16px;
             overflow: hidden;
-            background: linear-gradient(135deg, #0f2847 0%, #1a3d6e 48%, #2b6eff 160%);
+            background: linear-gradient(135deg, #0f3d32 0%, #1f6f5c 48%, #c8763a 160%);
             color: #fff;
             box-shadow: 0 8px 24px rgba(15, 40, 71, 0.35);
         }
@@ -1109,7 +1100,7 @@
             justify-content: center;
             width: 100%;
             height: 100%;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f2847' stroke-width='1.4'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / 58% no-repeat;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f3d32' stroke-width='1.4'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / 58% no-repeat;
             opacity: 0.45;
         }
         .bizniset-spotlight-kicker {
@@ -1260,8 +1251,8 @@
             margin: 0 0 16px;
             padding: 14px 16px;
             border-radius: 14px;
-            background: linear-gradient(165deg, rgba(43, 110, 255, 0.08) 0%, rgba(43, 110, 255, 0.03) 100%);
-            border: 1px solid rgba(43, 110, 255, 0.22);
+            background: linear-gradient(165deg, rgba(31, 111, 92, 0.08) 0%, rgba(31, 111, 92, 0.03) 100%);
+            border: 1px solid rgba(31, 111, 92, 0.22);
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
         }
         .problem-compose-recipient__label {
@@ -1321,7 +1312,7 @@
             display: block;
             font-size: 12px;
             font-weight: 700;
-            color: #1a3a6e;
+            color: #123f34;
             margin-bottom: 6px;
         }
         .problem-popup-form select,
@@ -1519,7 +1510,7 @@
             font-size: 22px;
             line-height: 1;
             cursor: pointer;
-            box-shadow: 0 6px 24px rgba(43, 110, 255, 0.45);
+            box-shadow: 0 6px 24px rgba(31, 111, 92, 0.45);
             align-items: center;
             justify-content: center;
             font-family: inherit;
@@ -1844,7 +1835,7 @@
     </dialog>
 </div>
 
-<footer style="background-color: #e8f0fc;">
+<footer style="background-color: #eef2ea;">
     <div id="coords-text" class="footer-coords" style="color: black; font-weight: bold"><b>EPSG:9141 · KOSOVAREF01 / Balkans zone 7 · E = — | N = —</b></div>
     <div id="bottom-center" aria-live="polite">Shkalla: —</div>
     <div class="footer-credit" style="color: black"><b>Genita Selmani</b></div>
@@ -1869,9 +1860,9 @@
 
     var BIZ_HIGHLIGHT_PREFS_KEY = "webgis_thevillage_biz_highlight_v1";
     var BIZ_HIGHLIGHT_DEFAULTS = {
-        fill: "#6e6e6e",
-        stroke: "#6e6e6e",
-        fillOpacity: 0.68,
+        fill: "#c8763a",
+        stroke: "#8f5527",
+        fillOpacity: 0.55,
         weight: 3,
         dashArray: ""
     };
@@ -1881,7 +1872,7 @@
     var BIZ_POINT_DEFAULTS = {
         shape: "circle",
         size: 10,
-        fill: "#9b59b6",
+        fill: "#8a7b63",
         stroke: "#2c3e50",
         strokeW: 0
     };
@@ -2711,23 +2702,27 @@
         return group;
     }
 
-    /** Stilet e shtresave — të përafruara me .sld origjinale (QGIS/GeoServer) të projektit. */
-    var KUFIRI_STYLE = { color: "#c9b89a", weight: 3, dashArray: "8,6", fill: true, fillColor: "#f2e8d8", fillOpacity: 0.12 };
-    var PARKINGU_STYLE = { color: "#265980", weight: 2, lineJoin: "bevel", fill: true, fillColor: "#dfdfdf", fillOpacity: 0.85 };
-    var NDARA_STYLE = { color: "#5f5f5f", weight: 1.2, fill: true, fillColor: "#a8a8a8", fillOpacity: 0.32 };
+    /**
+     * Stilet e shtresave — paleta "Fshati": jeshile pishe për kufij/natyrë, gurë/tokë të ngrohtë për
+     * infrastrukturë (parking, rrugë), dhe tokë/tulla për shtresën e bizneseve (dallim i qartë nga infrastruktura).
+     */
+    var KUFIRI_STYLE = { color: "#1f6f5c", weight: 2, dashArray: "7,5", fill: true, fillColor: "#1f6f5c", fillOpacity: 0.04 };
+    var PARKINGU_STYLE = { color: "#3c6b63", weight: 1.75, lineJoin: "bevel", fill: true, fillColor: "#e3ded1", fillOpacity: 0.85 };
+    var NDARA_STYLE = { color: "#a9895f", weight: 1.2, fill: true, fillColor: "#e7dcc8", fillOpacity: 0.38 };
 
-    // Rruget.sld: dy vija të mbivendosura (jashtme e errët + brendshme e çelët) sipas Kategoria.
+    // Dy vija të mbivendosura (jashtme e errët + brendshme e çelët) sipas Kategoria; rrugët kryesore "ne_Village"
+    // janë më të theksuara se ato "per_ne_Village" (hyrëse/dytësore), për hierarki të qartë kartografike.
     function roadCasingStyle(feature) {
         var kat = feature && feature.properties && feature.properties.Kategoria;
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#020003", weight: 14, opacity: 0.55, lineCap: "round", lineJoin: "round" } :
-            { color: "#1e1a14", weight: 10, lineCap: "round", lineJoin: "round" };
+            { color: "#332c22", weight: 6, opacity: 0.55, lineCap: "round", lineJoin: "round" } :
+            { color: "#332c22", weight: 9, lineCap: "round", lineJoin: "round" };
     }
     function roadFillStyle(feature) {
         var kat = feature && feature.properties && feature.properties.Kategoria;
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#d7d6d9", weight: 11, lineCap: "round", lineJoin: "round" } :
-            { color: "#b0b0b0", weight: 8, lineCap: "round", lineJoin: "round" };
+            { color: "#e4dfd0", weight: 4, lineCap: "round", lineJoin: "round" } :
+            { color: "#d7d0bd", weight: 6, lineCap: "round", lineJoin: "round" };
     }
     // Shtresa "Rrugët": dy pasazhe stilizimi mbi të njëjtat të dhëna + tooltip me emrin e rrugës.
     function buildRruguetLayer() {
@@ -2749,13 +2744,13 @@
             .catch(function(err) { console.error("[data] Rruget nuk u ngarkua:", err); });
         return group;
     }
-    // hekurudha.sld: vijë bazë e zezë + model kryqëzimesh të kuqe (përafruar me dashArray).
+    // Vijë bazë e errët + model kryqëzimesh me ngjyrën e theksit (përafruar me dashArray).
     function buildHekurudhaLayer() {
         var group = L.layerGroup();
         loadLocalGeoJSON("RailLines_FR")
             .then(function(data) {
-                var base = L.geoJSON(data, { style: function() { return { color: "#000000", weight: 4, lineCap: "round", lineJoin: "round" }; } });
-                var hatch = L.geoJSON(data, { style: function() { return { color: "#ff0000", weight: 1.4, dashArray: "2,9" }; } });
+                var base = L.geoJSON(data, { style: function() { return { color: "#221f18", weight: 3, lineCap: "round", lineJoin: "round" }; } });
+                var hatch = L.geoJSON(data, { style: function() { return { color: "#c8763a", weight: 1.3, dashArray: "2,8" }; } });
                 group.addLayer(base);
                 group.addLayer(hatch);
                 group.geoJsonData = data;
