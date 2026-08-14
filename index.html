@@ -1662,7 +1662,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
         </button>
         <div class="map-tool-menu" id="measure-menu">
-            <button type="button" class="map-tool-btn map-tool-btn--state-measure-menu" id="measure-menu-btn" onclick="toggleMeasureMenu()"
+            <button type="button" class="map-tool-btn map-tool-btn--state-measure-menu" id="measure-menu-btn" onclick="onMeasureMenuBtnClick()"
                 title="Vegla e matjes (distancë / sipërfaqe)"
                 aria-label="Vegla e matjes (distancë / sipërfaqe)"
                 aria-haspopup="true" aria-expanded="false">
@@ -4425,68 +4425,74 @@
     // Gjej pikën më të afërt në rrugë
     function findNearestPointOnRoad(lat, lng) {
         if (!roadNetwork || !roadNetwork.features) return null;
-        
+
         var minDist = Infinity;
         var nearestPoint = null;
         var nearestSegment = null;
-        
-        roadNetwork.features.forEach(function(feature) {
-            if (feature.geometry.type === 'LineString') {
-                var coords = feature.geometry.coordinates;
-                for (var i = 0; i < coords.length; i++) {
-                    var roadLat = coords[i][1];
-                    var roadLng = coords[i][0];
-                    var dist = calculateDistance(lat, lng, roadLat, roadLng);
-                    
-                    if (dist < minDist) {
-                        minDist = dist;
-                        nearestPoint = [roadLat, roadLng];
-                        nearestSegment = feature;
-                    }
+        var nearestLine = null; // vija konkrete [lng,lat] e pjesës më të afërt (për MultiLineString)
+
+        function scanLine(coords, feature) {
+            for (var i = 0; i < coords.length; i++) {
+                var roadLat = coords[i][1];
+                var roadLng = coords[i][0];
+                var dist = calculateDistance(lat, lng, roadLat, roadLng);
+
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearestPoint = [roadLat, roadLng];
+                    nearestSegment = feature;
+                    nearestLine = coords;
                 }
             }
+        }
+
+        // Rruget.geojson eksporton MultiLineString (jo LineString e thjeshtë) — duhen mbështetur të dyja.
+        roadNetwork.features.forEach(function(feature) {
+            var geom = feature.geometry;
+            if (!geom) return;
+            if (geom.type === 'LineString') {
+                scanLine(geom.coordinates, feature);
+            } else if (geom.type === 'MultiLineString') {
+                geom.coordinates.forEach(function(part) { scanLine(part, feature); });
+            }
         });
-        
-        return { point: nearestPoint, distance: minDist, segment: nearestSegment };
+
+        return { point: nearestPoint, distance: minDist, segment: nearestSegment, line: nearestLine };
     }
-    
+
     // Ndërto rrugën duke përdorur rrjetin e brendshëm
     function buildInternalRoute(start, end) {
         var startRoad = findNearestPointOnRoad(start[0], start[1]);
         var endRoad = findNearestPointOnRoad(end[0], end[1]);
-        
-        if (!startRoad || !endRoad) return null;
-        
+
+        if (!startRoad || !endRoad || !startRoad.point || !endRoad.point) return null;
+
         // Nëse të dyja pikat janë afër rrjetit të brendshëm (<50m)
         if (startRoad.distance < 50 && endRoad.distance < 50) {
             console.log("✓ Përdoret rrjeti i brendshëm i rrugëve");
-            
-            // Routing i thjeshtë: start -> nearest road point -> end road point -> end
+
+            // Routing i thjeshtë: start -> pika më e afërt në rrugë -> vija e rrugës -> pika më e afërt te fundi -> end
             var route = [start];
-            
-            // Shto pikën më të afërt në rrugë nga fillimi
+
             if (startRoad.distance > 5) {
                 route.push(startRoad.point);
             }
-            
-            // Shto të gjitha pikat e segmentit të rrugës
-            if (startRoad.segment && startRoad.segment.geometry.coordinates) {
-                var coords = startRoad.segment.geometry.coordinates;
-                coords.forEach(function(c) {
+
+            if (startRoad.line) {
+                startRoad.line.forEach(function(c) {
                     route.push([c[1], c[0]]);
                 });
             }
-            
-            // Shto pikën më të afërt në rrugë nga fundi
+
             if (endRoad.distance > 5 && endRoad.point[0] !== startRoad.point[0]) {
                 route.push(endRoad.point);
             }
-            
+
             route.push(end);
-            
+
             return route;
         }
-        
+
         return null;
     }
     
@@ -4743,6 +4749,15 @@
     function closeMeasureMenu() {
         toggleMeasureMenu(false);
     }
+    /** Klikimi i butonit kryesor: nëse matja është aktive, e mbyll direkt (pa hapur menynë); përndryshe hap/mbyll menynë. */
+    function onMeasureMenuBtnClick() {
+        if (isMeasuring) {
+            stopMeasuring();
+            closeMeasureMenu();
+            return;
+        }
+        toggleMeasureMenu();
+    }
     // Thirret nga një zë i menysë së matjes: fillon/ndërron mënyrën ('distance' ose 'area') dhe mbyll menynë.
     function selectMeasureMenuOption(mode) {
         toggleMeasureMode(mode);
@@ -4754,7 +4769,10 @@
         if (menu && !menu.contains(ev.target)) closeMeasureMenu();
     });
     document.addEventListener('keydown', function(ev) {
-        if (ev.key === 'Escape') closeMeasureMenu();
+        if (ev.key === 'Escape') {
+            closeMeasureMenu();
+            if (isMeasuring) stopMeasuring();
+        }
     });
 
     // Përditëson pamjen (buton kryesor + zërat e menysë) sipas measureMode/isMeasuring aktuale.
@@ -4763,7 +4781,7 @@
         if (menuBtn) {
             menuBtn.classList.toggle("map-tool-btn--on", isMeasuring);
             menuBtn.title = isMeasuring ?
-                (measureMode === 'area' ? "Vegla e matjes — sipërfaqja aktive" : "Vegla e matjes — distanca aktive") :
+                (measureMode === 'area' ? "Mbyll matjen e sipërfaqes (klikoni për të dalë)" : "Mbyll matjen e distancës (klikoni për të dalë)") :
                 "Vegla e matjes (distancë / sipërfaqe)";
             menuBtn.setAttribute("aria-label", menuBtn.title);
         }
