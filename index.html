@@ -28,25 +28,23 @@
             --mobile-breakpoint: 768px;
             --safe-bottom: env(safe-area-inset-bottom, 0px);
             --safe-top: env(safe-area-inset-top, 0px);
-            /* Paleta "Drejtori tregtare": bazë e bardhë e ngrohtë + bojëqielli i thellë (sinjalistikë premium retail) + ari si theks. */
-            --mall-blue: #a8283a;
-            --mall-blue-hover: #7a1c29;
-            --mall-bg-hover: #ece7dd;
-            --mall-tint-hover: #f2d9dd;
-            --mall-tint-hover-border: #a8283a;
-            --mall-tint-shadow: rgba(168, 40, 58, 0.22);
-            --mall-bg: #faf9f6;
-            --mall-border: #e9e4d9;
-            --mall-text: #18140f;
-            --mall-muted: #86796a;
-            --chip-gray: #f1eee5;
-            --chip-gray-dark: #ddd6c5;
-            --accent: #b08c3e;
-            --accent-soft: #f4ecd6;
+            --mall-blue: #2b6eff;
+            --mall-blue-hover: #0a3da8;
+            --mall-bg-hover: #b8b8b8;
+            --mall-tint-hover: #9eb3e8;
+            --mall-tint-hover-border: #3d5596;
+            --mall-tint-shadow: rgba(20, 50, 120, 0.35);
+            --mall-bg: #f2f2f2;
+            --mall-border: #e8e8e8;
+            --mall-text: #1a1a1a;
+            --mall-muted: #6b6b6b;
+            --chip-gray: #e5e5e5;
+            --chip-gray-dark: #d0d0d0;
+            --accent: #e67e22;
             --primary: var(--mall-blue);
-            --header-bg: #ffffff;
-            --header-border: rgba(24, 20, 15, 0.08);
-            --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 1px 4px rgba(24, 20, 15, 0.06);
+            --header-bg: #e8f0fc;
+            --header-border: rgba(43, 110, 255, 0.2);
+            --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.75) inset, 0 1px 4px rgba(15, 45, 100, 0.08);
         }
         html {
             height: 100%;
@@ -131,7 +129,7 @@
             font-weight: 700;
             letter-spacing: 0.03em;
             text-transform: uppercase;
-            color: #18140f;
+            color: #0f2847;
         }
         .header-academic-meta {
             margin: 0;
@@ -148,7 +146,7 @@
         .map-toolbar {
             position: absolute;
             z-index: 1001;
-            left: 16px;
+            left: calc(16px + min(360px, calc(100vw - 32px)) + 10px);
             top: 16px;
             display: flex;
             flex-direction: row;
@@ -158,153 +156,6 @@
             pointer-events: none;
         }
         .map-toolbar .map-tool-btn { pointer-events: auto; }
-
-        /** Kërkimi flotues mbi hartë — pika kryesore hyrëse për të gjetur një biznes (koncept "wayfinding"). */
-        .floating-search {
-            position: absolute;
-            top: 64px;
-            left: 16px;
-            z-index: 1005;
-            width: min(340px, calc(100vw - 32px));
-        }
-        .floating-search-input-wrap {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #fff;
-            border-radius: 999px;
-            padding: 12px 16px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
-            border: 1px solid rgba(0, 0, 0, 0.06);
-        }
-        .floating-search-input-wrap .search-icon {
-            font-size: 15px;
-            opacity: 0.55;
-            line-height: 1;
-        }
-        .floating-search-input-wrap input {
-            flex: 1;
-            min-width: 0;
-            border: none;
-            background: transparent;
-            font-size: 14px;
-            font-family: inherit;
-            color: var(--mall-text);
-            outline: none;
-        }
-        .floating-search-input-wrap input::placeholder { color: #9a9284; }
-        .floating-search-results {
-            margin-top: 8px;
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
-            overflow: hidden;
-            max-height: min(360px, calc(100vh - 200px));
-            overflow-y: auto;
-        }
-        .floating-search-results[hidden] { display: none; }
-        .floating-search-result {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 10px;
-            width: 100%;
-            padding: 11px 14px;
-            border: none;
-            border-bottom: 1px solid var(--mall-border);
-            background: #fff;
-            font-family: inherit;
-            text-align: left;
-            cursor: pointer;
-        }
-        .floating-search-result:last-child { border-bottom: none; }
-        .floating-search-result:hover,
-        .floating-search-result:focus-visible {
-            background: #f6f2ec;
-        }
-        .floating-search-result-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--mall-text);
-        }
-        .floating-search-result-cat {
-            flex-shrink: 0;
-            font-size: 10.5px;
-            color: var(--mall-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-        .floating-search-empty {
-            padding: 14px;
-            font-size: 12.5px;
-            color: var(--mall-muted);
-            text-align: center;
-        }
-        @media (max-width: 768px) {
-            .floating-search {
-                left: 12px;
-                right: 12px;
-                width: auto;
-                top: 60px;
-            }
-        }
-
-        /** Pilula kategorish — filtrim me një klik, si drejtoria e një qendre tregtare. */
-        .category-pills {
-            position: absolute;
-            top: 122px;
-            left: 16px;
-            right: 16px;
-            z-index: 1004;
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 2px;
-            scrollbar-width: none;
-            pointer-events: none;
-        }
-        .category-pills::-webkit-scrollbar { display: none; }
-        .category-pill {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: 1px solid var(--mall-border);
-            background: #fff;
-            font-size: 12.5px;
-            font-weight: 600;
-            font-family: inherit;
-            color: var(--mall-text);
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            pointer-events: auto;
-            -webkit-tap-highlight-color: transparent;
-            transition: opacity 0.15s, border-color 0.15s;
-        }
-        .category-pill .cat-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .category-pill:hover,
-        .category-pill:focus-visible {
-            border-color: var(--mall-blue);
-        }
-        .category-pill.is-off {
-            opacity: 0.4;
-            background: var(--mall-bg);
-        }
-        @media (max-width: 768px) {
-            .category-pills {
-                top: 114px;
-                left: 12px;
-                right: 12px;
-            }
-        }
         .map-tool-btn {
             width: 38px;
             height: 38px;
@@ -354,12 +205,12 @@
         .map-tool-btn--outline {
             background: rgba(255, 255, 255, 0.96);
             color: var(--mall-blue);
-            border-color: rgba(168, 40, 58, 0.24);
+            border-color: rgba(43, 110, 255, 0.22);
         }
         .map-tool-btn--outline:hover,
         .map-tool-btn--outline:focus-visible {
-            background: #f7e9eb;
-            border-color: rgba(168, 40, 58, 0.4);
+            background: #e8eefc;
+            border-color: rgba(43, 110, 255, 0.4);
         }
         .map-tool-btn--danger {
             color: #b03a2e;
@@ -371,26 +222,37 @@
             border-color: rgba(192, 57, 43, 0.5);
         }
         .map-tool-btn--state-nav.map-tool-btn--on {
-            background: #a8283a;
-            border-color: #7a1c29;
+            background: #219a52;
+            border-color: #1a7a41;
             color: #fff;
             box-shadow: none;
         }
         .map-tool-btn--state-nav.map-tool-btn--on:hover,
         .map-tool-btn--state-nav.map-tool-btn--on:focus-visible {
-            background: #7a1c29;
-            border-color: #5c1520;
+            background: #146b38;
+            border-color: #0f542b;
+        }
+        .map-tool-btn--state-measure.map-tool-btn--on {
+            background: #e74c3c;
+            border-color: #c0392b;
+            color: #fff;
+            box-shadow: none;
+        }
+        .map-tool-btn--state-measure.map-tool-btn--on:hover,
+        .map-tool-btn--state-measure.map-tool-btn--on:focus-visible {
+            background: #7e271e;
+            border-color: #6b2119;
         }
         .map-tool-btn--state-measure-menu.map-tool-btn--on {
-            background: #18140f;
-            border-color: #000000;
+            background: #34495e;
+            border-color: #2c3e50;
             color: #fff;
             box-shadow: none;
         }
         .map-tool-btn--state-measure-menu.map-tool-btn--on:hover,
         .map-tool-btn--state-measure-menu.map-tool-btn--on:focus-visible {
-            background: #000000;
-            border-color: #000000;
+            background: #212f3c;
+            border-color: #1a252f;
         }
         .map-tool-menu {
             position: relative;
@@ -440,8 +302,8 @@
             background: #eef1f4;
         }
         .measure-menu-item.is-active {
-            background: #f0eee9;
-            color: #18140f;
+            background: #eaf2fb;
+            color: #1b4f72;
             font-weight: 600;
         }
         .measure-popup {
@@ -529,7 +391,6 @@
         .btn-sidebar-geojson:hover,
         .btn-sidebar-geojson:focus-visible { background: var(--mall-tint-hover); }
 
-        /** Drejtoria: panel dytësor i mbyllur si parazgjedhje, hapet me butonin "Drejtoria" (jo më gjithmonë e hapur). */
         #sidebar {
             position: absolute;
             left: 16px;
@@ -537,7 +398,7 @@
             bottom: 16px;
             width: min(360px, calc(100vw - 32px));
             max-height: calc(100% - 32px);
-            z-index: 1016;
+            z-index: 1000;
             background: #fff;
             border-radius: 24px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0,0,0,0.04);
@@ -548,11 +409,6 @@
             overflow-y: auto;
             min-height: 0;
             box-sizing: border-box;
-            transform: translateX(calc(-100% - 32px));
-            transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
-        }
-        body.app-sidebar-open #sidebar {
-            transform: none;
         }
 
         .search-row {
@@ -710,9 +566,9 @@
         .legend-row:hover,
         .legend-filter-row:focus-within,
         .legend-bizneset-wrap .legend-row--parent:focus-within {
-            background: #f6e9ea;
-            border-color: #ddb9bf;
-            box-shadow: 0 1px 6px rgba(168, 40, 58, 0.12);
+            background: #f0f4ff;
+            border-color: #c5d4f5;
+            box-shadow: 0 1px 6px rgba(43, 110, 255, 0.12);
         }
         .legend-row input[type="checkbox"] {
             width: 16px;
@@ -732,13 +588,13 @@
         }
         /* Përafrohen me stilet WMS tipike: kufi = zonë e çelët, ndërtesa = gri, parkim = P blu, etj. */
         .legend-sym--kufi-v {
-            background: #f2f0eb;
-            border: 2px dashed #18140f;
+            background: #f2e8d8;
+            border: 1px solid #c9b89a;
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
         }
         .legend-sym--parking {
-            background: #2c4a68;
-            border: 1px solid #1c3049;
+            background: #1565c0;
+            border: 1px solid #0d47a1;
             border-radius: 3px;
             display: flex;
             align-items: center;
@@ -753,26 +609,25 @@
         }
         .legend-sym--road {
             background: #fff;
-            border: 1px solid #cfc9ba;
+            border: 1px solid #90a4ae;
             background-image:
-                linear-gradient(#a39c88, #a39c88),
-                linear-gradient(#a39c88, #a39c88);
+                linear-gradient(#7b8794, #7b8794),
+                linear-gradient(#7b8794, #7b8794);
             background-size: 85% 3px, 85% 3px;
             background-position: center 32%, center 68%;
             background-repeat: no-repeat;
         }
         .legend-sym--ndara {
-            background: #f2efe8;
-            border: 1px solid #c7c0b2;
+            background: #a8a8a8;
+            border: 1px solid #5f5f5f;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
         }
-        /* Pika me tri ngjyra — hint i drejtorisë me kategori shumëngjyrëshe të bizneseve. */
         .legend-sym--biz-cluster {
             border: none;
             background:
-                radial-gradient(circle, #a8283a 2.5px, transparent 2.5px),
-                radial-gradient(circle, #b08c3e 2.5px, transparent 2.5px),
-                radial-gradient(circle, #2c4a68 2.5px, transparent 2.5px);
+                radial-gradient(circle, #7f8c8d 2.5px, transparent 2.5px),
+                radial-gradient(circle, #7f8c8d 2.5px, transparent 2.5px),
+                radial-gradient(circle, #7f8c8d 2.5px, transparent 2.5px);
             background-size: 7px 7px;
             background-position: 1px 50%, 50% 50%, calc(100% - 1px) 50%;
             background-repeat: no-repeat;
@@ -814,18 +669,18 @@
         }
 
         .legend-sym--rail {
-            background-color: #f4f2ec;
-            border: 1px solid #948c78;
+            background-color: #eceff1;
+            border: 1px solid #546e7a;
             background-image:
                 repeating-linear-gradient(
                     90deg,
                     transparent 0px,
                     transparent 4px,
-                    #a8283a 4px,
-                    #a8283a 5px
+                    #37474f 4px,
+                    #37474f 5px
                 ),
-                linear-gradient(#18140f, #18140f),
-                linear-gradient(#18140f, #18140f);
+                linear-gradient(#263238, #263238),
+                linear-gradient(#263238, #263238);
             background-size: 100% 6px, 80% 2px, 80% 2px;
             background-position: center, center 28%, center 72%;
             background-repeat: no-repeat;
@@ -954,7 +809,7 @@
             background: var(--mall-blue);
             color: #fff;
             border-color: var(--mall-blue);
-            box-shadow: 0 2px 8px rgba(168, 40, 58, 0.35);
+            box-shadow: 0 2px 8px rgba(43, 110, 255, 0.35);
         }
 
         .sidebar-panel { display: flex; flex-direction: column; min-height: 0; }
@@ -1133,7 +988,7 @@
         }
         .bizniset-card.is-selected {
             border-color: var(--mall-blue);
-            background: #f6e9ea;
+            background: #eef3ff;
         }
         .bizniset-card-title {
             margin: 0 0 8px;
@@ -1194,7 +1049,7 @@
             width: 22px;
             height: 22px;
             opacity: 0.4;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318140f' stroke-width='1.5'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / contain no-repeat;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b6eff' stroke-width='1.5'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / contain no-repeat;
         }
         .bizniset-card-main {
             flex: 1;
@@ -1204,77 +1059,16 @@
             margin-top: 0;
         }
 
-        /** Karta e biznesit tani "fluturon" mbi hartë (jo brenda rrjedhës së sidebar-it). */
         .bizniset-spotlight {
-            position: absolute;
-            left: 50%;
-            bottom: max(20px, calc(12px + var(--safe-bottom)));
-            transform: translateX(-50%);
-            width: min(420px, calc(100vw - 32px));
-            z-index: 1015;
-            border-radius: 18px;
+            position: relative;
+            margin-bottom: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            background: linear-gradient(135deg, #171310 0%, #7a1c29 55%, #b08c3e 160%);
+            background: linear-gradient(135deg, #0f2847 0%, #1a3d6e 48%, #2b6eff 160%);
             color: #fff;
-            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.32);
+            box-shadow: 0 8px 24px rgba(15, 40, 71, 0.35);
         }
         .bizniset-spotlight[hidden] { display: none !important; }
-        body.app-sidebar-open .bizniset-spotlight { display: none !important; }
-        .bizniset-spotlight-close {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            z-index: 1;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(255, 255, 255, 0.16);
-            color: #fff;
-            font-size: 18px;
-            line-height: 1;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .bizniset-spotlight-close:hover,
-        .bizniset-spotlight-close:focus-visible {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        .bizniset-spotlight-actions {
-            position: relative;
-            padding: 0 14px 14px;
-        }
-        .bizniset-spotlight-directions-btn {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 14px;
-            border-radius: 12px;
-            border: none;
-            background: #fff;
-            color: #18140f;
-            font-weight: 700;
-            font-size: 13px;
-            font-family: inherit;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .bizniset-spotlight-directions-btn:hover,
-        .bizniset-spotlight-directions-btn:focus-visible {
-            background: #f0eee8;
-        }
-        .bizniset-spotlight-directions-btn svg {
-            width: 16px;
-            height: 16px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-        }
         .bizniset-spotlight-glow {
             position: absolute;
             inset: -40% -20% auto auto;
@@ -1289,7 +1083,7 @@
             display: flex;
             gap: 14px;
             align-items: center;
-            padding: 14px 34px 16px 14px;
+            padding: 14px 14px 16px;
         }
         .bizniset-spotlight-logo {
             flex: 0 0 56px;
@@ -1315,7 +1109,7 @@
             justify-content: center;
             width: 100%;
             height: 100%;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318140f' stroke-width='1.4'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / 58% no-repeat;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f2847' stroke-width='1.4'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / 58% no-repeat;
             opacity: 0.45;
         }
         .bizniset-spotlight-kicker {
@@ -1466,8 +1260,8 @@
             margin: 0 0 16px;
             padding: 14px 16px;
             border-radius: 14px;
-            background: linear-gradient(165deg, rgba(168, 40, 58, 0.08) 0%, rgba(168, 40, 58, 0.03) 100%);
-            border: 1px solid rgba(168, 40, 58, 0.22);
+            background: linear-gradient(165deg, rgba(43, 110, 255, 0.08) 0%, rgba(43, 110, 255, 0.03) 100%);
+            border: 1px solid rgba(43, 110, 255, 0.22);
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset;
         }
         .problem-compose-recipient__label {
@@ -1527,7 +1321,7 @@
             display: block;
             font-size: 12px;
             font-weight: 700;
-            color: #5c1520;
+            color: #1a3a6e;
             margin-bottom: 6px;
         }
         .problem-popup-form select,
@@ -1659,17 +1453,16 @@
             display: none;
             position: absolute;
             inset: 0;
-            z-index: 1014;
-            background: rgba(15, 20, 30, 0.32);
+            z-index: 1018;
+            background: rgba(15, 20, 30, 0.4);
             -webkit-tap-highlight-color: transparent;
         }
         body.app-sidebar-open .sidebar-backdrop {
             display: block;
         }
 
-        /** Titulli + butoni "×" i mbylljes së Drejtorisë — dukshëm gjithmonë, jo vetëm në mobile. */
         .sidebar-mobile-header {
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
@@ -1678,7 +1471,6 @@
             border-bottom: 1px solid var(--mall-border);
         }
         .sidebar-drag-handle {
-            display: none;
             position: absolute;
             top: 6px;
             left: 50%;
@@ -1712,34 +1504,29 @@
         }
         .mobile-sidebar-close-btn:active { background: var(--mall-bg); }
 
-        /** Buton "Drejtoria" — gjithmonë i dukshëm (desktop + mobile); hap panelin dytësor me shtresat/listën e plotë. */
         .mobile-panel-fab {
-            display: flex;
+            display: none;
             position: absolute;
-            left: max(16px, env(safe-area-inset-left, 0px));
-            bottom: max(20px, calc(14px + var(--safe-bottom)));
+            right: max(14px, env(safe-area-inset-right, 0px));
+            bottom: max(22px, calc(14px + var(--safe-bottom)));
             z-index: 1010;
-            align-items: center;
-            gap: 8px;
-            height: 48px;
-            padding: 0 18px 0 16px;
-            border-radius: 999px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
             border: none;
-            background: #18140f;
+            background: var(--mall-blue);
             color: #fff;
-            font-size: 13px;
-            font-weight: 700;
-            font-family: inherit;
+            font-size: 22px;
             line-height: 1;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+            box-shadow: 0 6px 24px rgba(43, 110, 255, 0.45);
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
             -webkit-tap-highlight-color: transparent;
-            transition: opacity 0.2s, transform 0.2s, background 0.15s;
+            transition: opacity 0.2s, transform 0.2s;
         }
-        .mobile-panel-fab:hover,
-        .mobile-panel-fab:focus-visible { background: #000000; }
-        .mobile-panel-fab:active { transform: scale(0.97); }
-        .mobile-panel-fab .fab-icon { font-size: 17px; }
+        .mobile-panel-fab:active { transform: scale(0.96); }
         body.app-sidebar-open .mobile-panel-fab {
             opacity: 0;
             pointer-events: none;
@@ -1782,12 +1569,14 @@
             .header-title strong { font-size: 13px; letter-spacing: -0.01em; }
             .header-title span { font-size: 10px; }
 
+            .mobile-panel-fab {
+                display: flex;
+            }
+
             .sidebar-mobile-header {
+                display: flex;
                 position: relative;
                 flex-shrink: 0;
-            }
-            .sidebar-drag-handle {
-                display: block;
             }
 
             #sidebar {
@@ -1824,6 +1613,18 @@
             }
         }
 
+        @media (min-width: 769px) {
+            body.app-sidebar-open .sidebar-backdrop {
+                display: none !important;
+            }
+            #sidebar {
+                transform: none !important;
+                transition: none;
+            }
+            .mobile-panel-fab {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1899,19 +1700,8 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
         </button>
     </div>
-    <div class="floating-search" id="floating-search">
-        <div class="floating-search-input-wrap">
-            <span class="search-icon" aria-hidden="true">🔍</span>
-            <input type="search" id="floating-search-input" placeholder="Kërko një biznes…" autocomplete="off" aria-label="Kërko një biznes">
-        </div>
-        <div class="floating-search-results" id="floating-search-results" hidden role="listbox" aria-label="Rezultatet e kërkimit"></div>
-    </div>
-    <div class="category-pills" id="category-pills" role="group" aria-label="Filtro bizneset sipas kategorisë"></div>
     <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
-    <button type="button" id="mobile-panel-fab" class="mobile-panel-fab" aria-controls="sidebar" aria-expanded="false" aria-label="Hap Drejtorinë (shtresat dhe lista e plotë e bizneseve)">
-        <span class="fab-icon" aria-hidden="true">☰</span>
-        <span>Drejtoria</span>
-    </button>
+    <button type="button" id="mobile-panel-fab" class="mobile-panel-fab" aria-controls="sidebar" aria-expanded="false" aria-label="Hap menunë e hartës">☰</button>
     <aside id="sidebar" aria-label="Shtresat dhe navigimi">
         <div class="sidebar-mobile-header">
             <span class="sidebar-drag-handle" aria-hidden="true"></span>
@@ -2008,32 +1798,23 @@
                 </div>
             </details>
             <div id="bizniset-status">Duke ngarkuar bizneset…</div>
+            <!-- <div id="bizniset-spotlight" class="bizniset-spotlight" hidden>
+                <div class="bizniset-spotlight-glow" aria-hidden="true"></div>
+                <div class="bizniset-spotlight-body">
+                    <div class="bizniset-spotlight-logo">
+                        <img id="bizniset-spotlight-img" alt="" />
+                        <span id="bizniset-spotlight-initial" class="bizniset-spotlight-initial" aria-hidden="true"></span>
+                    </div>
+                    <div class="bizniset-spotlight-copy">
+                        <p class="bizniset-spotlight-kicker">The Village · Outlet</p>
+                        <h3 id="bizniset-spotlight-title" class="bizniset-spotlight-title"></h3>
+                        <p id="bizniset-spotlight-tagline" class="bizniset-spotlight-tagline"></p>
+                    </div>
+                </div>
+            </div> -->
             <div id="bizniset-list"></div>
         </div>
     </aside>
-
-    <!-- Karta flotuese e biznesit: shfaqet mbi hartë kur zgjidhet një biznes (kërkim, listë, ose klik në hartë). -->
-    <div id="bizniset-spotlight" class="bizniset-spotlight" hidden>
-        <button type="button" class="bizniset-spotlight-close" onclick="clearBiznisetSelectionUI()" aria-label="Mbyll kartën e biznesit" title="Mbyll">×</button>
-        <div class="bizniset-spotlight-glow" aria-hidden="true"></div>
-        <div class="bizniset-spotlight-body">
-            <div class="bizniset-spotlight-logo">
-                <img id="bizniset-spotlight-img" alt="" />
-                <span id="bizniset-spotlight-initial" class="bizniset-spotlight-initial" aria-hidden="true"></span>
-            </div>
-            <div class="bizniset-spotlight-copy">
-                <p class="bizniset-spotlight-kicker">The Village · Drejtoria</p>
-                <h3 id="bizniset-spotlight-title" class="bizniset-spotlight-title"></h3>
-                <p id="bizniset-spotlight-tagline" class="bizniset-spotlight-tagline"></p>
-            </div>
-        </div>
-        <div class="bizniset-spotlight-actions">
-            <button type="button" class="bizniset-spotlight-directions-btn" onclick="startDirectionsToSelectedBizniset()">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 6 3 8H9z"/><circle cx="12" cy="12" r="0.8" fill="currentColor" stroke="none"/></svg>
-                Drejtimet
-            </button>
-        </div>
-    </div>
 
     <dialog class="webgis-pass-dialog" id="problem-report-password-dialog" aria-labelledby="problem-report-password-title" aria-modal="true">
         <div class="webgis-pass-dialog__inner">
@@ -2063,7 +1844,7 @@
     </dialog>
 </div>
 
-<footer style="background-color: #ffffff;">
+<footer style="background-color: #e8f0fc;">
     <div id="coords-text" class="footer-coords" style="color: black; font-weight: bold"><b>EPSG:9141 · KOSOVAREF01 / Balkans zone 7 · E = — | N = —</b></div>
     <div id="bottom-center" aria-live="polite">Shkalla: —</div>
     <div class="footer-credit" style="color: black"><b>Genita Selmani</b></div>
@@ -2088,9 +1869,9 @@
 
     var BIZ_HIGHLIGHT_PREFS_KEY = "webgis_thevillage_biz_highlight_v1";
     var BIZ_HIGHLIGHT_DEFAULTS = {
-        fill: "#a8283a",
-        stroke: "#7a1c29",
-        fillOpacity: 0.5,
+        fill: "#6e6e6e",
+        stroke: "#6e6e6e",
+        fillOpacity: 0.68,
         weight: 3,
         dashArray: ""
     };
@@ -2100,9 +1881,9 @@
     var BIZ_POINT_DEFAULTS = {
         shape: "circle",
         size: 10,
-        fill: "#18140f",
-        stroke: "#ffffff",
-        strokeW: 1.5
+        fill: "#9b59b6",
+        stroke: "#2c3e50",
+        strokeW: 0
     };
     /** Snapshot i “nga serveri” për rivendosje; mund të përditësohet pas ngarkimit WFS nëse shtohen fusha. */
     var bizPointServerDefaults = Object.assign({}, BIZ_POINT_DEFAULTS);
@@ -2930,28 +2711,23 @@
         return group;
     }
 
-    /**
-     * Stilet e shtresave — paleta "Drejtori tregtare": bazë neutrale e ngrohtë (letër/beton i pastër) për
-     * infrastrukturën, blu klasik për parkingun (konventë universale sinjalistike), dhe kontura minimale për
-     * ndërtesat e bizneseve që lë të dallohen pikat shumëngjyrëshe të kategorive mbi to.
-     */
-    var KUFIRI_STYLE = { color: "#18140f", weight: 1.5, dashArray: "4,4", fill: true, fillColor: "#18140f", fillOpacity: 0.02 };
-    var PARKINGU_STYLE = { color: "#2c4a68", weight: 1.75, lineJoin: "bevel", fill: true, fillColor: "#dbe3ec", fillOpacity: 0.9 };
-    var NDARA_STYLE = { color: "#c7c0b2", weight: 1, fill: true, fillColor: "#f2efe8", fillOpacity: 0.5 };
+    /** Stilet e shtresave — të përafruara me .sld origjinale (QGIS/GeoServer) të projektit. */
+    var KUFIRI_STYLE = { color: "#c9b89a", weight: 3, dashArray: "8,6", fill: true, fillColor: "#f2e8d8", fillOpacity: 0.12 };
+    var PARKINGU_STYLE = { color: "#265980", weight: 2, lineJoin: "bevel", fill: true, fillColor: "#dfdfdf", fillOpacity: 0.85 };
+    var NDARA_STYLE = { color: "#5f5f5f", weight: 1.2, fill: true, fillColor: "#a8a8a8", fillOpacity: 0.32 };
 
-    // Dy vija të mbivendosura (jashtme e errët + brendshme e çelët) sipas Kategoria; rrugët kryesore "ne_Village"
-    // janë më të theksuara se ato "per_ne_Village" (hyrëse/dytësore), për hierarki të qartë kartografike.
+    // Rruget.sld: dy vija të mbivendosura (jashtme e errët + brendshme e çelët) sipas Kategoria.
     function roadCasingStyle(feature) {
         var kat = feature && feature.properties && feature.properties.Kategoria;
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#3a352c", weight: 5, opacity: 0.5, lineCap: "round", lineJoin: "round" } :
-            { color: "#3a352c", weight: 8, lineCap: "round", lineJoin: "round" };
+            { color: "#020003", weight: 14, opacity: 0.55, lineCap: "round", lineJoin: "round" } :
+            { color: "#1e1a14", weight: 10, lineCap: "round", lineJoin: "round" };
     }
     function roadFillStyle(feature) {
         var kat = feature && feature.properties && feature.properties.Kategoria;
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#ece9e0", weight: 3, lineCap: "round", lineJoin: "round" } :
-            { color: "#e4e1d8", weight: 5, lineCap: "round", lineJoin: "round" };
+            { color: "#d7d6d9", weight: 11, lineCap: "round", lineJoin: "round" } :
+            { color: "#b0b0b0", weight: 8, lineCap: "round", lineJoin: "round" };
     }
     // Shtresa "Rrugët": dy pasazhe stilizimi mbi të njëjtat të dhëna + tooltip me emrin e rrugës.
     function buildRruguetLayer() {
@@ -2973,13 +2749,13 @@
             .catch(function(err) { console.error("[data] Rruget nuk u ngarkua:", err); });
         return group;
     }
-    // Vijë bazë e errët + model kryqëzimesh me ngjyrën e theksit (përafruar me dashArray).
+    // hekurudha.sld: vijë bazë e zezë + model kryqëzimesh të kuqe (përafruar me dashArray).
     function buildHekurudhaLayer() {
         var group = L.layerGroup();
         loadLocalGeoJSON("RailLines_FR")
             .then(function(data) {
-                var base = L.geoJSON(data, { style: function() { return { color: "#18140f", weight: 3, lineCap: "round", lineJoin: "round" }; } });
-                var hatch = L.geoJSON(data, { style: function() { return { color: "#a8283a", weight: 1.3, dashArray: "2,8" }; } });
+                var base = L.geoJSON(data, { style: function() { return { color: "#000000", weight: 4, lineCap: "round", lineJoin: "round" }; } });
+                var hatch = L.geoJSON(data, { style: function() { return { color: "#ff0000", weight: 1.4, dashArray: "2,9" }; } });
                 group.addLayer(base);
                 group.addLayer(hatch);
                 group.geoJsonData = data;
@@ -3158,7 +2934,6 @@
                     bizLegendEnabled[id] = this.checked;
                     saveBizLegendEnabled();
                     applyBizLegendToMap();
-                    syncCategoryPillUi(id, this.checked);
                 });
                 subs.appendChild(subLbl);
             });
@@ -3183,7 +2958,6 @@
                 bizLegendEnabled.other = this.checked;
                 saveBizLegendEnabled();
                 applyBizLegendToMap();
-                syncCategoryPillUi("other", this.checked);
             });
             subs.appendChild(subOther);
             collapseBtn.addEventListener("click", function(ev) {
@@ -4566,8 +4340,8 @@
         }, 0);
     })();
 
-    /** Drejtoria (sidebar) është panel dytësor i mbyllur si parazgjedhje, në çdo madhësi ekrani — hapet me butonin "Drejtoria". */
-    function initSidebarDrawer() {
+    function initMobileShell() {
+        var mq = window.matchMedia("(max-width: 768px)");
         var backdrop = document.getElementById("sidebar-backdrop");
         var fab = document.getElementById("mobile-panel-fab");
         var closeBtn = document.getElementById("mobile-sidebar-close");
@@ -4578,6 +4352,12 @@
         }
 
         function setSidebarOpen(open) {
+            if (!mq.matches) {
+                document.body.classList.remove("app-sidebar-open");
+                syncAria(false);
+                if (typeof map !== "undefined" && map) map.invalidateSize();
+                return;
+            }
             document.body.classList.toggle("app-sidebar-open", !!open);
             syncAria(!!open);
             setTimeout(function() {
@@ -4593,144 +4373,23 @@
         if (closeBtn) closeBtn.addEventListener("click", function() { setSidebarOpen(false); });
         if (backdrop) backdrop.addEventListener("click", function() { setSidebarOpen(false); });
 
+        function onMqChange() {
+            if (!mq.matches) document.body.classList.remove("app-sidebar-open");
+            syncAria(false);
+            if (typeof map !== "undefined" && map) map.invalidateSize();
+        }
+        if (mq.addEventListener) mq.addEventListener("change", onMqChange);
+        else if (mq.addListener) mq.addListener(onMqChange);
+
         document.addEventListener("keydown", function(ev) {
-            if (ev.key === "Escape" && document.body.classList.contains("app-sidebar-open")) {
+            if (ev.key === "Escape" && mq.matches && document.body.classList.contains("app-sidebar-open")) {
                 setSidebarOpen(false);
             }
         });
 
         window.setAppSidebarOpen = setSidebarOpen;
     }
-    initSidebarDrawer();
-
-    // Kërkimi flotues mbi hartë: kërkon në biznesetGeoJson dhe zgjedhja hap kartën flotuese + fokuson hartën.
-    function floatingSearchResultsFor(query) {
-        var q = (query || "").toLowerCase().trim();
-        if (!q || !biznisetGeoJson || !biznisetGeoJson.features) return [];
-        var out = [];
-        for (var i = 0; i < biznisetGeoJson.features.length && out.length < 8; i++) {
-            var f = biznisetGeoJson.features[i];
-            var title = biznisetFeatureTitle(f.properties || {}, i);
-            if (title.toLowerCase().indexOf(q) !== -1) out.push(f);
-        }
-        return out;
-    }
-    function closeFloatingSearchResults() {
-        var box = document.getElementById("floating-search-results");
-        if (box) box.hidden = true;
-    }
-    function renderFloatingSearchResults(features) {
-        var box = document.getElementById("floating-search-results");
-        var input = document.getElementById("floating-search-input");
-        if (!box) return;
-        box.innerHTML = "";
-        if (!features.length) {
-            var empty = document.createElement("div");
-            empty.className = "floating-search-empty";
-            empty.textContent = "Asnjë biznes nuk u gjet.";
-            box.appendChild(empty);
-            box.hidden = false;
-            return;
-        }
-        features.forEach(function(f) {
-            var props = f.properties || {};
-            var title = biznisetFeatureTitle(props, 0);
-            var cat = fixGeoServerUtf8String(categoryFromBiznisetProps(props) || "");
-            var row = document.createElement("button");
-            row.type = "button";
-            row.className = "floating-search-result";
-            row.setAttribute("role", "option");
-            var nameEl = document.createElement("span");
-            nameEl.className = "floating-search-result-name";
-            nameEl.textContent = title;
-            row.appendChild(nameEl);
-            if (cat) {
-                var catEl = document.createElement("span");
-                catEl.className = "floating-search-result-cat";
-                catEl.textContent = cat;
-                row.appendChild(catEl);
-            }
-            row.addEventListener("click", function() {
-                focusBiznisetCardByFeature(f);
-                closeFloatingSearchResults();
-                if (input) input.value = title;
-            });
-            box.appendChild(row);
-        });
-        box.hidden = false;
-    }
-    function initFloatingSearch() {
-        var input = document.getElementById("floating-search-input");
-        var wrap = document.getElementById("floating-search");
-        if (!input || !wrap) return;
-        input.addEventListener("input", function() {
-            var q = input.value;
-            if (!q.trim()) {
-                closeFloatingSearchResults();
-                return;
-            }
-            if (!biznisetGeoJson) {
-                fetchBiznisetFeatures().then(function() {
-                    renderFloatingSearchResults(floatingSearchResultsFor(q));
-                }).catch(function() {});
-                return;
-            }
-            renderFloatingSearchResults(floatingSearchResultsFor(q));
-        });
-        input.addEventListener("focus", function() {
-            if (input.value.trim()) renderFloatingSearchResults(floatingSearchResultsFor(input.value));
-        });
-        document.addEventListener("click", function(ev) {
-            if (!wrap.contains(ev.target)) closeFloatingSearchResults();
-        });
-        document.addEventListener("keydown", function(ev) {
-            if (ev.key === "Escape") closeFloatingSearchResults();
-        });
-    }
-    initFloatingSearch();
-
-    // Pilula kategorish flotuese — filtrim me një klik, sinkronizuar me checkbox-et ekzistuese të Drejtorisë.
-    function buildCategoryPills() {
-        var wrap = document.getElementById("category-pills");
-        if (!wrap) return;
-        wrap.innerHTML = "";
-        var rows = BIZ_LEGEND_ROWS.concat([{ id: "other", label: "Të tjera", color: "#95a5a6" }]);
-        rows.forEach(function(row) {
-            var on = bizLegendEnabled[row.id] !== false;
-            var pill = document.createElement("button");
-            pill.type = "button";
-            pill.className = "category-pill" + (on ? "" : " is-off");
-            pill.setAttribute("data-biz-leg", row.id);
-            pill.setAttribute("aria-pressed", on ? "true" : "false");
-            var dot = document.createElement("span");
-            dot.className = "cat-dot";
-            dot.style.backgroundColor = row.color;
-            var label = document.createElement("span");
-            label.textContent = row.label;
-            pill.appendChild(dot);
-            pill.appendChild(label);
-            pill.addEventListener("click", function() {
-                var currentlyOn = bizLegendEnabled[row.id] !== false;
-                bizLegendEnabled[row.id] = !currentlyOn;
-                saveBizLegendEnabled();
-                applyBizLegendToMap();
-                pill.classList.toggle("is-off", currentlyOn);
-                pill.setAttribute("aria-pressed", currentlyOn ? "false" : "true");
-                var cb = document.querySelector('.legend-biz-subcb[data-biz-leg="' + row.id + '"]');
-                if (cb) cb.checked = !currentlyOn;
-            });
-            wrap.appendChild(pill);
-        });
-    }
-    buildCategoryPills();
-
-    // Sinkronizon pamjen e pilulës kur kategoria ndryshohet nga checkbox-et e Drejtorisë (mban dy UI-t në pajtim).
-    function syncCategoryPillUi(id, on) {
-        var pill = document.querySelector('.category-pill[data-biz-leg="' + id + '"]');
-        if (!pill) return;
-        pill.classList.toggle("is-off", !on);
-        pill.setAttribute("aria-pressed", on ? "true" : "false");
-    }
+    initMobileShell();
 
     window.addEventListener("load", function() {
         setTimeout(function() {
@@ -4940,79 +4599,70 @@
         loadBiznesetNdaraWfs().catch(function() {}).then(function() {
             var business = findBiznesetNdaraFeatureAtLatLng(e.latlng);
             if (business) {
+                // Klikimi është mbi një biznes
                 var businessName = fixGeoServerUtf8String(String(
                     business.properties.Emri || business.properties.emri || "Biznesi"
                 ));
-                drawRouteToDestination(businessName, [e.latlng.lat, e.latlng.lng]);
+
+                console.log("🏢 Biznesi i zgjedhur:", businessName);
+                console.log("🚶 Nisja:", pikaNisjes);
+                console.log("🎯 Destinacioni:", [e.latlng.lat, e.latlng.lng]);
+
+                // Fshij rrugën e vjetër
+                if (routeLine) map.removeLayer(routeLine);
+                if (destinationMarker) map.removeLayer(destinationMarker);
+
+                var destination = [e.latlng.lat, e.latlng.lng];
+
+                // Llogarit rrugën
+                calculateRoute(pikaNisjes, destination).then(function(routeCoords) {
+                    // Vizato rrugën
+                    routeLine = L.polyline(routeCoords, {
+                        color: '#e67e22',
+                        weight: 6,
+                        opacity: 0.9,
+                        dashArray: '10, 15',
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }).addTo(map);
+
+                    // Shto marker për destinacionin
+                    destinationMarker = L.marker(destination, {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        })
+                    }).addTo(map);
+
+                    // Llogarit distancën totale
+                    var totalDistance = 0;
+                    for (var i = 0; i < routeCoords.length - 1; i++) {
+                        totalDistance += calculateDistance(
+                            routeCoords[i][0], routeCoords[i][1],
+                            routeCoords[i+1][0], routeCoords[i+1][1]
+                        );
+                    }
+
+                    var walkingTime = Math.ceil(totalDistance / 1.4);
+
+                    destinationMarker.bindPopup(
+                        `<b>${businessName}</b><br>` +
+                        `Distanca: ${totalDistance.toFixed(0)} metra<br>` +
+                        `Koha e ecjes: ~${Math.ceil(walkingTime / 60)} minuta`
+                    ).openPopup();
+
+                    console.log("✓ Rruga gjetur:", routeCoords.length, "pika,", totalDistance.toFixed(0), "metra");
+                });
             } else {
                 clearBiznisetSelectionUI();
                 alert("Ju lutem klikoni mbi një biznes (ndërtesë gri) për të marrë udhëzimet.");
             }
         });
     });
-
-    /** Vizaton rrugën nga "Ti je këtu" te një destinacion + marker + popup me distancë/kohë. */
-    function drawRouteToDestination(businessName, destination) {
-        if (!pikaNisjes || pikaNisjes.length !== 2) {
-            alert("Pika e nisjes 'TI JE KËTU' nuk është ngarkuar ende. Provoni përsëri.");
-            return;
-        }
-        if (routeLine) map.removeLayer(routeLine);
-        if (destinationMarker) map.removeLayer(destinationMarker);
-
-        calculateRoute(pikaNisjes, destination).then(function(routeCoords) {
-            routeLine = L.polyline(routeCoords, {
-                color: '#e67e22',
-                weight: 6,
-                opacity: 0.9,
-                dashArray: '10, 15',
-                lineCap: 'round',
-                lineJoin: 'round'
-            }).addTo(map);
-
-            destinationMarker = L.marker(destination, {
-                icon: L.icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41],
-                    popupAnchor: [1, -34],
-                    shadowSize: [41, 41]
-                })
-            }).addTo(map);
-
-            var totalDistance = 0;
-            for (var i = 0; i < routeCoords.length - 1; i++) {
-                totalDistance += calculateDistance(
-                    routeCoords[i][0], routeCoords[i][1],
-                    routeCoords[i+1][0], routeCoords[i+1][1]
-                );
-            }
-            var walkingTime = Math.ceil(totalDistance / 1.4);
-
-            destinationMarker.bindPopup(
-                `<b>${businessName}</b><br>` +
-                `Distanca: ${totalDistance.toFixed(0)} metra<br>` +
-                `Koha e ecjes: ~${Math.ceil(walkingTime / 60)} minuta`
-            ).openPopup();
-
-            console.log("✓ Rruga gjetur:", routeCoords.length, "pika,", totalDistance.toFixed(0), "metra");
-        });
-    }
-
-    /** Buton "Drejtimet" në kartën flotuese: vizaton rrugën deri te biznesi aktualisht i zgjedhur. */
-    function startDirectionsToSelectedBizniset() {
-        var f = lastHighlightedBiznisetFeature;
-        if (!f) return;
-        var pts = latlngsFromBiznisetFeature(f);
-        if (!pts.length) {
-            alert("Nuk ka koordinata të përdorshme për këtë biznes.");
-            return;
-        }
-        if (isNavActive) toggleNav();
-        var name = fixGeoServerUtf8String(biznisetFeatureTitle(f.properties || {}, 0));
-        drawRouteToDestination(name, [pts[0].lat, pts[0].lng]);
-    }
 
     function resetNav() {
         if (routeLine) {
