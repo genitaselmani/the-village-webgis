@@ -2320,8 +2320,11 @@
         zoomControl: false,
         maxZoom: MAP_MAX_ZOOM,
         minZoom: MAP_INITIAL_ZOOM,
-        zoomSnap: 0,            // lejon zoom-in bazë fraksional; hapat kontrollohen më poshtë
-        scrollWheelZoom: false  // zëvendësohet me hapa fiks (një rrotullim = një shkallë)
+        zoomSnap: 0,             // lejon zoom-in bazë fraksional; hapat kontrollohen më poshtë
+        scrollWheelZoom: false,  // zëvendësohet me hapa fiks (një rrotullim = një shkallë)
+        // Vektorët vizatohen në <canvas> në vend të <svg>: html2canvas e priste SVG-në e transformuar
+        // të Leaflet-it në mes, kështu që gjysma e poshtme e shtresave mungonte te "Ruaj si foto".
+        preferCanvas: true
     });
 
     // Rrota e miut: një hap = një shkallë fikse (1:4000 → 1:2000 → …), pa vlera të ndërmjetme.
