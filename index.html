@@ -3335,11 +3335,11 @@
 
     /**
      * Simbolizim sipas nivelit të zoom-it (përgjithësim kartografik): zoom i vogël (17-18, faktor
-     * zvogëlimi i madh) → pikë e thjeshtë me ngjyrë kategorie; zoom mesatar (19-20) → distinktiv
-     * (logo + unazë kategorie, siç ishte); zoom i madh (21-22) → vetëm logo, në madhësi më të madhe.
+     * zvogëlimi i madh) → pikë e thjeshtë me ngjyrë kategorie; zoom mesatar (19) → distinktiv
+     * (logo + unazë kategorie); zoom i madh (20-22) → vetëm logo, bazuar tek poligoni i biznesit.
      */
     var BIZ_ZOOM_TIER_DOT_MAX = 18;
-    var BIZ_ZOOM_TIER_BADGE_MAX = 20;
+    var BIZ_ZOOM_TIER_BADGE_MAX = 19;
     function getBizMarkerZoomTier() {
         var z = map.getZoom();
         if (z <= BIZ_ZOOM_TIER_DOT_MAX) return "dot";
@@ -3457,7 +3457,7 @@
             // E bazuar tek madhësia reale (në piksel) e poligonit të biznesit — mbulon shumicën e tij.
             var box = getBiznisetPolygonPixelBox(feature);
             if (box) {
-                return buildBiznisetRawLogoIconRect(logoUrl, box.w * 0.76, box.h * 0.76);
+                return buildBiznisetRawLogoIconRect(logoUrl, box.w * 0.62, box.h * 0.62);
             }
             // Pa poligon të përputhur (p.sh. rast pa Bizneset_ndara): madhësi e fiksuar, ende e madhe.
             var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
