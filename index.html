@@ -3379,7 +3379,7 @@
         });
     }
 
-    /** Vetëm logo, pa sfond/rreth — siç është foto origjinale, e zmadhuar. */
+    /** Vetëm logo, pa sfond/rreth — siç është foto origjinale, e zmadhuar (kuti katrore, madhësi fikse). */
     function buildBiznisetRawLogoIcon(logoUrl, size) {
         var s = Math.max(40, Math.min(260, size || 64));
         var imgSize = Math.round(s * 0.8);
@@ -3394,6 +3394,55 @@
         });
     }
 
+    /** Njësoj si buildBiznisetRawLogoIcon, por kuti drejtkëndore — për ta bazuar tek madhësia e vërtetë e poligonit. */
+    function buildBiznisetRawLogoIconRect(logoUrl, boxW, boxH) {
+        var w = boxW, h = boxH;
+        var MAX_DIM = 480, MIN_DIM = 60;
+        // Kufizim proporcional (jo për bosht) — ruan formën e vërtetë të poligonit, s'e bën katror me forcë.
+        if (w > MAX_DIM || h > MAX_DIM) {
+            var downScale = MAX_DIM / Math.max(w, h);
+            w *= downScale;
+            h *= downScale;
+        }
+        if (w < MIN_DIM || h < MIN_DIM) {
+            var upScale = MIN_DIM / Math.min(w, h);
+            w *= upScale;
+            h *= upScale;
+        }
+        w = Math.round(w);
+        h = Math.round(h);
+        var imgW = Math.round(w * 0.88);
+        var imgH = Math.round(h * 0.88);
+        var html = '<span class="biz-raw-logo" style="width:' + w + 'px;height:' + h + 'px;">' +
+            '<img src="' + logoUrl + '" alt="" class="biz-raw-logo-img" style="width:' + imgW + 'px;height:' + imgH + 'px;">' +
+            '</span>';
+        return L.divIcon({
+            className: "bizniset-raw-logo-divicon",
+            html: html,
+            iconSize: [w, h],
+            iconAnchor: [Math.round(w / 2), Math.round(h / 2)]
+        });
+    }
+
+    /** Kthen gjerësinë/lartësinë (në piksel, sipas zoom-it aktual) të poligonit Bizneset_ndara përkatës të biznesit. */
+    function getBiznisetPolygonPixelBox(feature) {
+        if (typeof findBiznesetNdaraFeatureByBizniset !== "function") return null;
+        try {
+            var ndara = findBiznesetNdaraFeatureByBizniset(feature);
+            if (!ndara || !ndara.geometry) return null;
+            var b = L.geoJSON(ndara.geometry).getBounds();
+            if (!b.isValid()) return null;
+            var nw = map.latLngToContainerPoint(b.getNorthWest());
+            var se = map.latLngToContainerPoint(b.getSouthEast());
+            var w = Math.abs(se.x - nw.x);
+            var h = Math.abs(se.y - nw.y);
+            if (!w || !h) return null;
+            return { w: w, h: h };
+        } catch (e) {
+            return null;
+        }
+    }
+
     /** Marker i biznesit: zgjedh pikë / distinktiv / logo e madhe sipas nivelit të zoom-it aktual. */
     function buildBiznisetMarkerIcon(feature, style) {
         var tier = getBizMarkerZoomTier();
@@ -3405,7 +3454,12 @@
             return buildBiznisetSymbolIcon(style);
         }
         if (tier === "logo-large") {
-            // Shumë e madhe në këtë nivel: ~170px në zoom 21, ~210px në zoom 22.
+            // E bazuar tek madhësia reale (në piksel) e poligonit të biznesit — mbulon shumicën e tij.
+            var box = getBiznisetPolygonPixelBox(feature);
+            if (box) {
+                return buildBiznisetRawLogoIconRect(logoUrl, box.w * 0.9, box.h * 0.9);
+            }
+            // Pa poligon të përputhur (p.sh. rast pa Bizneset_ndara): madhësi e fiksuar, ende e madhe.
             var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
             var szLarge = Math.max(140, Math.min(260, Math.round(170 + largeStep * 40)));
             return buildBiznisetRawLogoIcon(logoUrl, szLarge);
