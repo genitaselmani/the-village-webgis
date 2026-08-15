@@ -688,13 +688,16 @@
             background-repeat: no-repeat;
         }
         .legend-sym--transport {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            line-height: 1;
+            background: #eef1f5;
+            border: 1px solid #c7ccd4;
             border-radius: 50%;
-            background: #2563eb;
-            border: 1.5px solid #fff;
-            box-shadow: 0 0 0 1px #c7ccd4;
         }
-        /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë:
-            formë + ngjyrë të dallueshme (rreth/katror/romb), jo emoji. */
+        /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë. */
         .transport-station-divicon {
             background: transparent !important;
             border: none !important;
@@ -703,33 +706,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            box-sizing: border-box;
-            border: 2px solid #fff;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        .transport-station-badge--circle {
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+            font-size: 15px;
+            line-height: 1;
         }
-        .transport-station-badge--square {
-            border-radius: 4px;
+        /** Version i vogël i të njëjtit distinktiv, për rreshtat e legjendës. */
+        .legend-transport-swatch {
+            display: inline-flex;
+            flex: 0 0 18px;
         }
-        .transport-station-badge--diamond {
-            width: 22px;
-            height: 22px;
-            border-radius: 4px;
-            transform: rotate(45deg);
-        }
-        .transport-station-badge-label {
-            display: block;
-            color: #fff;
-            font: 800 10px/1 "Inter", system-ui, sans-serif;
-            letter-spacing: -0.02em;
-            user-select: none;
-        }
-        .transport-station-badge--diamond .transport-station-badge-label {
-            transform: rotate(-45deg);
+        .legend-transport-swatch .transport-station-badge {
+            width: 18px;
+            height: 18px;
+            border-width: 1px;
+            font-size: 10px;
         }
         .legend-text {
             flex: 1;
@@ -3059,29 +3053,29 @@
 
     var biznisetDisplayGroup = L.layerGroup([biznisetSymbolsLayer]).addTo(map);
 
-    /** Simbolizimi i kategorizuar për stacionet e shërbimeve të transportit (autobus / tren / taksi):
-     * forma + ngjyrë të dallueshme, jo emoji — më e thjeshtë dhe konsistente nëpër shfletues/OS. */
+    /** Simbolizimi i kategorizuar për stacionet e shërbimeve të transportit (autobus / tren / taksi). */
     var TRANSPORT_STATION_STYLES = {
-        "Stacion i autobusëve": { color: "#2563eb", shape: "circle", label: "A" },
-        "Stacion i trenit": { color: "#7c3aed", shape: "square", label: "T" },
-        "Stacion i taksive": { color: "#f59e0b", shape: "diamond", label: "X" }
+        "Stacion i autobusëve": { color: "#2563eb", icon: "🚌" },
+        "Stacion i trenit": { color: "#7c3aed", icon: "🚆" },
+        "Stacion i taksive": { color: "#f59e0b", icon: "🚕" }
     };
     var TRANSPORT_STATION_ORDER = ["Stacion i autobusëve", "Stacion i trenit", "Stacion i taksive"];
     var transportLegendEnabled = { "Stacion i autobusëve": true, "Stacion i trenit": true, "Stacion i taksive": true };
 
     function transportStationStyle(lloji) {
-        return TRANSPORT_STATION_STYLES[lloji] || { color: "#7f8c8d", shape: "circle", label: "?" };
+        return TRANSPORT_STATION_STYLES[lloji] || { color: "#7f8c8d", icon: "📍" };
+    }
+    // HTML e distinktivit (rreth me ngjyrë + emoji) — përdoret njësoj për markerin në hartë dhe për legjendën.
+    function transportStationBadgeHtml(lloji) {
+        var st = transportStationStyle(lloji);
+        return '<span class="transport-station-badge" style="background:' + st.color + ';">' + st.icon + '</span>';
     }
     function buildTransportStationIcon(lloji) {
-        var st = transportStationStyle(lloji);
-        var shapeClass = "transport-station-badge transport-station-badge--" + st.shape;
-        var html = '<span class="' + shapeClass + '" style="background:' + st.color + ';">' +
-            '<span class="transport-station-badge-label">' + st.label + '</span></span>';
         return L.divIcon({
             className: "transport-station-divicon",
-            html: html,
-            iconSize: [28, 28],
-            iconAnchor: [14, 14],
+            html: transportStationBadgeHtml(lloji),
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
             popupAnchor: [0, -14]
         });
     }
@@ -3434,6 +3428,7 @@
             var ttSym = document.createElement("span");
             ttSym.className = "legend-sym legend-sym--transport";
             ttSym.setAttribute("aria-hidden", "true");
+            ttSym.textContent = "🚌";
             var ttNameLbl = document.createElement("span");
             ttNameLbl.className = "legend-text";
             ttNameLbl.innerHTML = '<span class="legend-name">' + key + '</span>';
@@ -3453,7 +3448,6 @@
             ttSubs.className = "legend-bizneset-subs";
             ttSubs.id = "legend-transport-subs";
             TRANSPORT_STATION_ORDER.forEach(function(lloji) {
-                var st = transportStationStyle(lloji);
                 var subLbl = document.createElement("label");
                 subLbl.className = "legend-row legend-row--sub";
                 subLbl.setAttribute("data-legend-search", lloji.toLowerCase());
@@ -3463,8 +3457,8 @@
                 subCb.checked = transportLegendEnabled[lloji] !== false;
                 subCb.disabled = true; // aktivizohet vetëm kur shtresa kryesore është e ndezur
                 var dot = document.createElement("span");
-                dot.className = "legend-dot";
-                dot.style.backgroundColor = st.color;
+                dot.className = "legend-transport-swatch";
+                dot.innerHTML = transportStationBadgeHtml(lloji);
                 var sn = document.createElement("span");
                 sn.className = "legend-name";
                 sn.textContent = lloji;
