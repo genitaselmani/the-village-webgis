@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "Sherbimet_e_emergjences",
+"features": [
+{ "type": "Feature", "properties": { "id": 1, "Lloji": "Spitali i përgjithshem-Ferizaj" }, "geometry": { "type": "Point", "coordinates": [ 21.14651015, 42.37140283 ] } },
+{ "type": "Feature", "properties": { "id": 2, "Lloji": "Stacioni Policor" }, "geometry": { "type": "Point", "coordinates": [ 21.14678347, 42.37439119 ] } },
+{ "type": "Feature", "properties": { "id": 3, "Lloji": "Stacioni i Zjarrfikësve" }, "geometry": { "type": "Point", "coordinates": [ 21.14773714, 42.3753862 ] } }
+]
+}

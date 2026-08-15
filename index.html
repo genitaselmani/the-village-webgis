@@ -688,11 +688,11 @@
             background-repeat: no-repeat;
         }
         /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë. */
-        .transport-station-divicon {
+        .service-point-divicon {
             background: transparent !important;
             border: none !important;
         }
-        .transport-station-badge {
+        .service-point-badge {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -705,11 +705,11 @@
             line-height: 1;
         }
         /** Version i vogël i të njëjtit distinktiv, për rreshtat e legjendës. */
-        .legend-transport-swatch {
+        .legend-service-swatch {
             display: inline-flex;
             flex: 0 0 18px;
         }
-        .legend-transport-swatch .transport-station-badge {
+        .legend-service-swatch .service-point-badge {
             width: 18px;
             height: 18px;
             border-width: 1px;
@@ -2297,7 +2297,7 @@
      */
     var SCALE_FIXED_BASE_DENOM = 4000;
     var SCALE_FIXED_STEPS_IN = 5;  // zmadhim deri në 1:125
-    var SCALE_FIXED_STEPS_OUT = 3; // zvogëlim deri në 1:32000 (lejohet vetëm në pamjen e stacioneve të transportit)
+    var SCALE_FIXED_STEPS_OUT = 3; // zvogëlim deri në 1:32000 (lejohet vetëm në pamjen e shtresave të shërbimeve)
 
     // Emëruesi i shkallës në zoom 0, i matur me TË NJËJTËN matematikë distancash si treguesi i shkallës
     // në footer (L.latLng.distanceTo → rreze mesatare e Tokës). Formula standarde e Web Mercator përdor
@@ -2313,7 +2313,7 @@
     /** Zoom fillestar = zoom minimal: përdoruesi nuk mund të zvogëlojë më shumë sesa në hapjen e hartës. */
     var MAP_INITIAL_ZOOM = zoomForScaleDenominator(SCALE_FIXED_BASE_DENOM);
     var MAP_MAX_ZOOM = MAP_INITIAL_ZOOM + SCALE_FIXED_STEPS_IN;
-    var MAP_TRANSPORT_MIN_ZOOM = MAP_INITIAL_ZOOM - SCALE_FIXED_STEPS_OUT;
+    var MAP_SERVICE_MIN_ZOOM = MAP_INITIAL_ZOOM - SCALE_FIXED_STEPS_OUT;
     var map = L.map('map', {
         center: MAP_INITIAL_CENTER,
         zoom: MAP_INITIAL_ZOOM,
@@ -3097,132 +3097,207 @@
 
     var biznisetDisplayGroup = L.layerGroup([biznisetSymbolsLayer]).addTo(map);
 
-    /** Simbolizimi i kategorizuar për stacionet e shërbimeve të transportit (autobus / tren / taksi). */
-    var TRANSPORT_STATION_STYLES = {
-        "Stacion i autobusëve": { color: "#2563eb", icon: "🚌" },
-        "Stacion i trenit": { color: "#7c3aed", icon: "🚆" },
-        "Stacion i taksive": { color: "#f59e0b", icon: "🚕" }
-    };
-    var TRANSPORT_STATION_ORDER = ["Stacion i autobusëve", "Stacion i trenit", "Stacion i taksive"];
-    var transportLegendEnabled = { "Stacion i autobusëve": true, "Stacion i trenit": true, "Stacion i taksive": true };
+    /**
+     * Shtresat e "shërbimeve": pika me kategori jashtë kompleksit (transport, emergjencë, institucione).
+     * Të tria sillen njësoj — simbol i kategorizuar, nën-kategori në legjendë, zoom që zbret sa duhet për
+     * t'i nxënë të gjitha kur ndizen e kthehet te The Village kur fiken, dhe rrugë këmbësore me klik.
+     */
+    var SERVICE_LAYER_CONFIGS = [
+        {
+            key: "Sherbimet e Transportit",
+            file: "Sherbimet_e_transportit",
+            subsId: "legend-subs-transport",
+            routeColor: "#2563eb",
+            categories: [
+                { lloji: "Stacion i autobusëve", color: "#2563eb", icon: "🚌" },
+                { lloji: "Stacion i trenit", color: "#7c3aed", icon: "🚆" },
+                { lloji: "Stacion i taksive", color: "#f59e0b", icon: "🚕" }
+            ]
+        },
+        {
+            key: "Sherbimet e Emergjences",
+            file: "Sherbimet_e_emergjences",
+            subsId: "legend-subs-emergjence",
+            routeColor: "#dc2626",
+            categories: [
+                { lloji: "Spitali i përgjithshem-Ferizaj", color: "#dc2626", icon: "🏥" },
+                { lloji: "Stacioni Policor", color: "#1d4ed8", icon: "🚓" },
+                { lloji: "Stacioni i Zjarrfikësve", color: "#ea580c", icon: "🚒" }
+            ]
+        },
+        {
+            key: "Institucionet Administrative",
+            file: "Institucionet_administrative",
+            subsId: "legend-subs-institucione",
+            routeColor: "#0f766e",
+            categories: [
+                { lloji: "Komuna e Ferizajit", color: "#0f766e", icon: "🏛️" },
+                { lloji: "Gjykata themelore", color: "#6d28d9", icon: "⚖️" },
+                { lloji: "Posta", color: "#ca8a04", icon: "📮" }
+            ]
+        }
+    ];
 
-    function transportStationStyle(lloji) {
-        return TRANSPORT_STATION_STYLES[lloji] || { color: "#7f8c8d", icon: "📍" };
-    }
-    // HTML e distinktivit (rreth me ngjyrë + emoji) — përdoret njësoj për markerin në hartë dhe për legjendën.
-    function transportStationBadgeHtml(lloji) {
-        var st = transportStationStyle(lloji);
-        return '<span class="transport-station-badge" style="background:' + st.color + ';">' + st.icon + '</span>';
-    }
-    function buildTransportStationIcon(lloji) {
-        return L.divIcon({
-            className: "transport-station-divicon",
-            html: transportStationBadgeHtml(lloji),
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-            popupAnchor: [0, -14]
+    function createServiceLayer(cfg) {
+        var styleByLloji = {};
+        var enabled = {};
+        cfg.categories.forEach(function(c) {
+            styleByLloji[c.lloji] = c;
+            enabled[c.lloji] = true;
         });
-    }
 
-    var transportStationsLayer = L.layerGroup();
-    var transportStationsGeoJson = null;
-    var transportStationsLoadPromise = null;
-    var transportStationMarkers = []; // { lloji, marker }
+        var svc = {
+            cfg: cfg,
+            layer: L.layerGroup(),
+            geoJson: null,
+            loadPromise: null,
+            markers: [], // { lloji, marker }
+            enabled: enabled,
 
-    // Aplikon filtrin e legjendës (sipas kategorisë) te shtresa e stacioneve në hartë.
-    function applyTransportLegendToMap() {
-        transportStationMarkers.forEach(function(entry) {
-            var shouldShow = transportLegendEnabled[entry.lloji] !== false;
-            var has = transportStationsLayer.hasLayer(entry.marker);
-            if (shouldShow && !has) transportStationsLayer.addLayer(entry.marker);
-            else if (!shouldShow && has) transportStationsLayer.removeLayer(entry.marker);
-        });
-    }
-
-    // Ngarkon (njëherë) stacionet e transportit dhe ndërton markerët e kategorizuar në transportStationsLayer.
-    function loadTransportStations() {
-        if (transportStationsGeoJson) return Promise.resolve(transportStationsGeoJson);
-        if (transportStationsLoadPromise) return transportStationsLoadPromise;
-        transportStationsLoadPromise = loadLocalGeoJSON("Sherbimet_e_transportit")
-            .then(function(data) {
-                transportStationsGeoJson = data;
-                (data.features || []).forEach(function(f) {
-                    var c = f.geometry && f.geometry.coordinates;
-                    if (!c) return;
-                    var latlng = L.latLng(c[1], c[0]);
-                    var lloji = (f.properties && f.properties.Lloji) || "";
-                    var marker = L.marker(latlng, { icon: buildTransportStationIcon(lloji) });
-                    marker.on("click", function(ev) {
-                        L.DomEvent.stopPropagation(ev);
-                        routeToTransportStation(f, latlng, marker);
-                    });
-                    transportStationMarkers.push({ lloji: lloji, marker: marker });
+            styleFor: function(lloji) {
+                return styleByLloji[lloji] || { color: "#7f8c8d", icon: "📍" };
+            },
+            // Distinktivi (rreth me ngjyrë + simbol) — i njëjti HTML për markerin në hartë dhe për legjendën.
+            badgeHtml: function(lloji) {
+                return '<span class="service-point-badge" style="background:' + svc.styleFor(lloji).color + ';">' +
+                    svc.styleFor(lloji).icon + '</span>';
+            },
+            applyLegend: function() {
+                svc.markers.forEach(function(entry) {
+                    var show = svc.enabled[entry.lloji] !== false;
+                    var has = svc.layer.hasLayer(entry.marker);
+                    if (show && !has) svc.layer.addLayer(entry.marker);
+                    else if (!show && has) svc.layer.removeLayer(entry.marker);
                 });
-                applyTransportLegendToMap();
-                return data;
-            })
-            .catch(function(err) {
-                console.error("[Sherbimet_e_transportit] nuk u ngarkua:", err);
-                transportStationsLoadPromise = null;
-                throw err;
-            });
-        return transportStationsLoadPromise;
+            },
+            load: function() {
+                if (svc.geoJson) return Promise.resolve(svc.geoJson);
+                if (svc.loadPromise) return svc.loadPromise;
+                svc.loadPromise = loadLocalGeoJSON(cfg.file)
+                    .then(function(data) {
+                        svc.geoJson = data;
+                        (data.features || []).forEach(function(f) {
+                            var c = f.geometry && f.geometry.coordinates;
+                            if (!c) return;
+                            var latlng = L.latLng(c[1], c[0]);
+                            var lloji = (f.properties && f.properties.Lloji) || "";
+                            var marker = L.marker(latlng, {
+                                icon: L.divIcon({
+                                    className: "service-point-divicon",
+                                    html: svc.badgeHtml(lloji),
+                                    iconSize: [30, 30],
+                                    iconAnchor: [15, 15],
+                                    popupAnchor: [0, -14]
+                                })
+                            });
+                            marker.on("click", function(ev) {
+                                L.DomEvent.stopPropagation(ev);
+                                routeToServicePoint(f, latlng, marker, cfg.routeColor);
+                            });
+                            svc.markers.push({ lloji: lloji, marker: marker });
+                        });
+                        svc.applyLegend();
+                        return data;
+                    })
+                    .catch(function(err) {
+                        console.error("[" + cfg.file + "] nuk u ngarkua:", err);
+                        svc.loadPromise = null;
+                        throw err;
+                    });
+                return svc.loadPromise;
+            },
+            latLngs: function() {
+                if (!svc.geoJson || !svc.geoJson.features) return [];
+                return svc.geoJson.features.reduce(function(acc, f) {
+                    var c = f.geometry && f.geometry.coordinates;
+                    if (c) acc.push(L.latLng(c[1], c[0]));
+                    return acc;
+                }, []);
+            },
+            isOn: function() { return map.hasLayer(svc.layer); }
+        };
+        return svc;
     }
 
-    // Zmadhon/zvogëlon hartën në një nivel zoom-i ku shihen njëkohësisht të gjitha stacionet + The Village;
-    // fsheh pikat e bizneseve në këtë nivel (zoom shumë i vogël për t'i shfaqur kuptimshëm).
-    function zoomToShowAllTransportStations() {
+    var serviceLayers = SERVICE_LAYER_CONFIGS.map(createServiceLayer);
+    function serviceLayerByKey(key) {
+        for (var i = 0; i < serviceLayers.length; i++) {
+            if (serviceLayers[i].cfg.key === key) return serviceLayers[i];
+        }
+        return null;
+    }
+    function anyServiceLayerOn() {
+        return serviceLayers.some(function(svc) { return svc.isOn(); });
+    }
+
+    /** Pikat e bizneseve s'kanë kuptim në shkallën ku shihen shërbimet — fshihen derisa të fiket e fundit. */
+    var biznisetHiddenForServices = false;
+    function hideBiznisetForServiceView() {
+        if (biznisetHiddenForServices || !map.hasLayer(layers["Bizneset"])) return;
+        map.removeLayer(layers["Bizneset"]);
+        var cb = document.getElementById(layerIdForKey("Bizneset"));
+        if (cb) cb.checked = false;
+        biznisetHiddenForServices = true;
+    }
+    function restoreBiznisetAfterServiceView() {
+        if (!biznisetHiddenForServices) return;
+        map.addLayer(layers["Bizneset"]);
+        var cb = document.getElementById(layerIdForKey("Bizneset"));
+        if (cb) cb.checked = true;
+        biznisetHiddenForServices = false;
+    }
+
+    // Zbret në shkallën fikse më të afërt që i nxë të gjitha pikat e shtresave aktive + The Village.
+    function zoomToShowActiveServiceLayers() {
         var pts = [];
         if (pikaNisjes && pikaNisjes.length === 2) pts.push(L.latLng(pikaNisjes[0], pikaNisjes[1]));
-        if (transportStationsGeoJson && transportStationsGeoJson.features) {
-            transportStationsGeoJson.features.forEach(function(f) {
-                var c = f.geometry && f.geometry.coordinates;
-                if (c) pts.push(L.latLng(c[1], c[0]));
-            });
-        }
-        biznisetLayerHiddenForTransport = map.hasLayer(layers["Bizneset"]);
-        if (biznisetLayerHiddenForTransport) {
-            map.removeLayer(layers["Bizneset"]);
-            var biznisetCbEl = document.getElementById(layerIdForKey("Bizneset"));
-            if (biznisetCbEl) biznisetCbEl.checked = false;
-        }
-        if (!pts.length) return;
-        map.setMinZoom(MAP_TRANSPORT_MIN_ZOOM);
+        serviceLayers.forEach(function(svc) {
+            if (svc.isOn()) pts = pts.concat(svc.latLngs());
+        });
+        if (pts.length < 2) return;
+        hideBiznisetForServiceView();
+        map.setMinZoom(MAP_SERVICE_MIN_ZOOM);
         var bounds = L.latLngBounds(pts);
-        // Zbrit te shkalla fikse më e afërt që ende i nxë të gjitha stacionet (floor, jo round —
-        // rrumbullakimi lart do t'i priste disa stacione jashtë ekranit).
-        var fitZoom = map.getBoundsZoom(bounds, false, L.point(50, 50));
+        // Gjerësia e dobishme është vetëm pjesa jashtë panelit anësor; gjysma e mbulesës i shtohet paddingut
+        // (i cili zbritet nga të dyja anët), kështu që pas panMapForSidebarOverlay() gjithçka bie brenda pamjes.
+        var covered = 0;
+        try {
+            if (window.innerWidth >= 769) {
+                var mapRect = document.getElementById("map").getBoundingClientRect();
+                var sbRect = document.getElementById("sidebar").getBoundingClientRect();
+                covered = Math.max(0, Math.min(sbRect.right, mapRect.right) - mapRect.left);
+            }
+        } catch (e) {}
+        var fitZoom = map.getBoundsZoom(bounds, false, L.point(50 + covered / 2, 50));
+        // Floor, jo round: rrumbullakimi lart do t'i priste disa pika jashtë ekranit.
         var steps = Math.floor(fitZoom - MAP_INITIAL_ZOOM);
-        var target = Math.max(MAP_TRANSPORT_MIN_ZOOM, MAP_INITIAL_ZOOM + steps);
+        var target = Math.max(MAP_SERVICE_MIN_ZOOM, Math.min(MAP_INITIAL_ZOOM, MAP_INITIAL_ZOOM + steps));
         map.setView(bounds.getCenter(), target, { animate: false });
         panMapForSidebarOverlay();
     }
 
-    // Kthen hartën te niveli fillestar i zoom-it ku shihet vetëm The Village; rikthen bizneset nëse ishin të fshehura.
-    var biznisetLayerHiddenForTransport = false;
+    // Kthen hartën te niveli fillestar i zoom-it ku shihet vetëm The Village; rikthen bizneset nëse ishin fshehur.
     function resetMapToVillageView() {
-        // Animate:false + minZoom i rivendosur PARA setView: shmang ndërprerjen e animacionit nga ndryshimi
-        // i minZoom-it në mes të tij (që më parë linte hartën në një zoom/pozicion të ndërmjetëm, jo fiks).
+        // minZoom rivendoset PARA setView (dhe pa animacion): ndryshimi i tij në mes të një animacioni
+        // e ndërpriste atë dhe harta mbetej në një zoom/pozicion të ndërmjetëm, jo fiks.
         map.setMinZoom(MAP_INITIAL_ZOOM);
         applyVillageView();
-        if (biznisetLayerHiddenForTransport) {
-            map.addLayer(layers["Bizneset"]);
-            var biznisetCbEl = document.getElementById(layerIdForKey("Bizneset"));
-            if (biznisetCbEl) biznisetCbEl.checked = true;
-            biznisetLayerHiddenForTransport = false;
-        }
+        restoreBiznisetAfterServiceView();
     }
 
-    // Vizaton rrugën më të shkurtër (këmbë) nga "Ti je këtu" (The Village) deri te stacioni i klikuar.
-    function routeToTransportStation(feature, latlng, marker) {
-        if (!pikaNisjes || pikaNisjes.length !== 2) return;
+    function clearServiceRoute() {
         if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
         if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
-        var lloji = (feature.properties && feature.properties.Lloji) || "Stacioni";
-        var destination = [latlng.lat, latlng.lng];
-        calculateRoute(pikaNisjes, destination).then(function(routeCoords) {
+    }
+
+    // Vizaton rrugën më të shkurtër (këmbë) nga "Ti je këtu" (The Village) deri te pika e klikuar.
+    function routeToServicePoint(feature, latlng, marker, routeColor) {
+        if (!pikaNisjes || pikaNisjes.length !== 2) return;
+        clearServiceRoute();
+        var lloji = (feature.properties && feature.properties.Lloji) || "Pika";
+        calculateRoute(pikaNisjes, [latlng.lat, latlng.lng]).then(function(routeCoords) {
             routeLine = L.polyline(routeCoords, {
-                color: "#2563eb",
+                color: routeColor || "#2563eb",
                 weight: 5,
                 opacity: 0.9,
                 dashArray: "8, 10",
@@ -3257,7 +3332,9 @@
             pikaInformueseLayerGroup = L.layerGroup().addTo(map);
             return pikaInformueseLayerGroup;
         })(),
-        "Sherbimet e Transportit": transportStationsLayer
+        "Sherbimet e Transportit": serviceLayerByKey("Sherbimet e Transportit").layer,
+        "Sherbimet e Emergjences": serviceLayerByKey("Sherbimet e Emergjences").layer,
+        "Institucionet Administrative": serviceLayerByKey("Institucionet Administrative").layer
     };
 
     /**
@@ -3345,7 +3422,9 @@
         "Rrugët",
         "Kufiret e Bizneseve",
         "Hekurudha",
-        "Sherbimet e Transportit"
+        "Sherbimet e Transportit",
+        "Sherbimet e Emergjences",
+        "Institucionet Administrative"
     ];
     var LAYER_LEGEND_SYM = {
         "Kufiri": "legend-sym--kufi-v",
@@ -3500,47 +3579,48 @@
             layersDiv.appendChild(wrap);
             return;
         }
-        if (key === "Sherbimet e Transportit") {
-            var ttWrap = document.createElement("div");
-            ttWrap.className = "legend-bizneset-wrap legend-filter-row";
-            ttWrap.setAttribute("data-legend-search", (
-                key + " " + TRANSPORT_STATION_ORDER.join(" ")
-            ).toLowerCase());
-            var ttParentRow = document.createElement("div");
-            ttParentRow.className = "legend-row legend-row--parent";
-            var ttInp = document.createElement("input");
-            ttInp.type = "checkbox";
-            ttInp.checked = false; // e ndalur (off) kur hapet webgis
-            ttInp.id = lid;
-            var ttNameLbl = document.createElement("span");
-            ttNameLbl.className = "legend-text";
-            ttNameLbl.innerHTML = '<span class="legend-name">' + key + '</span>';
-            var ttCollapseBtn = document.createElement("button");
-            ttCollapseBtn.type = "button";
-            ttCollapseBtn.className = "legend-collapse-btn";
-            ttCollapseBtn.setAttribute("aria-expanded", "true");
-            ttCollapseBtn.setAttribute("aria-controls", "legend-transport-subs");
-            ttCollapseBtn.title = "Palos / hap kategoritë";
-            ttCollapseBtn.textContent = "▾";
-            ttParentRow.appendChild(ttInp);
-            ttParentRow.appendChild(ttNameLbl);
-            ttParentRow.appendChild(ttCollapseBtn);
+        var svc = serviceLayerByKey(key);
+        if (svc) {
+            var svcCats = svc.cfg.categories.map(function(c) { return c.lloji; });
+            var svcWrap = document.createElement("div");
+            svcWrap.className = "legend-bizneset-wrap legend-filter-row";
+            svcWrap.setAttribute("data-legend-search", (key + " " + svcCats.join(" ")).toLowerCase());
+            var svcParentRow = document.createElement("div");
+            svcParentRow.className = "legend-row legend-row--parent";
+            var svcInp = document.createElement("input");
+            svcInp.type = "checkbox";
+            svcInp.checked = false; // e ndalur (off) kur hapet webgis
+            svcInp.id = lid;
+            var svcNameLbl = document.createElement("span");
+            svcNameLbl.className = "legend-text";
+            svcNameLbl.innerHTML = '<span class="legend-name"></span>';
+            svcNameLbl.querySelector(".legend-name").textContent = key;
+            var svcCollapseBtn = document.createElement("button");
+            svcCollapseBtn.type = "button";
+            svcCollapseBtn.className = "legend-collapse-btn";
+            svcCollapseBtn.setAttribute("aria-expanded", "true");
+            svcCollapseBtn.setAttribute("aria-controls", svc.cfg.subsId);
+            svcCollapseBtn.title = "Palos / hap kategoritë";
+            svcCollapseBtn.textContent = "▾";
+            svcParentRow.appendChild(svcInp);
+            svcParentRow.appendChild(svcNameLbl);
+            svcParentRow.appendChild(svcCollapseBtn);
 
-            var ttSubs = document.createElement("div");
-            ttSubs.className = "legend-bizneset-subs";
-            ttSubs.id = "legend-transport-subs";
-            TRANSPORT_STATION_ORDER.forEach(function(lloji) {
+            var svcSubs = document.createElement("div");
+            svcSubs.className = "legend-bizneset-subs";
+            svcSubs.id = svc.cfg.subsId;
+            svcCats.forEach(function(lloji) {
                 var subLbl = document.createElement("label");
                 subLbl.className = "legend-row legend-row--sub";
                 subLbl.setAttribute("data-legend-search", lloji.toLowerCase());
                 var subCb = document.createElement("input");
                 subCb.type = "checkbox";
-                subCb.className = "legend-transport-subcb";
-                subCb.checked = transportLegendEnabled[lloji] !== false;
+                subCb.className = "legend-service-subcb";
+                subCb.checked = svc.enabled[lloji] !== false;
                 subCb.disabled = true; // aktivizohet vetëm kur shtresa kryesore është e ndezur
                 var dot = document.createElement("span");
-                dot.className = "legend-transport-swatch";
-                dot.innerHTML = transportStationBadgeHtml(lloji);
+                dot.className = "legend-service-swatch";
+                dot.innerHTML = svc.badgeHtml(lloji);
                 var sn = document.createElement("span");
                 sn.className = "legend-name";
                 sn.textContent = lloji;
@@ -3548,40 +3628,41 @@
                 subLbl.appendChild(dot);
                 subLbl.appendChild(sn);
                 subCb.addEventListener("change", function() {
-                    transportLegendEnabled[lloji] = this.checked;
-                    applyTransportLegendToMap();
+                    svc.enabled[lloji] = this.checked;
+                    svc.applyLegend();
                 });
-                ttSubs.appendChild(subLbl);
+                svcSubs.appendChild(subLbl);
             });
-            ttCollapseBtn.addEventListener("click", function(ev) {
+            svcCollapseBtn.addEventListener("click", function(ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
-                var open = ttSubs.classList.toggle("is-collapsed");
-                ttCollapseBtn.setAttribute("aria-expanded", open ? "false" : "true");
-                ttCollapseBtn.textContent = open ? "▸" : "▾";
+                var collapsed = svcSubs.classList.toggle("is-collapsed");
+                svcCollapseBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+                svcCollapseBtn.textContent = collapsed ? "▸" : "▾";
             });
 
-            ttInp.addEventListener("change", function() {
-                var subs = ttSubs.querySelectorAll(".legend-transport-subcb");
+            svcInp.addEventListener("change", function() {
+                var subs = svcSubs.querySelectorAll(".legend-service-subcb");
                 if (this.checked) {
-                    loadTransportStations().then(function() {
-                        applyTransportLegendToMap();
-                        map.addLayer(transportStationsLayer);
-                        zoomToShowAllTransportStations();
+                    svc.load().then(function() {
+                        svc.applyLegend();
+                        map.addLayer(svc.layer);
+                        zoomToShowActiveServiceLayers();
                         subs.forEach(function(cb) { cb.disabled = false; });
                     }).catch(function() {});
                 } else {
-                    map.removeLayer(transportStationsLayer);
-                    if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
-                    if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
-                    resetMapToVillageView();
+                    map.removeLayer(svc.layer);
+                    clearServiceRoute();
                     subs.forEach(function(cb) { cb.disabled = true; });
+                    // Rifiton pamjen vetëm sipas shtresave që mbeten aktive; kthehet te The Village kur s'ka asnjë.
+                    if (anyServiceLayerOn()) zoomToShowActiveServiceLayers();
+                    else resetMapToVillageView();
                 }
             });
 
-            ttWrap.appendChild(ttParentRow);
-            ttWrap.appendChild(ttSubs);
-            layersDiv.appendChild(ttWrap);
+            svcWrap.appendChild(svcParentRow);
+            svcWrap.appendChild(svcSubs);
+            layersDiv.appendChild(svcWrap);
             return;
         }
         var label = document.createElement("label");

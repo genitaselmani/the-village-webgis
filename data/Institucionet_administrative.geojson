@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "Institucionet_administrative",
+"features": [
+{ "type": "Feature", "properties": { "id": 1, "Lloji": "Gjykata themelore" }, "geometry": { "type": "Point", "coordinates": [ 21.14727562, 42.37580569 ] } },
+{ "type": "Feature", "properties": { "id": 2, "Lloji": "Komuna e Ferizajit" }, "geometry": { "type": "Point", "coordinates": [ 21.15370547, 42.36804115 ] } },
+{ "type": "Feature", "properties": { "id": 3, "Lloji": "Posta" }, "geometry": { "type": "Point", "coordinates": [ 21.15154268, 42.36934413 ] } }
+]
+}
