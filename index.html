@@ -2931,11 +2931,9 @@
                     console.log("✓ Pika e nisjes ngarkuar (WGS84):", pikaNisjes);
                     console.log("📍 Lat:", pikaNisjes[0], "Lng:", pikaNisjes[1]);
                     
-                    // Centro hartën në The Village
-                    setTimeout(function() {
-                        map.setView(pikaNisjes, 17, {animate: true});
-                        console.log("📍 Harta e centruar në The Village");
-                    }, 500);
+                    // Pamja fillestare vendoset nga applyVillageView() (e centruar mbi shtrirjen e bizneseve).
+                    // Këtu NUK ri-centrohet: pika informuese ndodhet pranë skajit jugor, prandaj centrimi mbi
+                    // të e shtynte tërë kompleksin lart e jashtë qendrës gjysmë sekonde pas hapjes.
                     setTimeout(function() {
                         ensurePikaInformueseMarker();
                     }, 0);
@@ -3288,6 +3286,7 @@
     function applyVillageView() {
         var c = computeBusinessExtentCenter();
         if (c) villageViewCenter = [c.lat, c.lng];
+        map.invalidateSize({ animate: false }); // centrimi të bazohet në përmasat reale të kontejnerit
         map.setView(villageViewCenter, MAP_INITIAL_ZOOM, { animate: false });
         panMapForSidebarOverlay();
     }
