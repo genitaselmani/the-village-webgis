@@ -4276,6 +4276,19 @@
         });
     }
 
+    // Rendit veçoritë sipas kategorisë (alfabetike), pastaj sipas emrit brenda çdo kategorie; pa kategori shkojnë në fund.
+    function sortBiznisetFeaturesByCategory(features) {
+        return (features || []).slice().sort(function(a, b) {
+            var catA = categoryFromBiznisetProps(a.properties || {}) || "￿";
+            var catB = categoryFromBiznisetProps(b.properties || {}) || "￿";
+            var cmp = catA.localeCompare(catB, "sq", { sensitivity: "base" });
+            if (cmp !== 0) return cmp;
+            var titleA = biznisetFeatureTitle(a.properties || {}, 0);
+            var titleB = biznisetFeatureTitle(b.properties || {}, 0);
+            return titleA.localeCompare(titleB, "sq", { sensitivity: "base" });
+        });
+    }
+
     function renderBiznisetList(features, filterText) {
         var listEl = document.getElementById("bizniset-list");
         var statusEl = document.getElementById("bizniset-status");
@@ -4283,7 +4296,7 @@
         listEl.innerHTML = "";
         var shown = 0;
         var total = features ? features.length : 0;
-        (features || []).forEach(function(f, i) {
+        sortBiznisetFeaturesByCategory(features).forEach(function(f, i) {
             var props = f.properties || {};
             if (q) {
                 var blob = JSON.stringify(props).toLowerCase();
