@@ -2413,9 +2413,12 @@
         }
     });
 
+    // crossOrigin: pa të, pllakat e hartës bazë ngarkohen pa CORS dhe html2canvas nuk mund t'i vizatojë —
+    // "Ruaj si foto" dilte me sfond gri të zbrazët në vend të hartës.
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: MAP_MAX_ZOOM,
-        maxNativeZoom: 19
+        maxNativeZoom: 19,
+        crossOrigin: "anonymous"
     }).addTo(map);
 
     /** Markerët e biznesit (logo reale ose simbol SVG i personalizueshëm), ndërtuar nga data/Bizniset.geojson. */
@@ -5604,49 +5607,77 @@
     }
     
     // FUNKSIONI PËR TË RUAJTUR HARTËN SI FOTO
+    /** Pret pllakat e hartës bazë që janë ende duke u ngarkuar — përndryshe kapja del me zona bosh. */
+    function whenMapTilesReady() {
+        var pending = Array.prototype.slice.call(document.querySelectorAll(".leaflet-tile"))
+            .filter(function(t) { return !(t.complete && t.naturalWidth > 0); });
+        if (!pending.length) return Promise.resolve();
+        return Promise.all(pending.map(function(t) {
+            return new Promise(function(resolve) {
+                t.addEventListener("load", resolve, { once: true });
+                t.addEventListener("error", resolve, { once: true });
+                setTimeout(resolve, 3000); // mos ngec nëse ndonjë pllakë s'vjen kurrë
+            });
+        }));
+    }
+
     function saveMapImage() {
         var btn = document.getElementById("map-action-save");
         if (!btn) return;
         btn.disabled = true;
         btn.classList.add("is-loading");
         btn.setAttribute("aria-busy", "true");
-        
-        // Merr elementin e hartës
-        var mapElement = document.getElementById('map');
-        
-        html2canvas(mapElement, {
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            scale: 2, // Cilësi më e lartë
-            logging: false
-        }).then(function(canvas) {
-            // Konverto canvas në blob
-            canvas.toBlob(function(blob) {
-                // Krijo një link për download
-                var url = URL.createObjectURL(blob);
-                var link = document.createElement('a');
-                var timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-                link.download = 'TheVillage_Map_' + timestamp + '.png';
-                link.href = url;
-                link.click();
-                
-                // Pastro
-                URL.revokeObjectURL(url);
-                
-                btn.classList.remove("is-loading");
-                btn.disabled = false;
-                btn.removeAttribute("aria-busy");
-                
-                console.log("✓ Harta u ruajt si foto");
-            });
-        }).catch(function(error) {
-            console.error("✗ Gabim në ruajtjen e hartës:", error);
-            alert("Gabim në ruajtjen e hartës. Provoni përsëri.");
+        function releaseBtn() {
             btn.classList.remove("is-loading");
             btn.disabled = false;
             btn.removeAttribute("aria-busy");
-        });
+        }
+
+        whenMapTilesReady()
+            .then(function() {
+                return html2canvas(document.getElementById("map"), {
+                    useCORS: true, // pa allowTaint: canvas-i mbetet i pastër, që toBlob të mos dështojë
+                    backgroundColor: "#ffffff",
+                    scale: 2, // Cilësi më e lartë
+                    logging: false,
+                    onclone: function(doc) {
+                        // Ndryshimet më poshtë prekin vetëm kopjen që vizatohet, jo hartën në ekran.
+                        // 1) Pllakat e kapura në mes të fade-in-it kanë opacity < 1 → dalin të zbehta ose fare.
+                        doc.querySelectorAll(".leaflet-tile").forEach(function(t) {
+                            t.style.opacity = "1";
+                        });
+                        // 2) html2canvas e vizaton box-shadow-in MBI elementin, jo pas tij, çka i nxin
+                        //    pikat e bizneseve dhe distinktivët e shërbimeve.
+                        doc.querySelectorAll(".biz-dot, .biz-badge, .service-point-badge").forEach(function(el) {
+                            el.style.boxShadow = "none";
+                        });
+                    }
+                });
+            })
+            .then(function(canvas) {
+                return new Promise(function(resolve, reject) {
+                    canvas.toBlob(function(blob) {
+                        if (!blob) { reject(new Error("toBlob dështoi")); return; }
+                        var url = URL.createObjectURL(blob);
+                        var link = document.createElement("a");
+                        var timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+                        link.download = "TheVillage_Map_" + timestamp + ".png";
+                        link.href = url;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    });
+                });
+            })
+            .then(function() {
+                releaseBtn();
+                console.log("✓ Harta u ruajt si foto");
+            })
+            .catch(function(error) {
+                console.error("✗ Gabim në ruajtjen e hartës:", error);
+                alert("Gabim në ruajtjen e hartës. Provoni përsëri.");
+                releaseBtn();
+            });
     }
     
     // FUNKSIONET PËR MATJEN E DISTANCËS DHE SIPËRFAQES
