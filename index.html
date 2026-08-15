@@ -3611,8 +3611,8 @@
             var szLarge = Math.max(140, Math.min(260, Math.round(170 + largeStep * 40)));
             return buildBiznisetRawLogoIcon(logoUrl, szLarge);
         }
-        // Niveli "badge" (zoom 19, i vetmi në këtë nivel): parazgjedhja (madhësi bazë 10) → 20px.
-        var sz = Math.max(10, Math.min(48, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 2.0)));
+        // Niveli "badge" (zoom 19, i vetmi në këtë nivel): parazgjedhja (madhësi bazë 10) → 18px.
+        var sz = Math.max(10, Math.min(48, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 1.8)));
         return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, sz);
     }
 
