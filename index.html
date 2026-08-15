@@ -3157,9 +3157,11 @@
     // Kthen hartën te niveli fillestar i zoom-it ku shihet vetëm The Village; rikthen bizneset nëse ishin të fshehura.
     var biznisetLayerHiddenForTransport = false;
     function resetMapToVillageView() {
-        map.once("moveend", panMapForSidebarOverlay);
-        map.setView(MAP_INITIAL_CENTER, MAP_INITIAL_ZOOM, { animate: true });
+        // Animate:false + minZoom i rivendosur PARA setView: shmang ndërprerjen e animacionit nga ndryshimi
+        // i minZoom-it në mes të tij (që më parë linte hartën në një zoom/pozicion të ndërmjetëm, jo fiks).
         map.setMinZoom(MAP_INITIAL_ZOOM);
+        map.setView(MAP_INITIAL_CENTER, MAP_INITIAL_ZOOM, { animate: false });
+        panMapForSidebarOverlay();
         if (biznisetLayerHiddenForTransport) {
             map.addLayer(layers["Bizneset"]);
             var biznisetCbEl = document.getElementById(layerIdForKey("Bizneset"));
