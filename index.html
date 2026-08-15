@@ -985,6 +985,18 @@
             object-fit: contain;
             display: block;
         }
+        /** Niveli i përgjithësuar (zoom i vogël): pikë e thjeshtë me ngjyrën e kategorisë. */
+        .bizniset-dot-divicon {
+            background: transparent !important;
+            border: none !important;
+        }
+        .biz-dot {
+            display: block;
+            border-radius: 50%;
+            border: 1.5px solid #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
+        }
         #bizniset-list {
             flex: 1 1 0%;
             min-height: 0;
@@ -2161,6 +2173,16 @@
     map.on("moveend", updateScaleDisplayFinal);
     map.whenReady(updateScaleDisplayFinal);
 
+    // Rindërton markerët e biznesit vetëm kur ndryshon niveli i simbolizimit (jo në çdo hap zoom-i).
+    var lastBizMarkerZoomTier = null;
+    map.on("zoomend", function() {
+        if (typeof getBizMarkerZoomTier !== "function" || typeof rebuildBiznisetSymbolsLayer !== "function") return;
+        var tier = getBizMarkerZoomTier();
+        if (tier === lastBizMarkerZoomTier) return;
+        lastBizMarkerZoomTier = tier;
+        rebuildBiznisetSymbolsLayer();
+    });
+
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: MAP_MAX_ZOOM,
         maxNativeZoom: 19
@@ -3300,10 +3322,40 @@
         });
     }
 
-    /** Distinktiv (badge) rrethor: logo e barazuar në madhësi (object-fit: contain) + unazë me ngjyrën e kategorisë. */
-    function buildBiznisetLogoBadgeIcon(logoUrl, ringColor, size) {
-        var s = Math.max(22, Math.min(56, size || 34));
-        var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;border-color:' + (ringColor || "#8a7b63") + ';">' +
+    /**
+     * Simbolizim sipas nivelit të zoom-it (përgjithësim kartografik): zoom i vogël (17-18, faktor
+     * zvogëlimi i madh) → pikë e thjeshtë me ngjyrë kategorie; zoom mesatar (19-20) → distinktiv
+     * (logo + unazë kategorie, siç ishte); zoom i madh (21-22) → vetëm logo, në madhësi më të madhe.
+     */
+    var BIZ_ZOOM_TIER_DOT_MAX = 18;
+    var BIZ_ZOOM_TIER_BADGE_MAX = 20;
+    function getBizMarkerZoomTier() {
+        var z = map.getZoom();
+        if (z <= BIZ_ZOOM_TIER_DOT_MAX) return "dot";
+        if (z <= BIZ_ZOOM_TIER_BADGE_MAX) return "badge";
+        return "logo-large";
+    }
+
+    // Niveli i përgjithësuar: pikë e thjeshtë me ngjyrën e kategorisë (pa logo).
+    function buildBiznisetDotIcon(style) {
+        var s = 11;
+        var color = style.fill || "#8a7b63";
+        var html = '<span class="biz-dot" style="width:' + s + 'px;height:' + s + 'px;background:' + color + ';"></span>';
+        return L.divIcon({
+            className: "bizniset-dot-divicon",
+            html: html,
+            iconSize: [s, s],
+            iconAnchor: [Math.round(s / 2), Math.round(s / 2)]
+        });
+    }
+
+    /** Distinktiv (badge) rrethor: logo e barazuar në madhësi (object-fit: contain) + unazë opsionale me ngjyrën e kategorisë. */
+    function buildBiznisetLogoBadgeIcon(logoUrl, ringColor, size, showRing) {
+        var s = Math.max(22, Math.min(84, size || 34));
+        var borderStyle = showRing === false ?
+            "border-color:#fff;" :
+            "border-color:" + (ringColor || "#8a7b63") + ";";
+        var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;' + borderStyle + '">' +
             '<img src="' + logoUrl + '" alt="" class="biz-badge-img">' +
             '</span>';
         return L.divIcon({
@@ -3314,14 +3366,22 @@
         });
     }
 
-    /** Marker i biznesit: logo + unazë sipas kategorisë kur ka përputhje të mirë me emrin; përndryshe forma SVG me ngjyrë kategorie. */
+    /** Marker i biznesit: zgjedh pikë / distinktiv / logo e madhe sipas nivelit të zoom-it aktual. */
     function buildBiznisetMarkerIcon(feature, style) {
-        var logoUrl = resolveLocalLogoUrlForBizniset(feature);
-        if (logoUrl) {
-            var sz = Math.max(22, Math.min(56, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 2.6)));
-            return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, sz);
+        var tier = getBizMarkerZoomTier();
+        if (tier === "dot") {
+            return buildBiznisetDotIcon(style);
         }
-        return buildBiznisetSymbolIcon(style);
+        var logoUrl = resolveLocalLogoUrlForBizniset(feature);
+        if (!logoUrl) {
+            return buildBiznisetSymbolIcon(style);
+        }
+        if (tier === "logo-large") {
+            var szLarge = Math.max(48, Math.min(84, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 4.4)));
+            return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, szLarge, false);
+        }
+        var sz = Math.max(22, Math.min(56, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 2.6)));
+        return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, sz);
     }
 
     // Normalizon një emër kategorie për krahasim (pa thekse, hapësira të pastra).
