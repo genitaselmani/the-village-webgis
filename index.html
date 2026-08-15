@@ -3424,17 +3424,18 @@
         return 'layer-cb-' + key.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '');
     }
 
+    /** Renditja në legjendë (jo në hartë — atë e cakton rendi i shtimit te `layers`). */
     var ORDERED_LAYER_KEYS = [
         "Pika Informuese",
         "Bizneset",
+        "Sherbimet e Transportit",
+        "Sherbimet e Emergjences",
+        "Institucionet Administrative",
         "Kufiri",
         "Parkingu",
         "Rrugët",
         "Kufiret e Bizneseve",
-        "Hekurudha",
-        "Sherbimet e Transportit",
-        "Sherbimet e Emergjences",
-        "Institucionet Administrative"
+        "Hekurudha"
     ];
     var LAYER_LEGEND_SYM = {
         "Kufiri": "legend-sym--kufi-v",
