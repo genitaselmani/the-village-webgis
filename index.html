@@ -3457,7 +3457,7 @@
             // E bazuar tek madhësia reale (në piksel) e poligonit të biznesit — mbulon shumicën e tij.
             var box = getBiznisetPolygonPixelBox(feature);
             if (box) {
-                return buildBiznisetRawLogoIconRect(logoUrl, box.w * 0.9, box.h * 0.9);
+                return buildBiznisetRawLogoIconRect(logoUrl, box.w * 0.76, box.h * 0.76);
             }
             // Pa poligon të përputhur (p.sh. rast pa Bizneset_ndara): madhësi e fiksuar, ende e madhe.
             var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
