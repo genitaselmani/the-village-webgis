@@ -2289,16 +2289,55 @@
     var measureMarkers = []; // Marker-at e matjes
 
     // Koordinatat fillestare të The Village (Prishtina, Kosovo)
-    /** Zoom fillestar = zoom minimal: përdoruesi nuk mund të zmadhojë më shumë sesa në hapjen e hartës (vetëm zoom-in). */
-    var MAP_INITIAL_ZOOM = 17;
-    var MAP_MAX_ZOOM = 22;
     var MAP_INITIAL_CENTER = [42.37252418042841, 21.148660685091816];
+
+    /**
+     * Shkallë fikse kartografike: hapja në 1:4000, dhe çdo hap zoom-i dyfishon/përgjysmon shkallën
+     * (1:4000 → 1:2000 → 1:1000 → 1:500 → 1:250 → 1:125). Zoom-i bazë është fraksional.
+     */
+    var SCALE_FIXED_BASE_DENOM = 4000;
+    var SCALE_FIXED_STEPS_IN = 5;  // zmadhim deri në 1:125
+    var SCALE_FIXED_STEPS_OUT = 3; // zvogëlim deri në 1:32000 (lejohet vetëm në pamjen e stacioneve të transportit)
+
+    // Emëruesi i shkallës në zoom 0, i matur me TË NJËJTËN matematikë distancash si treguesi i shkallës
+    // në footer (L.latLng.distanceTo → rreze mesatare e Tokës). Formula standarde e Web Mercator përdor
+    // rrezen ekuatoriale, çka do të nxirrte 1:3995 në vend të 1:4000 të plotë.
+    function scaleDenomAtZoom0(lat) {
+        var metersPerDegreeLng = L.latLng(lat, 0).distanceTo(L.latLng(lat, 1));
+        var pixelsPerDegreeLng = 256 / 360;
+        return (metersPerDegreeLng / pixelsPerDegreeLng) * 96 / 0.0254; // 96 DPI nominale
+    }
+    function zoomForScaleDenominator(denom) {
+        return Math.log2(scaleDenomAtZoom0(MAP_INITIAL_CENTER[0]) / denom);
+    }
+    /** Zoom fillestar = zoom minimal: përdoruesi nuk mund të zvogëlojë më shumë sesa në hapjen e hartës. */
+    var MAP_INITIAL_ZOOM = zoomForScaleDenominator(SCALE_FIXED_BASE_DENOM);
+    var MAP_MAX_ZOOM = MAP_INITIAL_ZOOM + SCALE_FIXED_STEPS_IN;
+    var MAP_TRANSPORT_MIN_ZOOM = MAP_INITIAL_ZOOM - SCALE_FIXED_STEPS_OUT;
     var map = L.map('map', {
         center: MAP_INITIAL_CENTER,
         zoom: MAP_INITIAL_ZOOM,
         zoomControl: false,
         maxZoom: MAP_MAX_ZOOM,
-        minZoom: MAP_INITIAL_ZOOM
+        minZoom: MAP_INITIAL_ZOOM,
+        zoomSnap: 0,            // lejon zoom-in bazë fraksional; hapat kontrollohen më poshtë
+        scrollWheelZoom: false  // zëvendësohet me hapa fiks (një rrotullim = një shkallë)
+    });
+
+    // Rrota e miut: një hap = një shkallë fikse (1:4000 → 1:2000 → …), pa vlera të ndërmjetme.
+    map.getContainer().addEventListener("wheel", function(ev) {
+        ev.preventDefault();
+        if (map._animatingZoom) return;
+        if (ev.deltaY < 0) map.zoomIn(1); else map.zoomOut(1);
+    }, { passive: false });
+
+    // Çdo zoom që përfundon jashtë rrjetës së shkallëve fikse (p.sh. pinch në celular,
+    // fitBounds i një theksimi) rrumbullakoset te shkalla fikse më e afërt.
+    map.on("zoomend", function() {
+        var z = map.getZoom();
+        var k = Math.round(z - MAP_INITIAL_ZOOM);
+        var target = Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), MAP_INITIAL_ZOOM + k));
+        if (Math.abs(z - target) > 0.001) map.setZoom(target, { animate: false });
     });
 
     // Paneli #sidebar "noton" mbi hartë (position:absolute) dhe mbulon një pjesë të anës së majtë në desktop;
@@ -3150,8 +3189,15 @@
             if (biznisetCbEl) biznisetCbEl.checked = false;
         }
         if (!pts.length) return;
-        map.setMinZoom(1);
-        map.fitBounds(L.latLngBounds(pts), { padding: [50, 50] });
+        map.setMinZoom(MAP_TRANSPORT_MIN_ZOOM);
+        var bounds = L.latLngBounds(pts);
+        // Zbrit te shkalla fikse më e afërt që ende i nxë të gjitha stacionet (floor, jo round —
+        // rrumbullakimi lart do t'i priste disa stacione jashtë ekranit).
+        var fitZoom = map.getBoundsZoom(bounds, false, L.point(50, 50));
+        var steps = Math.floor(fitZoom - MAP_INITIAL_ZOOM);
+        var target = Math.max(MAP_TRANSPORT_MIN_ZOOM, MAP_INITIAL_ZOOM + steps);
+        map.setView(bounds.getCenter(), target, { animate: false });
+        panMapForSidebarOverlay();
     }
 
     // Kthen hartën te niveli fillestar i zoom-it ku shihet vetëm The Village; rikthen bizneset nëse ishin të fshehura.
@@ -3160,8 +3206,7 @@
         // Animate:false + minZoom i rivendosur PARA setView: shmang ndërprerjen e animacionit nga ndryshimi
         // i minZoom-it në mes të tij (që më parë linte hartën në një zoom/pozicion të ndërmjetëm, jo fiks).
         map.setMinZoom(MAP_INITIAL_ZOOM);
-        map.setView(MAP_INITIAL_CENTER, MAP_INITIAL_ZOOM, { animate: false });
-        panMapForSidebarOverlay();
+        applyVillageView();
         if (biznisetLayerHiddenForTransport) {
             map.addLayer(layers["Bizneset"]);
             var biznisetCbEl = document.getElementById(layerIdForKey("Bizneset"));
@@ -3216,6 +3261,39 @@
         })(),
         "Sherbimet e Transportit": transportStationsLayer
     };
+
+    /**
+     * Qendra e pamjes së The Village. Fillon si vlerë e fiksuar, por zëvendësohet me qendrën reale të
+     * shtrirjes së bizneseve sapo të dhënat ngarkohen — pika e fiksuar ishte pranë skajit jugor, kështu
+     * që kompleksi dilte i zhvendosur lart e jashtë ekranit.
+     */
+    var villageViewCenter = MAP_INITIAL_CENTER;
+
+    function computeBusinessExtentCenter() {
+        try {
+            var kufiri = layers["Kufiri"];
+            if (kufiri && kufiri.geoJsonLayer) {
+                var kb = kufiri.geoJsonLayer.getBounds();
+                if (kb.isValid()) return kb.getCenter();
+            }
+            if (biznisetGeoJson && biznisetGeoJson.features) {
+                var bb = L.geoJSON(biznisetGeoJson).getBounds();
+                if (bb.isValid()) return bb.getCenter();
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    // Vendos pamjen e The Village: shtrirja e bizneseve e centruar në pjesën e dukshme të hartës.
+    function applyVillageView() {
+        var c = computeBusinessExtentCenter();
+        if (c) villageViewCenter = [c.lat, c.lng];
+        map.setView(villageViewCenter, MAP_INITIAL_ZOOM, { animate: false });
+        panMapForSidebarOverlay();
+    }
+    // Kufiri_village ngarkohet nga i njëjti cache-promise si te `layers` më sipër; ky callback regjistrohet
+    // pas atij të getLocalLayer(), pra geoJsonLayer është gati kur ekzekutohet.
+    loadLocalGeoJSON("Kufiri_village").then(applyVillageView).catch(function() {});
 
     /** Vendos markerin e klikueshëm mbi të njëjtat koordinata si Pike_informuse (popup «Ti je këtu!»). */
     function ensurePikaInformueseMarker() {
@@ -3806,12 +3884,12 @@
     }
 
     /**
-     * Simbolizim sipas nivelit të zoom-it (përgjithësim kartografik): zoom i vogël (17-18, faktor
-     * zvogëlimi i madh) → pikë e thjeshtë me ngjyrë kategorie; zoom mesatar (19) → distinktiv
-     * (logo + unazë kategorie); zoom i madh (20-22) → vetëm logo, bazuar tek poligoni i biznesit.
+     * Simbolizim sipas shkallës (përgjithësim kartografik), i shprehur në hapa nga shkalla bazë 1:4000:
+     * 1:4000-1:2000 → pikë e thjeshtë me ngjyrë kategorie; 1:1000 → distinktiv (logo + unazë kategorie);
+     * 1:500 e më poshtë → vetëm logo, bazuar tek poligoni i biznesit.
      */
-    var BIZ_ZOOM_TIER_DOT_MAX = 18;
-    var BIZ_ZOOM_TIER_BADGE_MAX = 19;
+    var BIZ_ZOOM_TIER_DOT_MAX = MAP_INITIAL_ZOOM + 1.5;   // përfshin hapat 0-1 (1:4000, 1:2000)
+    var BIZ_ZOOM_TIER_BADGE_MAX = MAP_INITIAL_ZOOM + 2.5; // përfshin hapin 2 (1:1000)
     function getBizMarkerZoomTier() {
         var z = map.getZoom();
         if (z <= BIZ_ZOOM_TIER_DOT_MAX) return "dot";
