@@ -13,6 +13,9 @@ OGC (WMS + WFS) përmes GeoServer-it në një server cloud me URL publike.
 
 ---
 
+> **Për Oracle Cloud (ARM):** ndiq [ORACLE-CLOUD.md](ORACLE-CLOUD.md) dhe përdor
+> `docker-compose.arm64.yml` — imazhi zyrtar OSGeo është vetëm amd64.
+
 ## 1. Merr një server
 
 | Opsioni | Kostoja | Shënim |
