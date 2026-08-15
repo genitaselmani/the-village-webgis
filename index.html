@@ -2301,6 +2301,23 @@
         minZoom: MAP_INITIAL_ZOOM
     });
 
+    // Paneli #sidebar "noton" mbi hartë (position:absolute) dhe mbulon një pjesë të anës së majtë në desktop;
+    // e zhvendos pikën qendrore djathtas sa gjysma e gjerësisë së mbuluar, që qendra e The Village të bjerë
+    // vizualisht në mes të pjesës së dukshme të hartës, jo në mes të gjithë kontejnerit (pjesërisht i fshehur).
+    function panMapForSidebarOverlay() {
+        try {
+            if (window.innerWidth < 769) return; // në celular #sidebar është panel poshtë, nuk mbulon majtas
+            var mapEl = document.getElementById("map");
+            var sbEl = document.getElementById("sidebar");
+            if (!mapEl || !sbEl) return;
+            var mapRect = mapEl.getBoundingClientRect();
+            var sbRect = sbEl.getBoundingClientRect();
+            var covered = Math.min(sbRect.right, mapRect.right) - mapRect.left;
+            if (covered > 0) map.panBy([-covered / 2, 0], { animate: false });
+        } catch (e) {}
+    }
+    panMapForSidebarOverlay();
+
     // Shton kontrollin vizual „N“ (veri lart) në cepin e hartës.
     (function addNorthIconControl() {
         var northCtrl = L.control({ position: "topright" });
@@ -3140,6 +3157,7 @@
     // Kthen hartën te niveli fillestar i zoom-it ku shihet vetëm The Village; rikthen bizneset nëse ishin të fshehura.
     var biznisetLayerHiddenForTransport = false;
     function resetMapToVillageView() {
+        map.once("moveend", panMapForSidebarOverlay);
         map.setView(MAP_INITIAL_CENTER, MAP_INITIAL_ZOOM, { animate: true });
         map.setMinZoom(MAP_INITIAL_ZOOM);
         if (biznisetLayerHiddenForTransport) {
