@@ -4031,6 +4031,23 @@
         return null;
     }
 
+    /**
+     * Parangarkon (cache) çdo logo të përputhur, që në ngarkim të faqes — jo vetëm kur harta arrin te
+     * niveli i zoom-it që i shfaq. Disa nga skedarët e logove janë me rezolucion shumë të lartë (deri
+     * në ~600 KB/foto), kështu që 75 shkarkime të njëkohshme vetëm në momentin e zoom-imit shkaktojnë
+     * vonesë të dukshme; parangarkimi i shpërndan shkarkimet në sfond që në fillim.
+     */
+    function preloadBiznisetLogos(features) {
+        var seen = {};
+        (features || []).forEach(function(f) {
+            var url = resolveLocalLogoUrlForBizniset(f);
+            if (!url || seen[url]) return;
+            seen[url] = true;
+            var im = new Image();
+            im.src = url;
+        });
+    }
+
     function fillBiznisetCardThumbs(listRoot) {
         if (!listRoot) return;
         listRoot.querySelectorAll("article.bizniset-card").forEach(function(art) {
@@ -4169,6 +4186,7 @@
                 loadBiznesetNdaraWfs().catch(function() {});
                 renderBiznisetList(data.features || [], filterInput.value);
                 syncBiznisetPointRendering();
+                preloadBiznisetLogos(data.features || []);
                 return biznisetGeoJson;
             })
             .catch(function(err) {
