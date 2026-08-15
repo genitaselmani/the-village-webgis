@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"name": "Sherbimet_e_transportit",
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "Lloji": "Stacion i taksive" }, "geometry": { "type": "Point", "coordinates": [ 21.14787960683545, 42.37434799595341 ] } },
+{ "type": "Feature", "properties": { "fid": 2, "Lloji": "Stacion i autobusëve" }, "geometry": { "type": "Point", "coordinates": [ 21.143264390651584, 42.378323059719676 ] } },
+{ "type": "Feature", "properties": { "fid": 3, "Lloji": "Stacion i taksive" }, "geometry": { "type": "Point", "coordinates": [ 21.158899261519096, 42.366586379771775 ] } },
+{ "type": "Feature", "properties": { "fid": 4, "Lloji": "Stacion i trenit" }, "geometry": { "type": "Point", "coordinates": [ 21.153510163413543, 42.36867084211459 ] } },
+{ "type": "Feature", "properties": { "fid": 5, "Lloji": "Stacion i taksive" }, "geometry": { "type": "Point", "coordinates": [ 21.147177434992603, 42.37042635749726 ] } }
+]
+}
