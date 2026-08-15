@@ -1966,19 +1966,6 @@
         </div>
     </aside>
 
-    <dialog class="webgis-pass-dialog" id="problem-report-password-dialog" aria-labelledby="problem-report-password-title" aria-modal="true">
-        <div class="webgis-pass-dialog__inner">
-            <h2 id="problem-report-password-title" class="webgis-pass-dialog__title">Raporto problem</h2>
-            <p class="webgis-pass-dialog__text">Shkruani fjalëkalimin për të aktivizuar modalitetin e raportimit të problemit në hartë.</p>
-            <label class="webgis-pass-dialog__label" for="problem-report-password-input">Fjalëkalimi
-                <input type="password" id="problem-report-password-input" name="problem-report-pw" autocomplete="current-password" inputmode="numeric" maxlength="32" />
-            </label>
-            <div class="webgis-pass-dialog__actions">
-                <button type="button" id="problem-report-password-cancel">Anulo</button>
-                <button type="button" class="webgis-pass-dialog__btn-primary" id="problem-report-password-submit">Vazhdo</button>
-            </div>
-        </div>
-    </dialog>
     <dialog class="webgis-pass-dialog" id="problem-report-compose-dialog" aria-labelledby="problem-report-compose-title" aria-modal="true">
         <div class="webgis-pass-dialog__inner">
             <h2 id="problem-report-compose-title" class="webgis-pass-dialog__title">Raport përmes Gmail</h2>
@@ -2830,10 +2817,8 @@
         });
     }
 
-    // Lidh butonin e raportit, dialogun e fjalëkalimit dhe ngarkimin e raporteve të vjetra.
+    // Lidh butonin e raportit dhe ngarkimin e raporteve të vjetra.
     function initProblemReportUi() {
-        var PROBLEM_REPORT_PASSWORD = "1234";
-
         // Aktivizon modin e raportimit (kursor kryq, fik matjen/navigimin nëse janë aktive).
         function activateProblemReportMode() {
             problemReportMode = true;
@@ -2847,50 +2832,7 @@
             map.getContainer().style.cursor = "crosshair";
         }
 
-        // Mbyll dialogun modal të fjalëkalimit për raportim.
-        function closeProblemReportPasswordDialog() {
-            var dlg = document.getElementById("problem-report-password-dialog");
-            if (!dlg) return;
-            try {
-                if (dlg.close) dlg.close();
-            } catch (e1) {}
-            dlg.removeAttribute("open");
-        }
-
-        // Hap dialogun e fjalëkalimit dhe pastron fushën e hyrjes.
-        function openProblemReportPasswordDialog() {
-            var dlg = document.getElementById("problem-report-password-dialog");
-            var inp = document.getElementById("problem-report-password-input");
-            if (!dlg || !inp) return;
-            inp.value = "";
-            try {
-                if (dlg.showModal) dlg.showModal();
-                else dlg.setAttribute("open", "");
-            } catch (e2) {}
-            setTimeout(function() {
-                inp.focus();
-            }, 30);
-        }
-
-        // Verifikon fjalëkalimin; në sukses aktivizon modin e raportimit.
-        function tryProblemReportPasswordThenActivate() {
-            var inp = document.getElementById("problem-report-password-input");
-            if (!inp) return;
-            if (String(inp.value || "").trim() === PROBLEM_REPORT_PASSWORD) {
-                closeProblemReportPasswordDialog();
-                activateProblemReportMode();
-            } else {
-                alert("Fjalëkalim i gabuar.");
-                inp.focus();
-                inp.select();
-            }
-        }
-
         var tgl = document.getElementById("problem-report-toggle");
-        var btnOk = document.getElementById("problem-report-password-submit");
-        var btnCancel = document.getElementById("problem-report-password-cancel");
-        var problemReportPwInput = document.getElementById("problem-report-password-input");
-
         if (tgl) {
             tgl.addEventListener("click", function() {
                 if (problemReportMode) {
@@ -2906,18 +2848,7 @@
                     syncMapCursorAfterProblemExit();
                     return;
                 }
-                openProblemReportPasswordDialog();
-            });
-        }
-
-        if (btnOk) btnOk.addEventListener("click", tryProblemReportPasswordThenActivate);
-        if (btnCancel) btnCancel.addEventListener("click", closeProblemReportPasswordDialog);
-        if (problemReportPwInput) {
-            problemReportPwInput.addEventListener("keydown", function(ev) {
-                if (ev.key === "Enter") {
-                    ev.preventDefault();
-                    tryProblemReportPasswordThenActivate();
-                }
+                activateProblemReportMode();
             });
         }
 
