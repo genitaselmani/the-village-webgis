@@ -1,0 +1,452 @@
+{
+  "Reiffeisen": {
+    "photo": "photos/reiffeisen.jpg",
+    "description": "Raiffeisen Bank është një nga bankat kryesore në Kosovë, pjesë e grupit austriak Raiffeisen Bank International, që ofron shërbime bankare për individë dhe biznese, si llogari, kredi dhe karta.",
+    "fallback": false,
+    "sourceNote": "facebook.com/RaiffeisenKosova (faqja zyrtare e bankës)"
+  },
+  "iAs": {
+    "photo": "photos/ias.jpg",
+    "description": "iAs Watches, Jewelry & Optics është zinxhir dyqanesh në Kosovë që shet orë, syze dhe bizhuteri nga marka të njohura ndërkombëtare, me disa pika shitjeje në vend.",
+    "fallback": false,
+    "sourceNote": "facebook.com/ias.watches (faqja zyrtare)"
+  },
+  "Forma": {
+    "photo": "logos/Forma1.png",
+    "description": "Forma është një dyqan aksesoresh dhe kozmetike që ofron produkte për bukuri dhe stil personal, duke synuar klientët që kërkojnë artikuj modernë me çmime të përballueshme.",
+    "fallback": true,
+    "sourceNote": "nuk u gjet foto e besueshme online; përdoret logoja ekzistuese e biznesit"
+  },
+  "Bliss": {
+    "photo": "logos/Bliss.png",
+    "description": "Bliss Cosmetics është një nga zinxhirët e njohur të dyqaneve të kozmetikës në Kosovë, që shet produkte kozmetike dhe higjienike të miratuara nga BE-ja.",
+    "fallback": true,
+    "sourceNote": "bliss-ks.com (u gjet vetëm logo e markës online, jo foto dyqani); përdoret logoja ekzistuese"
+  },
+  "Morganite": {
+    "photo": "logos/Morganite.png",
+    "description": "Morganite është një dyqan bizhuterish që ofron unaza, vathë, byzylykë dhe qafore, duke u fokusuar te artikujt elegantë prej ari dhe gurësh të çmuar.",
+    "fallback": true,
+    "sourceNote": "nuk u gjet foto e besueshme online; përdoret logoja ekzistuese e biznesit"
+  },
+  "EBC": {
+    "photo": "photos/ebc.webp",
+    "description": "EBC Cosmetics është një nga zinxhirët kryesorë të kozmetikës dhe parfumeve në Kosovë, që sjell marka prestigjioze ndërkombëtare si Dior, Chanel dhe Estée Lauder.",
+    "fallback": false,
+    "sourceNote": "ebc.shop (faqja zyrtare, seksioni Rreth Nesh)"
+  },
+  "Luxee": {
+    "photo": "logos/Luxee.png",
+    "description": "Luxee është një dyqan aksesoresh që ofron artikuj mode si çanta, bizhuteri dhe stoli për t'i shtuar prekje elegante veshjes së përditshme.",
+    "fallback": true,
+    "sourceNote": "nuk u gjet foto e besueshme online; përdoret logoja ekzistuese e biznesit"
+  },
+  "Cotto": {
+    "photo": "photos/cotto.jpg",
+    "description": "COTTO Brasserie & Restaurant është një restorant mesdhetar në The Village, Ferizaj, pjesë e Hotel Rubis, që shërben pjata italiane, greke, turke, franceze dhe spanjolle në një ambient modern.",
+    "fallback": false,
+    "sourceNote": "instagram.com/cotto.restaurant (foto profili zyrtare)"
+  },
+  "KFC": {
+    "photo": "photos/kfc.jpg",
+    "description": "KFC (Kentucky Fried Chicken) është zinxhir global ushqimi të shpejtë i specializuar në pulë të skuqur, i njohur për recetën origjinale me erëza dhe menunë me produkte pule.",
+    "fallback": false,
+    "sourceNote": "Wikimedia Commons - foto e një restoranti modern KFC (CC BY 4.0)"
+  },
+  "Burger King": {
+    "photo": "photos/burger-king.jpg",
+    "description": "Burger King është zinxhir global i ushqimit të shpejtë, i njohur për hamburgerin e tij të flakur në zjarr (flame-grilled), me menu që përfshin hamburgerë, patate dhe pije.",
+    "fallback": false,
+    "sourceNote": "Wikimedia Commons - foto e një dege Burger King (CC BY-SA 4.0)"
+  },
+  "Il Gusto": {
+    "photo": "photos/il-gusto.jpg",
+    "description": "Il Gusto Ristorante është restorant italian në Ferizaj, i specializuar në pica të pjekura në furrë me dru dhe pastë të bërë me dorë, në një ambient të ngrohtë familjar.",
+    "fallback": false,
+    "sourceNote": "instagram.com/ilgustoristorante.ks (foto profili zyrtare)"
+  },
+  "Big Scoop": {
+    "photo": "photos/big-scoop.webp",
+    "description": "Big Scoop është një markë e njohur në Kosovë për akullore, torta, krepa dhe vafle, me disa lokacione në Prishtinë, Ferizaj, Gjilan dhe Prizren, përfshirë The Village.",
+    "fallback": false,
+    "sourceNote": "bigscoop.menu (faqja zyrtare e lokacionit The Village, Ferizaj)"
+  },
+  "4Stinët": {
+    "photo": "logos/4Stinet.png",
+    "description": "4Stinët është një kafiteri me koncept modern që ofron kafe të shpejtë, ëmbëlsira dhe produkte të freskëta, me disa lokacione në Ferizaj përfshirë The Village.",
+    "fallback": true,
+    "sourceNote": "u gjet vetëm profil rrjeti social pa foto të lehtë shkarkueshme; përdoret logoja ekzistuese e biznesit"
+  },
+  "ProperPizza": {
+    "photo": "photos/properpizza.jpg",
+    "description": "Proper Pizza është restorant pica në Ferizaj i njohur për cilësi të mirë dhe çmime të përballueshme, duke ofruar edhe shërbim me porosi (delivery) dhe hapësirë për ndenjje.",
+    "fallback": false,
+    "sourceNote": "dyqani.app (foto e vendndodhjes Proper Pizza Ferizaj Village)"
+  },
+  "Steak House": {
+    "photo": "photos/steak-house.jpg",
+    "description": "Steak House & Bar është restorant në Ferizaj i specializuar në mish të pjekur (steak) dhe produkte të tymosura sipas recetave origjinale, duke ofruar edhe mëngjes dhe darka.",
+    "fallback": false,
+    "sourceNote": "instagram.com/steakhouserestaurant (foto profili zyrtare)"
+  },
+  "Carshia": {
+    "photo": "photos/carshia.jpg",
+    "description": "Çarshia Lounge është një lounge në The Village, Ferizaj, i njohur për nargjile dhe koktej të veçantë, në një ambient të rehatshëm me staf mikpritës.",
+    "fallback": false,
+    "sourceNote": "instagram.com/carshiaks (foto profili zyrtare)"
+  },
+  "Daily Dose": {
+    "photo": "photos/daily-dose.jpg",
+    "description": "Daily Dose është një lounge/kafiteri në Ferizaj që ofron kafe, pije dhe një ambient social për t'u çlodhur me miq e familje.",
+    "fallback": false,
+    "sourceNote": "facebook.com/daisydose.ks (foto profili zyrtare)"
+  },
+  "Don Taco": {
+    "photo": "photos/don-taco.jpg",
+    "description": "Don Taco është një restorant fast-food në Ferizaj i specializuar në kuzhinë meksikane dhe street food, si tako me mish, djathë dhe salcë meksikane.",
+    "fallback": false,
+    "sourceNote": "instagram.com/don__taco (foto profili zyrtare)"
+  },
+  "Gusto cafe": {
+    "photo": "photos/gusto-cafe.jpg",
+    "description": "Gusto Café është një kafiteri dhe ëmbëltore me disa lokacione në Kosovë (Prishtinë, Ferizaj, Mitrovicë, Gjilan), e njohur për kafe, ëmbëlsira dhe ambient të rehatshëm.",
+    "fallback": false,
+    "sourceNote": "gusto-ks.com (faqja zyrtare)"
+  },
+  "Heb's": {
+    "photo": "photos/hebs.jpg",
+    "description": "Heb's është zinxhir restorantesh fast-food në Kosovë i specializuar në burger dhe pulë, i njohur për shijen dhe cilësinë e produkteve të tij në disa qytete.",
+    "fallback": false,
+    "sourceNote": "delivery.hebskosova.com (faqja zyrtare e porosive)"
+  },
+  "HIB": {
+    "photo": "photos/hib.jpg",
+    "description": "HIB është një pikë ushqimi në Ferizaj që ofron pica, burgerë, sanduiçe dhe kafe, duke shërbyer si zgjedhje e përditshme për klientët e zonës.",
+    "fallback": false,
+    "sourceNote": "facebook.com (foto profili zyrtare e faqes HIB Ferizaj)"
+  },
+  "TRDLO": {
+    "photo": "photos/trdlo.jpg",
+    "description": "TRDLO është një bukëpjekëse dhe kafiteri në The Village, Ferizaj, e specializuar në trdelnik, ëmbëlsirë tradicionale çeko-sllovake e pjekur mbi zjarr dhe e mbushur me përbërës të ndryshëm.",
+    "fallback": false,
+    "sourceNote": "facebook.com/Trdloks (foto profili zyrtare)"
+  },
+  "Kid's Home": {
+    "photo": "photos/kids-home.jpg",
+    "description": "Kids Home Ferizaj është një hapësirë argëtimi dhe lojërash për fëmijë brenda The Village, e menduar si vend argëtues dhe i sigurt për familjet me fëmijë.",
+    "fallback": false,
+    "sourceNote": "instagram.com/kidshomeferizaj (foto profili zyrtare)"
+  },
+  "Villagecafe": {
+    "photo": "photos/villagecafe.jpg",
+    "description": "The Village Café është kafiteria kryesore brenda qendrës The Village Shopping & Fun në Ferizaj, që ofron kafe dhe pije në një ambient bashkëkohor për vizitorët e qendrës.",
+    "fallback": false,
+    "sourceNote": "dyqani.app (foto e vendndodhjes The Village Cafe, Ferizaj)"
+  },
+  "Missini": {
+    "photo": "photos/missini.jpg",
+    "description": "MISSINI Sweets është një kafiteri dhe ëmbëltore në Ferizaj që ofron ëmbëlsira, torta dhe kafe në një ambient të këndshëm për klientë të të gjitha moshave.",
+    "fallback": false,
+    "sourceNote": "dyqani.app (foto e vendndodhjes MISSINI Sweets, Ferizaj)"
+  },
+  "Mon Ami": {
+    "photo": "logos/Monami.png",
+    "description": "Mon Ami është një lounge bar dhe restorant në The Village, i njohur për atmosferën e ngrohtë, pijet e larmishme dhe menynë e larmishme, i përshtatshëm për të ngrënë dhe për t'u çlodhur.",
+    "fallback": true,
+    "sourceNote": "No independent press photo found; using existing business logo from repo /logos folder."
+  },
+  "Mondo": {
+    "photo": "logos/Mondo.png",
+    "description": "Mondo është një lokal gastronomie brenda qendrës The Village, që ofron kafe, pije dhe ushqim në një ambient modern e të përshtatshëm për familje.",
+    "fallback": true,
+    "sourceNote": "No independent press photo found; using existing business logo from repo /logos folder."
+  },
+  "Pasta Fasta": {
+    "photo": "logos/Pastafasta.png",
+    "description": "Pasta Fasta është një zinxhir restorantesh në Kosovë i specializuar në pastë italiane të përgatitur shpejt me salca të ndryshme, e ofruar në kuti praktike për konsum brenda ose me vete.",
+    "fallback": true,
+    "sourceNote": "No usable storefront photo found (only third-party listing sites); using existing business logo from repo /logos folder."
+  },
+  "Sach Pizza": {
+    "photo": "logos/Sachpizza.png",
+    "description": "Sach Pizza është një zinxhir picerish i pranishëm në disa qytete të Kosovës dhe në Maqedoninë e Veriut, i njohur për picat dhe produktet e Sachcaffé.",
+    "fallback": true,
+    "sourceNote": "No usable storefront photo found; using existing business logo from repo /logos folder."
+  },
+  "Mono": {
+    "photo": "logos/Mono.png",
+    "description": "Mono Café & Bistro është një kafiteri familjare në The Village, me ambient të këndshëm, hapësirë lojërash për fëmijë dhe meny me pije e ëmbëlsira shtëpiake.",
+    "fallback": true,
+    "sourceNote": "No independent press photo found; using existing business logo from repo /logos folder."
+  },
+  "Barnatore": {
+    "photo": "logos/Barnatore.png",
+    "description": "Barnatore është një emër i përhapur farmacish në Kosovë, që ofron barna, produkte kozmetike e higjienike, si dhe këshillim farmaceutik për klientët.",
+    "fallback": true,
+    "sourceNote": "Only product/manufacturer images found on affiliated pharmacy sites, not a genuine storefront photo; using existing business logo from repo /logos folder."
+  },
+  "Villageshop": {
+    "photo": "logos/Villageshop.png",
+    "description": "Villageshop është dyqani i brendshëm i qendrës tregtare The Village, ku ofrohen artikuj të përditshëm, dhurata dhe suvenire nën markën e vetë qendrës.",
+    "fallback": true,
+    "sourceNote": "No independent photo found; using existing business logo from repo /logos folder."
+  },
+  "Rubis": {
+    "photo": "logos/Rubis.png",
+    "description": "Rubis është një hotel butik brenda kompleksit The Village, që ofron dhoma moderne, restorant me kuzhinë ndërkombëtare dhe hapësira për konferenca.",
+    "fallback": true,
+    "sourceNote": "Hotel Rubis (RUBIS Boutique Hotel) official site did not expose usable direct image links; using existing business logo from repo /logos folder."
+  },
+  "Evapify": {
+    "photo": "logos/Evapify.png",
+    "description": "Evapify është një kompani që ofron produkte vape dhe cigare elektronike të certifikuara sipas standardeve evropiane, me pika shitjeje në qendra tregtare në mbarë Kosovën, përfshirë The Village.",
+    "fallback": true,
+    "sourceNote": "No usable storefront photo found on evapify.com/evapify-ks.com; using existing business logo from repo /logos folder."
+  },
+  "Exchange": {
+    "photo": "logos/Exchange.png",
+    "description": "Exchange është një pikë këmbimi valutor që u mundëson klientëve të këmbejnë monedha të huaja sipas kursit të ditës, shërbim i zakonshëm në qendrat tregtare.",
+    "fallback": true,
+    "sourceNote": "Small independent service point; no dedicated photo found online. Using existing business logo from repo /logos folder."
+  },
+  "Autolarje": {
+    "photo": "logos/Autolarje.png",
+    "description": "Autolarje është një pikë e larjes së automjeteve që ofron shërbime larjeje dhe pastrimi për makina, të disponueshme për vizitorët e qendrës tregtare.",
+    "fallback": true,
+    "sourceNote": "Small independent service point; no dedicated photo found online. Using existing business logo from repo /logos folder."
+  },
+  "Optika Moda": {
+    "photo": "logos/Optikamoda.png",
+    "description": "Optika Moda është një zinxhir optikash i pranishëm në shumë qytete të Kosovës, që ofron syze optike e dielli, lente kontakti dhe kontrolle të shikimit me staf të kualifikuar.",
+    "fallback": true,
+    "sourceNote": "No usable direct storefront photo found; using existing business logo from repo /logos folder."
+  },
+  "Loris": {
+    "photo": "logos/Loris.png",
+    "description": "Loris është një markë turke parfumesh dhe kozmetikë, me dyqane koncept në disa vende, që ofron një gamë të gjerë parfumesh e produktesh kozmetike.",
+    "fallback": true,
+    "sourceNote": "No usable direct storefront photo found; using existing business logo from repo /logos folder."
+  },
+  "Max Optika": {
+    "photo": "logos/Maxoptika.png",
+    "description": "Max Optika është një zinxhir optikash i pranishëm në Shqipëri, Kosovë dhe Maqedoninë e Veriut, që ofron korniza optike, syze dielli dhe lente kontakti.",
+    "fallback": true,
+    "sourceNote": "Official site only exposed promotional banner/category graphics, not a genuine store photo; using existing business logo from repo /logos folder."
+  },
+  "Aztech": {
+    "photo": "photos/aztech.jpg",
+    "description": "Aztech është një nga zinxhirët kryesorë të dyqaneve të elektronikës në Kosovë, që ofron pajisje shtëpiake, telefona, televizorë dhe produkte të tjera nga marka të njohura botërore.",
+    "fallback": false,
+    "sourceNote": "telegrafi.com — press photo from a Telegrafi article about an Aztech store opening."
+  },
+  "D Mobile": {
+    "photo": "logos/DMobile.png",
+    "description": "D Mobile është një dyqan në Ferizaj i specializuar në shitjen dhe servisimin e telefonave inteligjentë të markave si Samsung dhe iPhone, si dhe aksesorë të tjerë elektronikë.",
+    "fallback": true,
+    "sourceNote": "Only social-media pages found, no fetchable photo; using existing business logo from repo /logos folder."
+  },
+  "A&M": {
+    "photo": "logos/AM.png",
+    "description": "A&M është një dyqan modë në Ferizaj që ofron veshje të përditshme e elegante për femra dhe meshkuj, së bashku me aksesorë të ndryshëm mode.",
+    "fallback": true,
+    "sourceNote": "No usable direct storefront photo found; using existing business logo from repo /logos folder."
+  },
+  "Bonatti": {
+    "photo": "logos/Bonatti.png",
+    "description": "Bonatti është një markë e njohur për të brendshme, veshje nate dhe rroba banje, e pranishme në disa vende të rajonit të Ballkanit, përfshirë Kosovën.",
+    "fallback": true,
+    "sourceNote": "No usable direct product/storefront photo found; using existing business logo from repo /logos folder."
+  },
+  "Driloni": {
+    "photo": "photos/driloni.jpg",
+    "description": "Driloni Sportswear është një dyqan veshjesh dhe këpucësh sportive në The Village, që ofron marka të njohura ndërkombëtare si Nike, Adidas, Puma dhe Reebok për të gjitha moshat.",
+    "fallback": false,
+    "sourceNote": "driloni-ks.com — official brand photoshoot image from the Driloni Sportswear website."
+  },
+  "LC Waikiki": {
+    "photo": "photos/lc-waikiki.jpg",
+    "description": "LC Waikiki është një zinxhir modë turk me çmime të përballueshme, që ofron veshje për fëmijë, gra dhe burra, i pranishëm në shumë qendra tregtare në Kosovë e më gjerë.",
+    "fallback": false,
+    "sourceNote": "commons.wikimedia.org — photo of an LC Waikiki store in a Kosovo shopping centre (Gjakova), used as representative brand imagery."
+  },
+  "Planet Kids": {
+    "photo": "logos/Planetkids.png",
+    "description": "Planet Kids është një dyqan i specializuar në veshje dhe artikuj për fëmijë, që ofron koleksione të larmishme për moshat më të vogla.",
+    "fallback": true,
+    "sourceNote": "No usable direct photo found online; using existing business logo from repo /logos folder."
+  },
+  "Shooter": {
+    "photo": "logos/Shooter.png",
+    "description": "Shooter është një markë modë që ofron veshje casual e urbane, kryesisht për të rinj, e disponueshme edhe në koleksione për fëmijë nën emrin Shooter Kids.",
+    "fallback": true,
+    "sourceNote": "No usable direct photo found online; using existing business logo from repo /logos folder."
+  },
+  "Viva Fresh": {
+    "photo": "logos/Vivafresh.png",
+    "description": "Viva Fresh Store është një nga zinxhirët e njohur të supermarketeve në Kosovë, me pika shitjeje në vend dhe një gamë të gjerë produktesh ushqimore e jo vetëm.",
+    "fallback": true,
+    "sourceNote": "Official site blocked direct image access (403) and no other usable storefront photo found; using existing business logo from repo /logos folder."
+  },
+  "Interex": {
+    "photo": "logos/Interex.png",
+    "description": "Interex është një zinxhir supermarketesh në Kosovë, i njohur për çmimet konkurruese dhe risi si arkat vetë-shërbyese dhe çmimet dixhitale, me pika shitjeje në disa qytete të vendit.",
+    "fallback": true,
+    "sourceNote": "Official site only exposed a team photo, not a storefront; using existing business logo from repo /logos folder."
+  },
+  "BankomatTEB": {
+    "photo": "logos/BankomatTEB.png",
+    "description": "BankomatTEB është një makinë bankare automatike e Bankës TEB, që mundëson tërheqje dhe depozitim parash, kontrollim të gjendjes së llogarisë dhe shërbime të tjera bankare 24 orë në ditë.",
+    "fallback": true,
+    "sourceNote": "TEB Kosovo official site only exposed card/campaign graphics, not real ATM photography; using existing business logo from repo /logos folder."
+  },
+  "Matrons": {
+    "photo": "logos/Matrons.png",
+    "description": "Matrons është një dyqan modë që ofron veshje dhe aksesore për femra e meshkuj, me koleksione të përditësuara sipas trendeve aktuale.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Neptun": {
+    "photo": "photos/neptun.jpg",
+    "description": "Neptun është një zinxhir i njohur i shitjes së pajisjeve elektronike dhe elektroshtëpiake në Kosovë, me dyqane në shumë qytete, duke përfshirë Ferizajn.",
+    "fallback": false,
+    "sourceNote": "telegrafi.com (artikull rreth hapjes së dyqaneve Neptun në Kosovë)"
+  },
+  "Garda": {
+    "photo": "logos/Garda.png",
+    "description": "Garda është një dyqan modë që ofron veshje dhe aksesore për klientë të ndryshëm, pjesë e ofertës së shumëllojshme të qendrës tregtare.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Jysk": {
+    "photo": "photos/jysk.jpg",
+    "description": "Jysk është zinxhir danez ndërkombëtar i shitjes me pakicë i specializuar në mobilje, dyshekë dhe artikuj për shtëpi, i pranishëm në shumë vende të botës.",
+    "fallback": false,
+    "sourceNote": "Wikimedia Commons (foto e një dyqani Jysk)"
+  },
+  "EMO": {
+    "photo": "photos/emo.png",
+    "description": "EMO është distributor kryesor në Kosovë i orëve dhe aksesoreve nga marka botërore të njohura, me traditë familjare shumëvjeçare në industrinë e orëve.",
+    "fallback": false,
+    "sourceNote": "telegrafi.com (artikull rreth markës EMO në Kosovë)"
+  },
+  "Punto Lavazza": {
+    "photo": "photos/punto-lavazza.jpg",
+    "description": "Punto Lavazza është koncept kafeje i lidhur me markën italiane Lavazza, që ofron espresso dhe pije kafeje me cilësi premium në një ambient bar-kafeje.",
+    "fallback": false,
+    "sourceNote": "Wikimedia Commons (shenjë/dyqan Lavazza)"
+  },
+  "Comodita": {
+    "photo": "photos/comodita.jpg",
+    "description": "Comodita Home është zinxhiri kryesor rajonal i artikujve shtëpiakë, i njohur për dyshekë, tekstile, artikuj kuzhine dhe produkte për fëmijë.",
+    "fallback": false,
+    "sourceNote": "comoditahome.com (faqja zyrtare e brendit)"
+  },
+  "Sport Vision": {
+    "photo": "photos/sport-vision.jpg",
+    "description": "Sport Vision është lider i shitjes së artikujve sportivë në rajonin e Ballkanit, duke ofruar veshje, këpucë dhe pajisje nga marka të njohura botërore sportive.",
+    "fallback": false,
+    "sourceNote": "sportvision.group (faqja zyrtare e kompanisë)"
+  },
+  "LTB": {
+    "photo": "logos/LTB.png",
+    "description": "LTB (Little Big) është markë turke e veshjeve denim, e njohur për xhinse dhe koleksione mode të përditshme për femra e meshkuj.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Grafitti": {
+    "photo": "logos/Grafitti.png",
+    "description": "Grafitti është dyqan modë që ofron veshje dhe aksesore për një klientelë të re dhe të orientuar nga trendet aktuale.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Jumbo": {
+    "photo": "logos/Jumbo.png",
+    "description": "Jumbo është zinxhir grek i shitjes me pakicë i specializuar në lodra, artikuj dekorimi për shtëpi, artikuj sezonalë dhe kancelari, i pranishëm në disa vende të rajonit.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (qasje e bllokuar te faqja zyrtare e-jumbo.gr)"
+  },
+  "Intersport": {
+    "photo": "photos/intersport.jpg",
+    "description": "Intersport është një nga zinxhirët më të mëdhenj botërorë të artikujve sportivë, duke ofruar veshje, këpucë dhe pajisje sportive nga marka të ndryshme.",
+    "fallback": false,
+    "sourceNote": "Wikimedia Commons (foto e një dyqani Intersport)"
+  },
+  "Penti": {
+    "photo": "photos/penti.jpg",
+    "description": "Penti është markë turke e njohur për të brendshme, çorape dhe rroba plazhi, me dyqane në shumë vende të Evropës dhe rajonit.",
+    "fallback": false,
+    "sourceNote": "hurriyet.com.tr (artikull për hapjen e një dyqani Penti)"
+  },
+  "Lobby": {
+    "photo": "logos/Lobby.png",
+    "description": "Lobby është një lokal/lounge bar që ofron pije dhe një ambient relaksues për klientët brenda qendrës tregtare.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Brasserie": {
+    "photo": "logos/Brasserie.png",
+    "description": "Brasserie (COTTO Brasserie & Restaurant) është restorant që ofron kuzhinë të larmishme, ndër të tjera pjata italiane, greke, turke dhe franceze, në një ambient elegant.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto reale e lirë për përdorim)"
+  },
+  "Top Shop": {
+    "photo": "photos/top-shop.jpg",
+    "description": "Top Shop është dyqan elektronike dhe pajisjesh shtëpiake në Kosovë, që ofron produkte të vogla elektroshtëpiake dhe artikuj teknologjikë për shtëpinë.",
+    "fallback": false,
+    "sourceNote": "topshop-ks.com (faqja zyrtare, foto produkti)"
+  },
+  "Toyzz Shop": {
+    "photo": "photos/toyzz-shop.jpg",
+    "description": "Toyzz Shop është një zinxhir i njohur lodrash nga Turqia, që ofron lodra, artikuj edukativë dhe produkte argëtuese për fëmijë të gjitha moshave.",
+    "fallback": false,
+    "sourceNote": "milliyet.com.tr (artikull mediatik rreth Toyzz Shop)"
+  },
+  "Madam Coco": {
+    "photo": "photos/madam-coco.png",
+    "description": "Madam Coco (Madame Coco) është markë turke e artikujve shtëpiakë dhe tekstileve për dekorim, e pranishme me qindra dyqane në disa vende.",
+    "fallback": false,
+    "sourceNote": "madamecoco.com (faqja zyrtare e brendit)"
+  },
+  "N'Sport": {
+    "photo": "logos/Nsport.png",
+    "description": "N'Sport është distributor në Kosovë i markave sportive dhe të modës, përfaqësues zyrtar i markës Puma, me dyqane në disa qytete të vendit.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (faqja zyrtare nuk ofroi foto të lirë për përdorim)"
+  },
+  "Candy Village": {
+    "photo": "logos/Candyvillage.png",
+    "description": "Candy Village është dyqan i ëmbëlsirave dhe sheqerkave, që ofron një larmi karamelesh, çokollatash dhe kripshkash për fëmijë e të rritur.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "American Burger": {
+    "photo": "logos/Americanburger.png",
+    "description": "American Burger është restorant fast-food i specializuar në hamburgerë në stil amerikan, me menu që përfshin edhe patate të skuqura dhe pije.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Chickano": {
+    "photo": "logos/Chickano.png",
+    "description": "Chickano është restorant fast-food i specializuar në produkte me pulë, si pjata dhe sanduiçe të shpejta për konsum brenda ose me vete.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Tap Rrap Doner": {
+    "photo": "logos/Taprrapdoner.png",
+    "description": "Tap Rrap Doner është restorant fast-food nga Ferizaji, i specializuar në doner dhe tantun, me disa pika shitjeje në qytet përfshirë The Village.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (faqja zyrtare nuk ofroi foto të lirë për përdorim)"
+  },
+  "Rino": {
+    "photo": "logos/Rino.png",
+    "description": "Rino është dyqan modë që ofron veshje dhe aksesore për klientë të ndryshëm brenda qendrës tregtare.",
+    "fallback": true,
+    "sourceNote": "logo ekzistuese nga /logos (nuk u gjet foto e dedikuar reale)"
+  },
+  "Tualet": {
+    "photo": null,
+    "description": "Tualet publik i qendrës tregtare.",
+    "fallback": false,
+    "sourceNote": "n/a"
+  }
+}

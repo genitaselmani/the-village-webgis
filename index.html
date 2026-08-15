@@ -1218,6 +1218,45 @@
             font-weight: 500;
         }
 
+        /** Popup i biznesit në hartë: foto + tekst përshkrues, kur klikohet poligoni i biznesit. */
+        .biz-map-popup {
+            width: 220px;
+        }
+        .biz-map-popup-img {
+            display: block;
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 0 0 8px;
+            background: #eef0f2;
+        }
+        .biz-map-popup-img[data-fallback="1"] {
+            object-fit: contain;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .biz-map-popup-title {
+            margin: 0 0 2px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+        .biz-map-popup-cat {
+            margin: 0 0 6px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #8a7b63;
+        }
+        .biz-map-popup-desc {
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #444;
+        }
+
         .leaflet-control.webgis-north-icon {
             margin-top: 10px !important;
             margin-right: max(10px, env(safe-area-inset-right, 0px)) !important;
@@ -2149,6 +2188,65 @@
             });
         localGeoJsonCache[name] = p;
         return p;
+    }
+
+    /** Cache: Promise i objektit { "Emri biznesit": {photo, description, fallback, sourceNote} } nga data/biznisetPhotos.json. */
+    var biznisetPhotoInfoPromise = null;
+    function loadBiznisetPhotoInfo() {
+        if (biznisetPhotoInfoPromise) return biznisetPhotoInfoPromise;
+        biznisetPhotoInfoPromise = fetch(DATA_BASE + "biznisetPhotos.json")
+            .then(function(r) {
+                if (!r.ok) throw new Error("biznisetPhotos.json: HTTP " + r.status);
+                return r.json();
+            })
+            .catch(function(err) {
+                console.warn("[bizniset] Nuk u ngarkuan fotot/përshkrimet:", err);
+                return {};
+            });
+        return biznisetPhotoInfoPromise;
+    }
+
+    // Shpëton tekst për futje të sigurt në HTML (parandalon XSS nga vlerat e atributeve).
+    function escapeHtmlText(s) {
+        return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    // Ndërton HTML-në për popup-in e biznesit në hartë (foto + kategori + përshkrim).
+    function buildBiznisetPopupHtml(bizFeature, photoInfoMap) {
+        var props = bizFeature.properties || {};
+        var title = biznisetFeatureTitle(props, 0);
+        var cat = categoryFromBiznisetProps(props);
+        var info = (photoInfoMap && photoInfoMap[title]) || null;
+        var photoUrl = info && info.photo ? info.photo : resolveLocalLogoUrlForBizniset(bizFeature);
+        var isFallback = !info || !info.photo || info.fallback;
+        var desc = (info && info.description) ? info.description : "";
+        var html = '<div class="biz-map-popup">';
+        if (photoUrl) {
+            html += '<img class="biz-map-popup-img"' + (isFallback ? ' data-fallback="1"' : '') +
+                ' src="' + escapeHtmlText(photoUrl) + '" alt="" onerror="this.style.display=\'none\'">';
+        }
+        html += '<h4 class="biz-map-popup-title">' + escapeHtmlText(title) + '</h4>';
+        if (cat) html += '<p class="biz-map-popup-cat">' + escapeHtmlText(cat) + '</p>';
+        if (desc) html += '<p class="biz-map-popup-desc">' + escapeHtmlText(desc) + '</p>';
+        html += '</div>';
+        return html;
+    }
+
+    // Hap popup-in e biznesit në hartë, në pozitën e klikimit.
+    function openBiznisetMapPopup(bizFeature, latlng) {
+        if (!bizFeature || !latlng) return;
+        loadBiznisetPhotoInfo().then(function(photoInfoMap) {
+            var html = buildBiznisetPopupHtml(bizFeature, photoInfoMap);
+            L.popup({ maxWidth: 240, className: "biz-map-popup-wrap" })
+                .setLatLng(latlng)
+                .setContent(html)
+                .openOn(map);
+        });
     }
 
     var pikaNisjes = null; // Do të merret nga data/Pike_informuse.geojson
@@ -4650,7 +4748,7 @@
         highlightBiznesetNdaraForBizniset(bizFeature);
     }
 
-    function openBiznisetFromNdaraPolygon(ndaraFeature) {
+    function openBiznisetFromNdaraPolygon(ndaraFeature, clickLatlng) {
         if (!ndaraFeature || !ndaraFeature.geometry) return;
         switchSidebarTab("bizniset");
         fetchBiznisetFeatures()
@@ -4664,6 +4762,7 @@
                 var biz = findBiznisetFeatureMatchingNdara(ndaraFeature);
                 if (biz) {
                     focusBiznisetCardByFeature(biz);
+                    openBiznisetMapPopup(biz, clickLatlng);
                 } else {
                     clearBiznisetListSelection();
                     if (biznisetSelectedCardEl) {
@@ -4677,6 +4776,7 @@
                     };
                     lastHighlightedBiznisetFeature = stub;
                     showBiznisetSpotlight(stub);
+                    openBiznisetMapPopup(stub, clickLatlng);
                     biznisetListSelectionLayer = L.geoJSON(ndaraFeature.geometry, {
                         style: getBizHighlightStyleFromUI()
                     }).addTo(map);
@@ -4959,7 +5059,7 @@
             loadBiznesetNdaraWfs().catch(function() {}).then(function() {
                 var ndaraFeature = findBiznesetNdaraFeatureAtLatLng(e.latlng);
                 if (ndaraFeature) {
-                    openBiznisetFromNdaraPolygon(ndaraFeature);
+                    openBiznisetFromNdaraPolygon(ndaraFeature, e.latlng);
                 } else {
                     clearBiznisetSelectionUI();
                 }
