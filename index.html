@@ -657,8 +657,8 @@
         }
         .pika-informuese-leaflet-marker .pika-informuese-hit {
             box-sizing: border-box;
-            width: 34px;
-            height: 46px;
+            width: 26px;
+            height: 35px;
             cursor: pointer;
             display: block;
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
@@ -2195,8 +2195,12 @@
 
     // Rindërton markerët e biznesit në çdo hap zoom-i (niveli "badge" ndryshon madhësinë brenda vetë diapazonit 19-20).
     map.on("zoomend", function() {
-        if (typeof rebuildBiznisetSymbolsLayer !== "function") return;
-        rebuildBiznisetSymbolsLayer();
+        if (typeof rebuildBiznisetSymbolsLayer === "function") rebuildBiznisetSymbolsLayer();
+        var rr = typeof layers !== "undefined" ? layers["Rrugët"] : null;
+        if (rr && rr.casingLayer && rr.fillLayer) {
+            rr.casingLayer.setStyle(roadCasingStyle);
+            rr.fillLayer.setStyle(roadFillStyle);
+        }
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -2778,17 +2782,26 @@
     var NDARA_STYLE = { color: "#5f5f5f", weight: 1.2, fill: true, fillColor: "#a8a8a8", fillOpacity: 0.32 };
 
     // Rruget.sld: dy vija të mbivendosura (jashtme e errët + brendshme e çelët) sipas Kategoria.
+    /** Shkallëzimi i gjerësisë së rrugëve sipas zoom-it: më hollë në zoom të ulët, më të trasha në zoom të lartë. */
+    function roadZoomWidthScale() {
+        var z = map.getZoom();
+        var t = (z - MAP_INITIAL_ZOOM) / (MAP_MAX_ZOOM - MAP_INITIAL_ZOOM);
+        t = Math.max(0, Math.min(1, t));
+        return 0.4 + t * 0.6; // 0.4× në zoom më të ulët → 1.0× në zoom më të lartë
+    }
     function roadCasingStyle(feature) {
         var kat = feature && feature.properties && feature.properties.Kategoria;
+        var s = roadZoomWidthScale();
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#020003", weight: 14, opacity: 0.55, lineCap: "round", lineJoin: "round" } :
-            { color: "#1e1a14", weight: 10, lineCap: "round", lineJoin: "round" };
+            { color: "#020003", weight: Math.max(1, 14 * s), opacity: 0.55, lineCap: "round", lineJoin: "round" } :
+            { color: "#1e1a14", weight: Math.max(1, 10 * s), lineCap: "round", lineJoin: "round" };
     }
     function roadFillStyle(feature) {
         var kat = feature && feature.properties && feature.properties.Kategoria;
+        var s = roadZoomWidthScale();
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#d7d6d9", weight: 11, lineCap: "round", lineJoin: "round" } :
-            { color: "#b0b0b0", weight: 8, lineCap: "round", lineJoin: "round" };
+            { color: "#d7d6d9", weight: Math.max(0.5, 11 * s), lineCap: "round", lineJoin: "round" } :
+            { color: "#b0b0b0", weight: Math.max(0.5, 8 * s), lineCap: "round", lineJoin: "round" };
     }
     // Shtresa "Rrugët": dy pasazhe stilizimi mbi të njëjtat të dhëna + tooltip me emrin e rrugës.
     function buildRruguetLayer() {
@@ -2806,6 +2819,8 @@
                 group.addLayer(casing);
                 group.addLayer(fillLn);
                 group.geoJsonData = data;
+                group.casingLayer = casing;
+                group.fillLayer = fillLn;
             })
             .catch(function(err) { console.error("[data] Rruget nuk u ngarkua:", err); });
         return group;
@@ -2852,7 +2867,7 @@
         }
         // Pin i dukshëm (i njëjti simbol si në legjendë) — më parë e vetmja pjesë ishte "hit zone"-i i padukshëm,
         // ndërsa vetë ikona vizuale vinte nga shtresa WMS e hequr gjatë migrimit nga GeoServer.
-        var pinSvg = '<svg class="pika-informuese-pin-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="34" height="46" focusable="false" aria-hidden="true">' +
+        var pinSvg = '<svg class="pika-informuese-pin-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="26" height="35" focusable="false" aria-hidden="true">' +
             '<path fill="#e53935" stroke="#fff" stroke-width="1" d="M12 0C5.37 0 0 5.12 0 11.45c0 5.95 9.1 18.02 11.14 20.42.53.6 1.19.9 1.86.9s1.33-.3 1.86-.9C16.9 29.47 24 18.15 24 11.45 24 5.12 18.63 0 12 0z"/>' +
             '<circle cx="12" cy="11" r="4" fill="#6d1f28"/>' +
             "</svg>";
@@ -2861,9 +2876,9 @@
             icon: L.divIcon({
                 className: "pika-informuese-leaflet-marker",
                 html: pinHtml,
-                iconSize: [34, 46],
-                iconAnchor: [17, 46],
-                popupAnchor: [0, -40]
+                iconSize: [26, 35],
+                iconAnchor: [13, 35],
+                popupAnchor: [0, -30]
             }),
             interactive: true,
             keyboard: true,
