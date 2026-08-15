@@ -980,10 +980,25 @@
             overflow: hidden;
         }
         .biz-badge-img {
-            width: 76%;
-            height: 76%;
+            /* Madhësia (px) vendoset inline nga JS — shmang mospërputhje % mbi flex item me elementë "replaced". */
             object-fit: contain;
             display: block;
+        }
+        /** Vetëm logo (zoom 21-22): pa sfond të bardhë apo unazë — siç është foto, e zmadhuar në 80% të kutisë. */
+        .bizniset-raw-logo-divicon {
+            background: transparent !important;
+            border: none !important;
+        }
+        .biz-raw-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .biz-raw-logo-img {
+            /* Madhësia (px) vendoset inline nga JS. */
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
         }
         /** Niveli i përgjithësuar (zoom i vogël): pikë e thjeshtë me ngjyrën e kategorisë. */
         .bizniset-dot-divicon {
@@ -2173,13 +2188,9 @@
     map.on("moveend", updateScaleDisplayFinal);
     map.whenReady(updateScaleDisplayFinal);
 
-    // Rindërton markerët e biznesit vetëm kur ndryshon niveli i simbolizimit (jo në çdo hap zoom-i).
-    var lastBizMarkerZoomTier = null;
+    // Rindërton markerët e biznesit në çdo hap zoom-i (niveli "badge" ndryshon madhësinë brenda vetë diapazonit 19-20).
     map.on("zoomend", function() {
-        if (typeof getBizMarkerZoomTier !== "function" || typeof rebuildBiznisetSymbolsLayer !== "function") return;
-        var tier = getBizMarkerZoomTier();
-        if (tier === lastBizMarkerZoomTier) return;
-        lastBizMarkerZoomTier = tier;
+        if (typeof rebuildBiznisetSymbolsLayer !== "function") return;
         rebuildBiznisetSymbolsLayer();
     });
 
@@ -3349,17 +3360,34 @@
         });
     }
 
-    /** Distinktiv (badge) rrethor: logo e barazuar në madhësi (object-fit: contain) + unazë opsionale me ngjyrën e kategorisë. */
-    function buildBiznisetLogoBadgeIcon(logoUrl, ringColor, size, showRing) {
+    /**
+     * Distinktiv (badge) rrethor: logo e barazuar në madhësi (object-fit: contain) + unazë me ngjyrën e kategorisë.
+     * 62% (jo më shumë) që edhe një logo katrore e plotë të mos priten nga skaji i rrumbullakët (rrethi pret
+     * çdo gjë > ~70.7% të diametrit, pasi katrori i brendashkruar ka diagonale më të madhe se diametri përtej kësaj).
+     */
+    function buildBiznisetLogoBadgeIcon(logoUrl, ringColor, size) {
         var s = Math.max(22, Math.min(84, size || 34));
-        var borderStyle = showRing === false ?
-            "border-color:#fff;" :
-            "border-color:" + (ringColor || "#8a7b63") + ";";
-        var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;' + borderStyle + '">' +
-            '<img src="' + logoUrl + '" alt="" class="biz-badge-img">' +
+        var imgSize = Math.round(s * 0.62); // px eksplicite (jo % mbi flex item) — shmang mospërputhje shkallëzimi të shfletuesit
+        var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;border-color:' + (ringColor || "#8a7b63") + ';">' +
+            '<img src="' + logoUrl + '" alt="" class="biz-badge-img" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
             '</span>';
         return L.divIcon({
             className: "bizniset-badge-divicon",
+            html: html,
+            iconSize: [s, s],
+            iconAnchor: [Math.round(s / 2), Math.round(s / 2)]
+        });
+    }
+
+    /** Vetëm logo, pa sfond/rreth — siç është foto origjinale, e zmadhuar. */
+    function buildBiznisetRawLogoIcon(logoUrl, size) {
+        var s = Math.max(40, Math.min(96, size || 64));
+        var imgSize = Math.round(s * 0.8);
+        var html = '<span class="biz-raw-logo" style="width:' + s + 'px;height:' + s + 'px;">' +
+            '<img src="' + logoUrl + '" alt="" class="biz-raw-logo-img" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
+            '</span>';
+        return L.divIcon({
+            className: "bizniset-raw-logo-divicon",
             html: html,
             iconSize: [s, s],
             iconAnchor: [Math.round(s / 2), Math.round(s / 2)]
@@ -3377,10 +3405,12 @@
             return buildBiznisetSymbolIcon(style);
         }
         if (tier === "logo-large") {
-            var szLarge = Math.max(48, Math.min(84, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 4.4)));
-            return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, szLarge, false);
+            var szLarge = Math.max(40, Math.min(96, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 4.6)));
+            return buildBiznisetRawLogoIcon(logoUrl, szLarge);
         }
-        var sz = Math.max(22, Math.min(56, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 2.6)));
+        // Niveli "badge" (zoom 19-20): rritet pak me vetë zoom-in brenda diapazonit, jo vetëm me stilin bazë.
+        var zoomGrowth = 1 + (map.getZoom() - BIZ_ZOOM_TIER_BADGE_MAX + 1) * 0.14;
+        var sz = Math.max(22, Math.min(64, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 2.6 * zoomGrowth)));
         return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, sz);
     }
 
