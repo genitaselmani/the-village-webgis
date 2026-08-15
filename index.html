@@ -3381,7 +3381,7 @@
 
     /** Vetëm logo, pa sfond/rreth — siç është foto origjinale, e zmadhuar. */
     function buildBiznisetRawLogoIcon(logoUrl, size) {
-        var s = Math.max(40, Math.min(160, size || 64));
+        var s = Math.max(40, Math.min(260, size || 64));
         var imgSize = Math.round(s * 0.8);
         var html = '<span class="biz-raw-logo" style="width:' + s + 'px;height:' + s + 'px;">' +
             '<img src="' + logoUrl + '" alt="" class="biz-raw-logo-img" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
@@ -3405,10 +3405,9 @@
             return buildBiznisetSymbolIcon(style);
         }
         if (tier === "logo-large") {
-            // Zmadhohet ndjeshëm në këtë nivel (jo thjesht raporti 80% — vetë kutia duhet të jetë e madhe),
-            // dhe rritet edhe më tej ndërmjet zoom 21 dhe 22.
-            var zoomGrowthLarge = 1 + (map.getZoom() - BIZ_ZOOM_TIER_BADGE_MAX - 1) * 0.18;
-            var szLarge = Math.max(80, Math.min(160, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 9 * zoomGrowthLarge)));
+            // Shumë e madhe në këtë nivel: ~170px në zoom 21, ~210px në zoom 22.
+            var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
+            var szLarge = Math.max(140, Math.min(260, Math.round(170 + largeStep * 40)));
             return buildBiznisetRawLogoIcon(logoUrl, szLarge);
         }
         // Niveli "badge" (zoom 19-20): rritet pak me vetë zoom-in brenda diapazonit, jo vetëm me stilin bazë.
