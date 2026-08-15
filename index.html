@@ -354,10 +354,20 @@
         }
 
         @media (max-width: 768px) {
+            /* Majtas, jo djathtas: kontrollet e Leaflet-it (veriu + zoom) rrinë lart-djathtas dhe
+               më parë butoni i fundit binte nën to. max-width e rezervon atë shtyllë, kështu që
+               shiriti mbështillet në dy rreshta te ekranet e ngushta në vend që të mbivendoset. */
             .map-toolbar {
-                left: auto;
-                right: 12px;
+                left: 12px;
+                right: auto;
                 top: 12px;
+                max-width: calc(100vw - 12px - 56px);
+                gap: 8px;
+            }
+            /* 44px = objektivi minimal i prekjes; 38px ishte i vështirë për t'u qëlluar me gisht. */
+            .map-tool-btn {
+                width: 44px;
+                height: 44px;
             }
         }
 
@@ -1587,15 +1597,23 @@
             min-width: 0;
         }
         @media (max-width: 640px) {
-            footer {
-                grid-template-columns: 1fr;
-                text-align: center;
+            /* Koordinatat përditësohen vetëm me lëvizjen e miut, prandaj në ekran me prekje
+               mbeten përgjithmonë "E = — | N = —". Fshihen që hapësira t'i mbetet hartës. */
+            .footer-coords {
+                display: none;
             }
-            .footer-coords,
-            #bottom-center,
+            footer {
+                grid-template-columns: 1fr auto;
+                gap: 4px 10px;
+                padding: 6px 12px max(6px, var(--safe-bottom));
+            }
+            #bottom-center {
+                justify-self: start;
+                text-align: left;
+            }
             .footer-credit {
-                justify-self: center;
-                text-align: center;
+                justify-self: end;
+                text-align: right;
             }
         }
 
@@ -1688,7 +1706,8 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto;
                 justify-items: center;
-                padding: max(8px, var(--safe-top)) 12px 10px;
+                padding: max(6px, var(--safe-top)) 12px 6px;
+                gap: 4px;
             }
             .header-spacer { display: none; }
             .header-title {
@@ -1709,15 +1728,29 @@
             .header-academic-text {
                 text-align: center;
             }
+            /* Koka zinte deri në 24% të ekranit në telefona të vegjël. Blloku akademik ruhet
+               (është pjesë e identitetit të tezës), por shtypet që hartës t'i mbetet më shumë. */
             .header-academic-logo {
-                width: 48px;
-                height: 48px;
+                width: 34px;
+                height: 34px;
             }
+            .header-academic-inner { gap: 8px; }
+            .header-academic-text { gap: 1px; line-height: 1.2; }
             .header-academic-org,
             .header-academic-faculty { font-size: 9px; }
             .header-academic-meta { font-size: 9px; }
             .header-title strong { font-size: 13px; letter-spacing: -0.01em; }
             .header-title span { font-size: 10px; }
+
+            /* iOS e zmadhon krejt faqen kur fokusohet një fushë me font nën 16px, dhe përdoruesi
+               mbetet i zmadhuar. 16px e parandalon plotësisht. */
+            input[type="search"],
+            input[type="text"],
+            input[type="email"],
+            textarea,
+            select {
+                font-size: 16px;
+            }
 
             .mobile-panel-fab {
                 display: flex;
