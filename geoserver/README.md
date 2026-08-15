@@ -68,7 +68,34 @@ http://IP-E-SERVERIT:8080/geoserver/thevillage/wms?service=WMS&version=1.3.0&req
 http://IP-E-SERVERIT:8080/geoserver/thevillage/wfs?service=WFS&version=2.0.0&request=GetCapabilities
 ```
 
-Provoji edhe në QGIS: `Layer → Add Layer → Add WMS/WMTS Layer` me të njëjtin URL.
+---
+
+## Si i hap dikush tjetër shtresat në QGIS
+
+Personi tjetër nuk ka nevojë për fjalëkalim — shtresat janë të lexueshme anonimisht.
+Mjafton t'i dërgosh njërën nga dy adresat e mësipërme (pa pjesën `?service=...`,
+QGIS e shton vetë):
+
+```
+http://IP-E-SERVERIT:8080/geoserver/thevillage/wms
+http://IP-E-SERVERIT:8080/geoserver/thevillage/wfs
+```
+
+**WMS — harta e vizatuar (e shpejtë, për pamje):**
+1. `Layer → Add Layer → Add WMS/WMTS Layer…`
+2. `New` → jep një emër (p.sh. *The Village*) → ngjit URL-në e WMS → `OK`
+3. `Connect` → shfaqen të 10 shtresat → zgjidh dhe `Add`
+
+**WFS — të dhënat vektoriale (me atribute, të përzgjedhshme):**
+1. `Layer → Add Layer → Add WFS Layer…`
+2. `New` → ngjit URL-në e WFS → `OK` → `Connect`
+3. Zgjidh shtresat → `Add`
+
+Me WFS-në personi merr gjeometrinë dhe atributet e vërteta (emrin e biznesit, kategorinë,
+llojin e stacionit) dhe mund t'i filtrojë a t'i eksportojë. Me WMS merr vetëm pamjen.
+
+Shtresat ofrohen në shumë sisteme referuese, përfshirë **EPSG:9141 (KOSOVAREF01 /
+Balkans zone 7)** dhe EPSG:4326.
 
 ---
 
