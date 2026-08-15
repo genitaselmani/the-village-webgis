@@ -1013,14 +1013,12 @@
             justify-content: center;
             text-align: center;
             box-sizing: border-box;
-            padding: 3px 8px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.92);
+            padding: 0;
             color: #18140f;
             font-weight: 700;
             font-family: inherit;
             line-height: 1.15;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+            text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 5px #fff;
         }
         /** Niveli i përgjithësuar (zoom i vogël): pikë e thjeshtë me ngjyrën e kategorisë. */
         .bizniset-dot-divicon {
@@ -2845,17 +2843,59 @@
             .catch(function(err) { console.error("[data] Rruget nuk u ngarkua:", err); });
         return group;
     }
-    // hekurudha.sld: vijë bazë e zezë + model kryqëzimesh të kuqe (përafruar me dashArray).
-    // Simboli klasik i hekurudhës: vijë e zezë e trashë + "traversa" të bardha të shkurtra — i dallueshëm
-    // qartë nga çdo shtresë tjetër (kafe e rrugëve, gri e ndërtesave, bezhë e kufirit).
+    // Ndërton traversa (segmente pingule me vijën, jo paralele) — simboli klasik i hekurudhës.
+    function buildRailTies(data) {
+        var ties = [];
+        var SPACING_M = 22;
+        var HALF_LEN_M = 2;
+        var R = 6371000;
+        var mLat = (Math.PI / 180) * R;
+
+        function walkLine(coords) {
+            for (var i = 0; i < coords.length - 1; i++) {
+                var lng1 = coords[i][0], lat1 = coords[i][1];
+                var lng2 = coords[i + 1][0], lat2 = coords[i + 1][1];
+                var segLenM = calculateDistance(lat1, lng1, lat2, lng2);
+                if (!segLenM || segLenM < 0.5) continue;
+
+                var mLng = Math.max(1e-6, (Math.PI / 180) * R * Math.cos(((lat1 + lat2) / 2) * Math.PI / 180));
+                var dxM = (lng2 - lng1) * mLng;
+                var dyM = (lat2 - lat1) * mLat;
+                var dirX = dxM / segLenM, dirY = dyM / segLenM;
+                var perpX = -dirY, perpY = dirX; // vektori pingul me vijën
+
+                var t = SPACING_M / 2;
+                while (t < segLenM) {
+                    var plng = lng1 + (dirX * t) / mLng;
+                    var plat = lat1 + (dirY * t) / mLat;
+                    var p1 = [plat + (perpY * HALF_LEN_M) / mLat, plng + (perpX * HALF_LEN_M) / mLng];
+                    var p2 = [plat - (perpY * HALF_LEN_M) / mLat, plng - (perpX * HALF_LEN_M) / mLng];
+                    ties.push([p1, p2]);
+                    t += SPACING_M;
+                }
+            }
+        }
+
+        (data.features || []).forEach(function(f) {
+            var geom = f.geometry;
+            if (!geom) return;
+            if (geom.type === "LineString") walkLine(geom.coordinates);
+            else if (geom.type === "MultiLineString") geom.coordinates.forEach(walkLine);
+        });
+        return ties;
+    }
+
+    // Simboli klasik i hekurudhës: vijë e zezë e vetme + traversa të shkurtra pingule me të —
+    // i dallueshëm qartë nga çdo shtresë tjetër (kafe e rrugëve, gri e ndërtesave, bezhë e kufirit).
     function buildHekurudhaLayer() {
         var group = L.layerGroup();
         loadLocalGeoJSON("RailLines_FR")
             .then(function(data) {
-                var base = L.geoJSON(data, { style: function() { return { color: "#15130f", weight: 5, lineCap: "butt", lineJoin: "round" }; } });
-                var ties = L.geoJSON(data, { style: function() { return { color: "#f4f1e8", weight: 2, dashArray: "2,7", lineCap: "butt" }; } });
+                var base = L.geoJSON(data, { style: function() { return { color: "#15130f", weight: 3, lineCap: "butt", lineJoin: "round" }; } });
                 group.addLayer(base);
-                group.addLayer(ties);
+                buildRailTies(data).forEach(function(pts) {
+                    L.polyline(pts, { color: "#15130f", weight: 2, lineCap: "butt", interactive: false }).addTo(group);
+                });
                 group.geoJsonData = data;
             })
             .catch(function(err) { console.error("[data] RailLines_FR nuk u ngarkua:", err); });
@@ -3491,18 +3531,52 @@
         }
     }
 
-    /** Vetëm tekst (pa foto) — përdoret p.sh. për "Tualet", ku s'ka kuptim logo/markë tregtare. */
-    function buildBiznisetTextIcon(text, boxW, boxH) {
+    /** Vetëm tekst (pa foto, pa sfond) — përdoret p.sh. për "Tualet", ku s'ka kuptim logo/markë tregtare. */
+    function buildBiznisetTextIcon(text, boxW, boxH, angleDeg) {
         var w = Math.max(50, Math.round(boxW || 80));
         var h = Math.max(26, Math.round(boxH || 32));
         var fontSize = Math.max(11, Math.min(20, Math.round(h * 0.34)));
-        var html = '<span class="biz-text-label" style="width:' + w + 'px;height:' + h + 'px;font-size:' + fontSize + 'px;">' + text + '</span>';
+        var rot = angleDeg || 0;
+        var html = '<span class="biz-text-label" style="width:' + w + 'px;height:' + h + 'px;font-size:' + fontSize + 'px;transform:rotate(' + rot + 'deg);">' + text + '</span>';
         return L.divIcon({
             className: "bizniset-text-divicon",
             html: html,
             iconSize: [w, h],
             iconAnchor: [Math.round(w / 2), Math.round(h / 2)]
         });
+    }
+
+    /** Kthen këndin (gradë, konvencion CSS — rrotullim orar) e brinjës më të gjatë të poligonit Bizneset_ndara të biznesit. */
+    function getBiznisetPolygonAngleDeg(feature) {
+        if (typeof findBiznesetNdaraFeatureByBizniset !== "function") return 0;
+        try {
+            var ndara = findBiznesetNdaraFeatureByBizniset(feature);
+            if (!ndara || !ndara.geometry) return 0;
+            var geom = ndara.geometry;
+            var ring = null;
+            if (geom.type === "Polygon") ring = geom.coordinates[0];
+            else if (geom.type === "MultiPolygon") ring = geom.coordinates[0][0];
+            if (!ring || ring.length < 2) return 0;
+            var meanLat = ring.reduce(function(s, c) { return s + c[1]; }, 0) / ring.length;
+            var mLng = Math.cos(meanLat * Math.PI / 180) || 1;
+            var bestLenSq = -1, bestAngle = 0;
+            for (var i = 0; i < ring.length - 1; i++) {
+                var dx = (ring[i + 1][0] - ring[i][0]) * mLng;
+                var dy = ring[i + 1][1] - ring[i][1];
+                var lenSq = dx * dx + dy * dy;
+                if (lenSq > bestLenSq) {
+                    bestLenSq = lenSq;
+                    // -dy: konverton këndin gjeografik (Y lart) në rrotullim orar CSS (Y poshtë).
+                    bestAngle = Math.atan2(-dy, dx) * 180 / Math.PI;
+                }
+            }
+            // Sillet brenda [-90, 90] që teksti të mos dalë "kokëposhtë".
+            if (bestAngle > 90) bestAngle -= 180;
+            if (bestAngle < -90) bestAngle += 180;
+            return bestAngle;
+        } catch (e) {
+            return 0;
+        }
     }
 
     /** Marker i biznesit: zgjedh pikë / distinktiv / logo e madhe sipas nivelit të zoom-it aktual. */
@@ -3514,12 +3588,13 @@
         // Rast special: "Tualet" shfaqet vetëm si tekst, pa foto — vetëm për këtë biznes, të tjerët si më parë.
         var bizTitle = biznisetFeatureTitle(feature.properties || {}, 0);
         if (String(bizTitle).trim().toLowerCase() === "tualet") {
+            var tAngle = getBiznisetPolygonAngleDeg(feature);
             if (tier === "logo-large") {
                 var tBox = getBiznisetPolygonPixelBox(feature);
-                if (tBox) return buildBiznisetTextIcon("Tualet", tBox.w * 0.62, tBox.h * 0.62);
-                return buildBiznisetTextIcon("Tualet", 90, 36);
+                if (tBox) return buildBiznisetTextIcon("Tualet", tBox.w * 0.62, tBox.h * 0.62, tAngle);
+                return buildBiznisetTextIcon("Tualet", 90, 36, tAngle);
             }
-            return buildBiznisetTextIcon("Tualet", 68, 28);
+            return buildBiznisetTextIcon("Tualet", 68, 28, tAngle);
         }
         var logoUrl = resolveLocalLogoUrlForBizniset(feature);
         if (!logoUrl) {
