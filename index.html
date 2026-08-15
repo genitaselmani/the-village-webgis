@@ -674,20 +674,17 @@
         }
 
         .legend-sym--rail {
-            background-color: #eceff1;
-            border: 1px solid #546e7a;
-            background-image:
-                repeating-linear-gradient(
-                    90deg,
-                    transparent 0px,
-                    transparent 4px,
-                    #37474f 4px,
-                    #37474f 5px
-                ),
-                linear-gradient(#263238, #263238),
-                linear-gradient(#263238, #263238);
-            background-size: 100% 6px, 80% 2px, 80% 2px;
-            background-position: center, center 28%, center 72%;
+            background-color: #15130f;
+            border: 1px solid #0a0906;
+            background-image: repeating-linear-gradient(
+                90deg,
+                transparent 0px,
+                transparent 3px,
+                #f4f1e8 3px,
+                #f4f1e8 4.5px
+            );
+            background-size: 100% 60%;
+            background-position: center;
             background-repeat: no-repeat;
         }
         .legend-text {
@@ -1004,6 +1001,26 @@
             object-fit: contain;
             display: block;
             filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
+        }
+        /** Etiketë vetëm-tekst (pa foto) — p.sh. "Tualet". */
+        .bizniset-text-divicon {
+            background: transparent !important;
+            border: none !important;
+        }
+        .biz-text-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+            padding: 3px 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #18140f;
+            font-weight: 700;
+            font-family: inherit;
+            line-height: 1.15;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
         }
         /** Niveli i përgjithësuar (zoom i vogël): pikë e thjeshtë me ngjyrën e kategorisë. */
         .bizniset-dot-divicon {
@@ -2829,14 +2846,16 @@
         return group;
     }
     // hekurudha.sld: vijë bazë e zezë + model kryqëzimesh të kuqe (përafruar me dashArray).
+    // Simboli klasik i hekurudhës: vijë e zezë e trashë + "traversa" të bardha të shkurtra — i dallueshëm
+    // qartë nga çdo shtresë tjetër (kafe e rrugëve, gri e ndërtesave, bezhë e kufirit).
     function buildHekurudhaLayer() {
         var group = L.layerGroup();
         loadLocalGeoJSON("RailLines_FR")
             .then(function(data) {
-                var base = L.geoJSON(data, { style: function() { return { color: "#000000", weight: 4, lineCap: "round", lineJoin: "round" }; } });
-                var hatch = L.geoJSON(data, { style: function() { return { color: "#ff0000", weight: 1.4, dashArray: "2,9" }; } });
+                var base = L.geoJSON(data, { style: function() { return { color: "#15130f", weight: 5, lineCap: "butt", lineJoin: "round" }; } });
+                var ties = L.geoJSON(data, { style: function() { return { color: "#f4f1e8", weight: 2, dashArray: "2,7", lineCap: "butt" }; } });
                 group.addLayer(base);
-                group.addLayer(hatch);
+                group.addLayer(ties);
                 group.geoJsonData = data;
             })
             .catch(function(err) { console.error("[data] RailLines_FR nuk u ngarkua:", err); });
@@ -3472,11 +3491,35 @@
         }
     }
 
+    /** Vetëm tekst (pa foto) — përdoret p.sh. për "Tualet", ku s'ka kuptim logo/markë tregtare. */
+    function buildBiznisetTextIcon(text, boxW, boxH) {
+        var w = Math.max(50, Math.round(boxW || 80));
+        var h = Math.max(26, Math.round(boxH || 32));
+        var fontSize = Math.max(11, Math.min(20, Math.round(h * 0.34)));
+        var html = '<span class="biz-text-label" style="width:' + w + 'px;height:' + h + 'px;font-size:' + fontSize + 'px;">' + text + '</span>';
+        return L.divIcon({
+            className: "bizniset-text-divicon",
+            html: html,
+            iconSize: [w, h],
+            iconAnchor: [Math.round(w / 2), Math.round(h / 2)]
+        });
+    }
+
     /** Marker i biznesit: zgjedh pikë / distinktiv / logo e madhe sipas nivelit të zoom-it aktual. */
     function buildBiznisetMarkerIcon(feature, style) {
         var tier = getBizMarkerZoomTier();
         if (tier === "dot") {
             return buildBiznisetDotIcon(style);
+        }
+        // Rast special: "Tualet" shfaqet vetëm si tekst, pa foto — vetëm për këtë biznes, të tjerët si më parë.
+        var bizTitle = biznisetFeatureTitle(feature.properties || {}, 0);
+        if (String(bizTitle).trim().toLowerCase() === "tualet") {
+            if (tier === "logo-large") {
+                var tBox = getBiznisetPolygonPixelBox(feature);
+                if (tBox) return buildBiznisetTextIcon("Tualet", tBox.w * 0.62, tBox.h * 0.62);
+                return buildBiznisetTextIcon("Tualet", 90, 36);
+            }
+            return buildBiznisetTextIcon("Tualet", 68, 28);
         }
         var logoUrl = resolveLocalLogoUrlForBizniset(feature);
         if (!logoUrl) {
