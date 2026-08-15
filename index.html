@@ -1848,9 +1848,9 @@
                     </div>
                     <div class="bizniset-personalize-row">
                         <label>Madhësia e pikës
-                            <input type="range" id="biz-point-size" min="6" max="28" step="1" value="10">
+                            <input type="range" id="biz-point-size" min="6" max="28" step="1" value="18">
                         </label>
-                        <span id="biz-point-size-label" aria-live="polite">10 px</span>
+                        <span id="biz-point-size-label" aria-live="polite">18 px</span>
                     </div>
                     <div class="bizniset-personalize-row bizniset-personalize-row--wide">
                     </div>
@@ -1950,7 +1950,7 @@
     /** Vlerat fillestare të simbolit të biznesit (pa logo lokale) — pikë e vogël, pa kufi të trashë. */
     var BIZ_POINT_DEFAULTS = {
         shape: "circle",
-        size: 10,
+        size: 18,
         fill: "#9b59b6",
         stroke: "#2c3e50",
         strokeW: 0
@@ -3611,8 +3611,8 @@
             var szLarge = Math.max(140, Math.min(260, Math.round(170 + largeStep * 40)));
             return buildBiznisetRawLogoIcon(logoUrl, szLarge);
         }
-        // Niveli "badge" (zoom 19, i vetmi në këtë nivel): parazgjedhja (madhësi bazë 10) → 18px.
-        var sz = Math.max(10, Math.min(48, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 1.8)));
+        // Niveli "badge" (zoom 19, i vetmi në këtë nivel): madhësia e distinktivit = "Madhësia e pikës" (parazgjedhje 18px).
+        var sz = Math.max(10, Math.min(48, Math.round(style.size != null ? style.size : BIZ_POINT_DEFAULTS.size)));
         return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, sz);
     }
 
