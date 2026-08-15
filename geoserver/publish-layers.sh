@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# Publikon të gjitha shtresat e The Village në GeoServer përmes REST API.
+# Idempotent: mund ta ekzekutosh sa herë të duash pa e prishur konfigurimin ekzistues.
+#
+# Përdorimi:
+#   GEOSERVER_URL=http://IP-JOTE:8080/geoserver \
+#   GEOSERVER_USER=admin GEOSERVER_PASS=fjalekalimi \
+#   ./publish-layers.sh
+
+set -euo pipefail
+
+GS_URL="${GEOSERVER_URL:-http://localhost:8080/geoserver}"
+GS_USER="${GEOSERVER_USER:-admin}"
+GS_PASS="${GEOSERVER_PASS:?Vendos GEOSERVER_PASS}"
+
+WORKSPACE="thevillage"
+NAMESPACE="https://genitaselmani.github.io/the-village-webgis"
+STORE="thevillage_gpkg"
+# Shtegu i GeoPackage-ut BRENDA kontejnerit (siç montohet te docker-compose.yml).
+GPKG_PATH="file:///opt/geoserver_data/data/thevillage.gpkg"
+
+LAYERS=(
+  Kufiri_village
+  Parkingu
+  Rruget
+  RailLines_FR
+  Bizneset_ndara
+  Bizniset
+  Pike_informuse
+  Sherbimet_e_transportit
+  Sherbimet_e_emergjences
+  Institucionet_administrative
+)
+
+curl_gs() { curl -sS -u "$GS_USER:$GS_PASS" "$@"; }
+
+# Kthen kodin HTTP pa e shtypur trupin — për të dalluar "ekziston" nga "nuk ekziston".
+http_code() { curl -sS -o /dev/null -w "%{http_code}" -u "$GS_USER:$GS_PASS" "$@"; }
+
+echo "==> GeoServer: $GS_URL"
+
+# 1) Workspace
+if [ "$(http_code "$GS_URL/rest/workspaces/$WORKSPACE")" = "200" ]; then
+  echo "  workspace '$WORKSPACE' ekziston"
+else
+  curl_gs -X POST -H "Content-Type: application/json" \
+    -d "{\"workspace\":{\"name\":\"$WORKSPACE\"}}" \
+    "$GS_URL/rest/workspaces" >/dev/null
+  echo "  workspace '$WORKSPACE' u krijua"
+fi
+
+# Namespace-i i lidhur me workspace-in (URI-ja që del në GetCapabilities).
+curl_gs -X PUT -H "Content-Type: application/json" \
+  -d "{\"namespace\":{\"prefix\":\"$WORKSPACE\",\"uri\":\"$NAMESPACE\"}}" \
+  "$GS_URL/rest/namespaces/$WORKSPACE" >/dev/null || true
+
+# 2) Datastore mbi GeoPackage
+if [ "$(http_code "$GS_URL/rest/workspaces/$WORKSPACE/datastores/$STORE")" = "200" ]; then
+  echo "  datastore '$STORE' ekziston"
+else
+  curl_gs -X POST -H "Content-Type: application/json" -d "{
+    \"dataStore\": {
+      \"name\": \"$STORE\",
+      \"connectionParameters\": {
+        \"entry\": [
+          {\"@key\":\"database\",\"\$\":\"$GPKG_PATH\"},
+          {\"@key\":\"dbtype\",\"\$\":\"geopkg\"}
+        ]
+      }
+    }
+  }" "$GS_URL/rest/workspaces/$WORKSPACE/datastores" >/dev/null
+  echo "  datastore '$STORE' u krijua"
+fi
+
+# 3) Shtresat
+for layer in "${LAYERS[@]}"; do
+  if [ "$(http_code "$GS_URL/rest/workspaces/$WORKSPACE/datastores/$STORE/featuretypes/$layer")" = "200" ]; then
+    echo "  shtresa '$layer' ekziston"
+    continue
+  fi
+  # srs=EPSG:4326 me reprojectionPolicy FORCE_DECLARED: të dhënat janë në WGS84,
+  # ndërsa GeoServer i riprojekton vetë në çdo CRS që kërkon klienti (edhe në 9141).
+  curl_gs -X POST -H "Content-Type: application/json" -d "{
+    \"featureType\": {
+      \"name\": \"$layer\",
+      \"nativeName\": \"$layer\",
+      \"srs\": \"EPSG:4326\",
+      \"projectionPolicy\": \"FORCE_DECLARED\",
+      \"enabled\": true
+    }
+  }" "$GS_URL/rest/workspaces/$WORKSPACE/datastores/$STORE/featuretypes" >/dev/null
+  echo "  shtresa '$layer' u publikua"
+done
+
+echo ""
+echo "==> Gati. Endpoint-et:"
+echo "  WMS  GetCapabilities: $GS_URL/$WORKSPACE/wms?service=WMS&version=1.3.0&request=GetCapabilities"
+echo "  WFS  GetCapabilities: $GS_URL/$WORKSPACE/wfs?service=WFS&version=2.0.0&request=GetCapabilities"
