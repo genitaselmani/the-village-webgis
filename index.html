@@ -687,16 +687,6 @@
             background-position: center;
             background-repeat: no-repeat;
         }
-        .legend-sym--transport {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            line-height: 1;
-            background: #eef1f5;
-            border: 1px solid #c7ccd4;
-            border-radius: 50%;
-        }
         /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë. */
         .transport-station-divicon {
             background: transparent !important;
@@ -3425,10 +3415,6 @@
             ttInp.type = "checkbox";
             ttInp.checked = false; // e ndalur (off) kur hapet webgis
             ttInp.id = lid;
-            var ttSym = document.createElement("span");
-            ttSym.className = "legend-sym legend-sym--transport";
-            ttSym.setAttribute("aria-hidden", "true");
-            ttSym.textContent = "🚌";
             var ttNameLbl = document.createElement("span");
             ttNameLbl.className = "legend-text";
             ttNameLbl.innerHTML = '<span class="legend-name">' + key + '</span>';
@@ -3440,7 +3426,6 @@
             ttCollapseBtn.title = "Palos / hap kategoritë";
             ttCollapseBtn.textContent = "▾";
             ttParentRow.appendChild(ttInp);
-            ttParentRow.appendChild(ttSym);
             ttParentRow.appendChild(ttNameLbl);
             ttParentRow.appendChild(ttCollapseBtn);
 
