@@ -3454,7 +3454,7 @@
      * çdo gjë > ~70.7% të diametrit, pasi katrori i brendashkruar ka diagonale më të madhe se diametri përtej kësaj).
      */
     function buildBiznisetLogoBadgeIcon(logoUrl, ringColor, size) {
-        var s = Math.max(22, Math.min(84, size || 34));
+        var s = Math.max(10, Math.min(84, size || 34));
         var imgSize = Math.round(s * 0.62); // px eksplicite (jo % mbi flex item) — shmang mospërputhje shkallëzimi të shfletuesit
         var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;border-color:' + (ringColor || "#8a7b63") + ';">' +
             '<img src="' + logoUrl + '" alt="" class="biz-badge-img" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
@@ -3611,9 +3611,8 @@
             var szLarge = Math.max(140, Math.min(260, Math.round(170 + largeStep * 40)));
             return buildBiznisetRawLogoIcon(logoUrl, szLarge);
         }
-        // Niveli "badge" (zoom 19-20): rritet pak me vetë zoom-in brenda diapazonit, jo vetëm me stilin bazë.
-        var zoomGrowth = 1 + (map.getZoom() - BIZ_ZOOM_TIER_BADGE_MAX + 1) * 0.14;
-        var sz = Math.max(22, Math.min(64, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 2.6 * zoomGrowth)));
+        // Niveli "badge" (zoom 19, i vetmi në këtë nivel): parazgjedhja (madhësi bazë 10) → 14px.
+        var sz = Math.max(10, Math.min(40, Math.round((style.size != null ? style.size : BIZ_POINT_DEFAULTS.size) * 1.4)));
         return buildBiznisetLogoBadgeIcon(logoUrl, style.fill, sz);
     }
 
