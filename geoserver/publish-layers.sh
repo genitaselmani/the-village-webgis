@@ -16,8 +16,13 @@ GS_PASS="${GEOSERVER_PASS:?Vendos GEOSERVER_PASS}"
 WORKSPACE="thevillage"
 NAMESPACE="https://genitaselmani.github.io/the-village-webgis"
 STORE="thevillage_gpkg"
-# Shtegu i GeoPackage-ut BRENDA kontejnerit (siç montohet te docker-compose.yml).
-GPKG_PATH="file:///opt/geoserver_data/data/thevillage.gpkg"
+# Shtegu i GeoPackage-ut ASHTU SIÇ E SHEH GEOSERVER-i (jo si e sheh ky skript).
+#   Docker  → /opt/geoserver_data/data/thevillage.gpkg  (parazgjedhje)
+#   Windows → GPKG_PATH='C:/rruga/e/plote/thevillage.gpkg'
+# KUJDES: përdor GJITHMONË vija të pjerrëta përpara (/). Backslash-et e Windows-it
+# janë sekuenca ikjeje në JSON dhe shtegu arrin i gëlltitur te GeoServer-i.
+GPKG_PATH="${GPKG_PATH:-file:///opt/geoserver_data/data/thevillage.gpkg}"
+GPKG_PATH="${GPKG_PATH//\\//}"
 
 LAYERS=(
   Kufiri_village
@@ -36,6 +41,20 @@ curl_gs() { curl -sS -u "$GS_USER:$GS_PASS" "$@"; }
 
 # Kthen kodin HTTP pa e shtypur trupin — për të dalluar "ekziston" nga "nuk ekziston".
 http_code() { curl -sS -o /dev/null -w "%{http_code}" -u "$GS_USER:$GS_PASS" "$@"; }
+
+# Si curl_gs, por ndalon me mesazh nëse GeoServer-i e refuzon kërkesën. Pa këtë,
+# një shteg i gabuar kalon në heshtje dhe shtresat duken "të publikuara" kur s'janë.
+post_or_fail() {
+  local desc="$1"; shift
+  local body code
+  body=$(curl -sS -w $'\n%{http_code}' -u "$GS_USER:$GS_PASS" "$@")
+  code="${body##*$'\n'}"
+  if [ "$code" -ge 400 ] 2>/dev/null; then
+    echo "  GABIM te $desc (HTTP $code):" >&2
+    echo "${body%$'\n'*}" | head -3 >&2
+    exit 1
+  fi
+}
 
 echo "==> GeoServer: $GS_URL"
 
@@ -58,7 +77,7 @@ curl_gs -X PUT -H "Content-Type: application/json" \
 if [ "$(http_code "$GS_URL/rest/workspaces/$WORKSPACE/datastores/$STORE")" = "200" ]; then
   echo "  datastore '$STORE' ekziston"
 else
-  curl_gs -X POST -H "Content-Type: application/json" -d "{
+  post_or_fail "krijimin e datastore-it" -X POST -H "Content-Type: application/json" -d "{
     \"dataStore\": {
       \"name\": \"$STORE\",
       \"connectionParameters\": {
@@ -68,7 +87,7 @@ else
         ]
       }
     }
-  }" "$GS_URL/rest/workspaces/$WORKSPACE/datastores" >/dev/null
+  }" "$GS_URL/rest/workspaces/$WORKSPACE/datastores"
   echo "  datastore '$STORE' u krijua"
 fi
 
@@ -80,7 +99,7 @@ for layer in "${LAYERS[@]}"; do
   fi
   # srs=EPSG:4326 me reprojectionPolicy FORCE_DECLARED: të dhënat janë në WGS84,
   # ndërsa GeoServer i riprojekton vetë në çdo CRS që kërkon klienti (edhe në 9141).
-  curl_gs -X POST -H "Content-Type: application/json" -d "{
+  post_or_fail "publikimin e shtresës '$layer'" -X POST -H "Content-Type: application/json" -d "{
     \"featureType\": {
       \"name\": \"$layer\",
       \"nativeName\": \"$layer\",
@@ -88,7 +107,7 @@ for layer in "${LAYERS[@]}"; do
       \"projectionPolicy\": \"FORCE_DECLARED\",
       \"enabled\": true
     }
-  }" "$GS_URL/rest/workspaces/$WORKSPACE/datastores/$STORE/featuretypes" >/dev/null
+  }" "$GS_URL/rest/workspaces/$WORKSPACE/datastores/$STORE/featuretypes"
   echo "  shtresa '$layer' u publikua"
 done
 
