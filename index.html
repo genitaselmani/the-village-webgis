@@ -657,9 +657,14 @@
         }
         .pika-informuese-leaflet-marker .pika-informuese-hit {
             box-sizing: border-box;
-            width: 44px;
-            height: 44px;
+            width: 34px;
+            height: 46px;
             cursor: pointer;
+            display: block;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+        }
+        .pika-informuese-leaflet-marker .pika-informuese-pin-svg {
+            display: block;
         }
 
         .leaflet-container .leaflet-popup.pika-informuese-popup .leaflet-popup-content {
@@ -2845,14 +2850,20 @@
             } catch (eRem) {}
             pikaInformueseMarker = null;
         }
-        var pinHtml = '<div class="pika-informuese-hit" role="presentation" aria-hidden="true"></div>';
+        // Pin i dukshëm (i njëjti simbol si në legjendë) — më parë e vetmja pjesë ishte "hit zone"-i i padukshëm,
+        // ndërsa vetë ikona vizuale vinte nga shtresa WMS e hequr gjatë migrimit nga GeoServer.
+        var pinSvg = '<svg class="pika-informuese-pin-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="34" height="46" focusable="false" aria-hidden="true">' +
+            '<path fill="#e53935" stroke="#fff" stroke-width="1" d="M12 0C5.37 0 0 5.12 0 11.45c0 5.95 9.1 18.02 11.14 20.42.53.6 1.19.9 1.86.9s1.33-.3 1.86-.9C16.9 29.47 24 18.15 24 11.45 24 5.12 18.63 0 12 0z"/>' +
+            '<circle cx="12" cy="11" r="4" fill="#6d1f28"/>' +
+            "</svg>";
+        var pinHtml = '<div class="pika-informuese-hit" role="presentation" aria-hidden="true">' + pinSvg + '</div>';
         pikaInformueseMarker = L.marker(pikaNisjes, {
             icon: L.divIcon({
                 className: "pika-informuese-leaflet-marker",
                 html: pinHtml,
-                iconSize: [44, 44],
-                iconAnchor: [22, 22],
-                popupAnchor: [0, -20]
+                iconSize: [34, 46],
+                iconAnchor: [17, 46],
+                popupAnchor: [0, -40]
             }),
             interactive: true,
             keyboard: true,
