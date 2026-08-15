@@ -688,15 +688,13 @@
             background-repeat: no-repeat;
         }
         .legend-sym--transport {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            line-height: 1;
-            background: #eef1f5;
-            border: 1px solid #c7ccd4;
+            border-radius: 50%;
+            background: #2563eb;
+            border: 1.5px solid #fff;
+            box-shadow: 0 0 0 1px #c7ccd4;
         }
-        /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë. */
+        /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë:
+            formë + ngjyrë të dallueshme (rreth/katror/romb), jo emoji. */
         .transport-station-divicon {
             background: transparent !important;
             border: none !important;
@@ -705,13 +703,33 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            box-sizing: border-box;
             border: 2px solid #fff;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-            font-size: 15px;
-            line-height: 1;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+        }
+        .transport-station-badge--circle {
+            border-radius: 50%;
+        }
+        .transport-station-badge--square {
+            border-radius: 4px;
+        }
+        .transport-station-badge--diamond {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            transform: rotate(45deg);
+        }
+        .transport-station-badge-label {
+            display: block;
+            color: #fff;
+            font: 800 10px/1 "Inter", system-ui, sans-serif;
+            letter-spacing: -0.02em;
+            user-select: none;
+        }
+        .transport-station-badge--diamond .transport-station-badge-label {
+            transform: rotate(-45deg);
         }
         .legend-text {
             flex: 1;
@@ -3041,23 +3059,29 @@
 
     var biznisetDisplayGroup = L.layerGroup([biznisetSymbolsLayer]).addTo(map);
 
-    /** Simbolizimi i kategorizuar për stacionet e shërbimeve të transportit (autobus / tren / taksi). */
+    /** Simbolizimi i kategorizuar për stacionet e shërbimeve të transportit (autobus / tren / taksi):
+     * forma + ngjyrë të dallueshme, jo emoji — më e thjeshtë dhe konsistente nëpër shfletues/OS. */
     var TRANSPORT_STATION_STYLES = {
-        "Stacion i autobusëve": { color: "#2563eb", icon: "🚌" },
-        "Stacion i trenit": { color: "#7c3aed", icon: "🚆" },
-        "Stacion i taksive": { color: "#f59e0b", icon: "🚕" }
+        "Stacion i autobusëve": { color: "#2563eb", shape: "circle", label: "A" },
+        "Stacion i trenit": { color: "#7c3aed", shape: "square", label: "T" },
+        "Stacion i taksive": { color: "#f59e0b", shape: "diamond", label: "X" }
     };
+    var TRANSPORT_STATION_ORDER = ["Stacion i autobusëve", "Stacion i trenit", "Stacion i taksive"];
+    var transportLegendEnabled = { "Stacion i autobusëve": true, "Stacion i trenit": true, "Stacion i taksive": true };
+
     function transportStationStyle(lloji) {
-        return TRANSPORT_STATION_STYLES[lloji] || { color: "#7f8c8d", icon: "📍" };
+        return TRANSPORT_STATION_STYLES[lloji] || { color: "#7f8c8d", shape: "circle", label: "?" };
     }
     function buildTransportStationIcon(lloji) {
         var st = transportStationStyle(lloji);
-        var html = '<span class="transport-station-badge" style="background:' + st.color + ';">' + st.icon + '</span>';
+        var shapeClass = "transport-station-badge transport-station-badge--" + st.shape;
+        var html = '<span class="' + shapeClass + '" style="background:' + st.color + ';">' +
+            '<span class="transport-station-badge-label">' + st.label + '</span></span>';
         return L.divIcon({
             className: "transport-station-divicon",
             html: html,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
             popupAnchor: [0, -14]
         });
     }
@@ -3065,6 +3089,17 @@
     var transportStationsLayer = L.layerGroup();
     var transportStationsGeoJson = null;
     var transportStationsLoadPromise = null;
+    var transportStationMarkers = []; // { lloji, marker }
+
+    // Aplikon filtrin e legjendës (sipas kategorisë) te shtresa e stacioneve në hartë.
+    function applyTransportLegendToMap() {
+        transportStationMarkers.forEach(function(entry) {
+            var shouldShow = transportLegendEnabled[entry.lloji] !== false;
+            var has = transportStationsLayer.hasLayer(entry.marker);
+            if (shouldShow && !has) transportStationsLayer.addLayer(entry.marker);
+            else if (!shouldShow && has) transportStationsLayer.removeLayer(entry.marker);
+        });
+    }
 
     // Ngarkon (njëherë) stacionet e transportit dhe ndërton markerët e kategorizuar në transportStationsLayer.
     function loadTransportStations() {
@@ -3083,8 +3118,9 @@
                         L.DomEvent.stopPropagation(ev);
                         routeToTransportStation(f, latlng, marker);
                     });
-                    transportStationsLayer.addLayer(marker);
+                    transportStationMarkers.push({ lloji: lloji, marker: marker });
                 });
+                applyTransportLegendToMap();
                 return data;
             })
             .catch(function(err) {
@@ -3095,7 +3131,8 @@
         return transportStationsLoadPromise;
     }
 
-    // Zmadhon/zvogëlon hartën në një nivel zoom-i ku shihen njëkohësisht të gjitha stacionet + The Village.
+    // Zmadhon/zvogëlon hartën në një nivel zoom-i ku shihen njëkohësisht të gjitha stacionet + The Village;
+    // fsheh pikat e bizneseve në këtë nivel (zoom shumë i vogël për t'i shfaqur kuptimshëm).
     function zoomToShowAllTransportStations() {
         var pts = [];
         if (pikaNisjes && pikaNisjes.length === 2) pts.push(L.latLng(pikaNisjes[0], pikaNisjes[1]));
@@ -3105,15 +3142,28 @@
                 if (c) pts.push(L.latLng(c[1], c[0]));
             });
         }
+        biznisetLayerHiddenForTransport = map.hasLayer(layers["Bizneset"]);
+        if (biznisetLayerHiddenForTransport) {
+            map.removeLayer(layers["Bizneset"]);
+            var biznisetCbEl = document.getElementById(layerIdForKey("Bizneset"));
+            if (biznisetCbEl) biznisetCbEl.checked = false;
+        }
         if (!pts.length) return;
         map.setMinZoom(1);
         map.fitBounds(L.latLngBounds(pts), { padding: [50, 50] });
     }
 
-    // Kthen hartën te niveli fillestar i zoom-it ku shihet vetëm The Village.
+    // Kthen hartën te niveli fillestar i zoom-it ku shihet vetëm The Village; rikthen bizneset nëse ishin të fshehura.
+    var biznisetLayerHiddenForTransport = false;
     function resetMapToVillageView() {
         map.setView(MAP_INITIAL_CENTER, MAP_INITIAL_ZOOM, { animate: true });
         map.setMinZoom(MAP_INITIAL_ZOOM);
+        if (biznisetLayerHiddenForTransport) {
+            map.addLayer(layers["Bizneset"]);
+            var biznisetCbEl = document.getElementById(layerIdForKey("Bizneset"));
+            if (biznisetCbEl) biznisetCbEl.checked = true;
+            biznisetLayerHiddenForTransport = false;
+        }
     }
 
     // Vizaton rrugën më të shkurtër (këmbë) nga "Ti je këtu" (The Village) deri te stacioni i klikuar.
@@ -3370,9 +3420,13 @@
             return;
         }
         if (key === "Sherbimet e Transportit") {
-            var ttLabel = document.createElement("label");
-            ttLabel.className = "legend-row legend-filter-row";
-            ttLabel.setAttribute("data-legend-search", key.toLowerCase());
+            var ttWrap = document.createElement("div");
+            ttWrap.className = "legend-bizneset-wrap legend-filter-row";
+            ttWrap.setAttribute("data-legend-search", (
+                key + " " + TRANSPORT_STATION_ORDER.join(" ")
+            ).toLowerCase());
+            var ttParentRow = document.createElement("div");
+            ttParentRow.className = "legend-row legend-row--parent";
             var ttInp = document.createElement("input");
             ttInp.type = "checkbox";
             ttInp.checked = false; // e ndalur (off) kur hapet webgis
@@ -3380,28 +3434,78 @@
             var ttSym = document.createElement("span");
             ttSym.className = "legend-sym legend-sym--transport";
             ttSym.setAttribute("aria-hidden", "true");
-            ttSym.textContent = "🚌";
-            var ttTxt = document.createElement("span");
-            ttTxt.className = "legend-text";
-            ttTxt.innerHTML = '<span class="legend-name"></span>';
-            ttTxt.querySelector(".legend-name").textContent = key;
-            ttLabel.appendChild(ttInp);
-            ttLabel.appendChild(ttSym);
-            ttLabel.appendChild(ttTxt);
+            var ttNameLbl = document.createElement("span");
+            ttNameLbl.className = "legend-text";
+            ttNameLbl.innerHTML = '<span class="legend-name">' + key + '</span>';
+            var ttCollapseBtn = document.createElement("button");
+            ttCollapseBtn.type = "button";
+            ttCollapseBtn.className = "legend-collapse-btn";
+            ttCollapseBtn.setAttribute("aria-expanded", "true");
+            ttCollapseBtn.setAttribute("aria-controls", "legend-transport-subs");
+            ttCollapseBtn.title = "Palos / hap kategoritë";
+            ttCollapseBtn.textContent = "▾";
+            ttParentRow.appendChild(ttInp);
+            ttParentRow.appendChild(ttSym);
+            ttParentRow.appendChild(ttNameLbl);
+            ttParentRow.appendChild(ttCollapseBtn);
+
+            var ttSubs = document.createElement("div");
+            ttSubs.className = "legend-bizneset-subs";
+            ttSubs.id = "legend-transport-subs";
+            TRANSPORT_STATION_ORDER.forEach(function(lloji) {
+                var st = transportStationStyle(lloji);
+                var subLbl = document.createElement("label");
+                subLbl.className = "legend-row legend-row--sub";
+                subLbl.setAttribute("data-legend-search", lloji.toLowerCase());
+                var subCb = document.createElement("input");
+                subCb.type = "checkbox";
+                subCb.className = "legend-transport-subcb";
+                subCb.checked = transportLegendEnabled[lloji] !== false;
+                subCb.disabled = true; // aktivizohet vetëm kur shtresa kryesore është e ndezur
+                var dot = document.createElement("span");
+                dot.className = "legend-dot";
+                dot.style.backgroundColor = st.color;
+                var sn = document.createElement("span");
+                sn.className = "legend-name";
+                sn.textContent = lloji;
+                subLbl.appendChild(subCb);
+                subLbl.appendChild(dot);
+                subLbl.appendChild(sn);
+                subCb.addEventListener("change", function() {
+                    transportLegendEnabled[lloji] = this.checked;
+                    applyTransportLegendToMap();
+                });
+                ttSubs.appendChild(subLbl);
+            });
+            ttCollapseBtn.addEventListener("click", function(ev) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                var open = ttSubs.classList.toggle("is-collapsed");
+                ttCollapseBtn.setAttribute("aria-expanded", open ? "false" : "true");
+                ttCollapseBtn.textContent = open ? "▸" : "▾";
+            });
+
             ttInp.addEventListener("change", function() {
+                var subs = ttSubs.querySelectorAll(".legend-transport-subcb");
                 if (this.checked) {
                     loadTransportStations().then(function() {
+                        applyTransportLegendToMap();
                         map.addLayer(transportStationsLayer);
                         zoomToShowAllTransportStations();
+                        subs.forEach(function(cb) { cb.disabled = false; });
                     }).catch(function() {});
                 } else {
                     map.removeLayer(transportStationsLayer);
                     if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
                     if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
                     resetMapToVillageView();
+                    subs.forEach(function(cb) { cb.disabled = true; });
                 }
             });
-            layersDiv.appendChild(ttLabel);
+
+            ttWrap.appendChild(ttParentRow);
+            ttWrap.appendChild(ttSubs);
+            layersDiv.appendChild(ttWrap);
             return;
         }
         var label = document.createElement("label");
