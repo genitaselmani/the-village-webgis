@@ -608,11 +608,11 @@
             user-select: none;
         }
         .legend-sym--road {
-            background: #fff;
-            border: 1px solid #90a4ae;
+            background: #e8d5a8;
+            border: 1px solid #3a2412;
             background-image:
-                linear-gradient(#7b8794, #7b8794),
-                linear-gradient(#7b8794, #7b8794);
+                linear-gradient(#3a2412, #3a2412),
+                linear-gradient(#3a2412, #3a2412);
             background-size: 85% 3px, 85% 3px;
             background-position: center 32%, center 68%;
             background-repeat: no-repeat;
@@ -2781,8 +2781,11 @@
     var PARKINGU_STYLE = { color: "#265980", weight: 2, lineJoin: "bevel", fill: true, fillColor: "#dfdfdf", fillOpacity: 0.85 };
     var NDARA_STYLE = { color: "#5f5f5f", weight: 1.2, fill: true, fillColor: "#a8a8a8", fillOpacity: 0.32 };
 
-    // Rruget.sld: dy vija të mbivendosura (jashtme e errët + brendshme e çelët) sipas Kategoria.
-    /** Shkallëzimi i gjerësisë së rrugëve sipas zoom-it: më hollë në zoom të ulët, më të trasha në zoom të lartë. */
+    /**
+     * Rrugët: kasing i errët ngjyrë kafe të thellë (jo gri neutrale) + mbushje krem/bezhë e ngrohtë —
+     * paleta ndryshon nga gri e ndërtesave (NDARA_STYLE) dhe gri e çelët e parkingut, që rrugët të
+     * dallohen qartë si shtresë më vete. Gjerësia shkallëzohet me zoom (më hollë në zoom të ulët).
+     */
     function roadZoomWidthScale() {
         var z = map.getZoom();
         var t = (z - MAP_INITIAL_ZOOM) / (MAP_MAX_ZOOM - MAP_INITIAL_ZOOM);
@@ -2793,15 +2796,15 @@
         var kat = feature && feature.properties && feature.properties.Kategoria;
         var s = roadZoomWidthScale();
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#020003", weight: Math.max(1, 14 * s), opacity: 0.55, lineCap: "round", lineJoin: "round" } :
-            { color: "#1e1a14", weight: Math.max(1, 10 * s), lineCap: "round", lineJoin: "round" };
+            { color: "#4a2f18", weight: Math.max(1, 14 * s), opacity: 0.55, lineCap: "round", lineJoin: "round" } :
+            { color: "#3a2412", weight: Math.max(1, 10 * s), lineCap: "round", lineJoin: "round" };
     }
     function roadFillStyle(feature) {
         var kat = feature && feature.properties && feature.properties.Kategoria;
         var s = roadZoomWidthScale();
         return kat === "Rruget_per_ne_Village" ?
-            { color: "#d7d6d9", weight: Math.max(0.5, 11 * s), lineCap: "round", lineJoin: "round" } :
-            { color: "#b0b0b0", weight: Math.max(0.5, 8 * s), lineCap: "round", lineJoin: "round" };
+            { color: "#f2e4c8", weight: Math.max(0.5, 11 * s), lineCap: "round", lineJoin: "round" } :
+            { color: "#e8d5a8", weight: Math.max(0.5, 8 * s), lineCap: "round", lineJoin: "round" };
     }
     // Shtresa "Rrugët": dy pasazhe stilizimi mbi të njëjtat të dhëna + tooltip me emrin e rrugës.
     function buildRruguetLayer() {
