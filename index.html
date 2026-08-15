@@ -1041,6 +1041,23 @@
             margin: 0 -4px;
             -webkit-overflow-scrolling: touch;
         }
+        .bizniset-category-header {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            margin: 16px 0 8px;
+            padding: 4px 2px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--mall-muted);
+            background: #fff;
+            border-bottom: 1px solid var(--mall-border);
+        }
+        .bizniset-category-header:first-child {
+            margin-top: 0;
+        }
         .bizniset-card {
             border: 1px solid var(--mall-border);
             border-radius: 14px;
@@ -4296,6 +4313,7 @@
         listEl.innerHTML = "";
         var shown = 0;
         var total = features ? features.length : 0;
+        var lastCategory = null;
         sortBiznisetFeaturesByCategory(features).forEach(function(f, i) {
             var props = f.properties || {};
             if (q) {
@@ -4305,6 +4323,14 @@
                 }
             }
             shown++;
+            var cat = categoryFromBiznisetProps(props) || "Pa kategori";
+            if (cat !== lastCategory) {
+                lastCategory = cat;
+                var catHeader = document.createElement("h3");
+                catHeader.className = "bizniset-category-header";
+                catHeader.textContent = cat;
+                listEl.appendChild(catHeader);
+            }
             var article = document.createElement("article");
             article.className = "bizniset-card";
             article._biznisetFeature = f;
