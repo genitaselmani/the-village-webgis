@@ -2222,12 +2222,11 @@
         var title = biznisetFeatureTitle(props, 0);
         var cat = categoryFromBiznisetProps(props);
         var info = (photoInfoMap && photoInfoMap[title]) || null;
-        var photoUrl = info && info.photo ? info.photo : resolveLocalLogoUrlForBizniset(bizFeature);
-        var isFallback = !info || !info.photo || info.fallback;
+        var photoUrl = resolveLocalLogoUrlForBizniset(bizFeature);
         var desc = (info && info.description) ? info.description : "";
         var html = '<div class="biz-map-popup">';
         if (photoUrl) {
-            html += '<img class="biz-map-popup-img"' + (isFallback ? ' data-fallback="1"' : '') +
+            html += '<img class="biz-map-popup-img" data-fallback="1"' +
                 ' src="' + escapeHtmlText(photoUrl) + '" alt="" onerror="this.style.display=\'none\'">';
         }
         html += '<h4 class="biz-map-popup-title">' + escapeHtmlText(title) + '</h4>';
