@@ -2846,8 +2846,8 @@
     // Ndërton traversa (segmente pingule me vijën, jo paralele) — simboli klasik i hekurudhës.
     function buildRailTies(data) {
         var ties = [];
-        var SPACING_M = 22;
-        var HALF_LEN_M = 2;
+        var SPACING_M = 12;
+        var HALF_LEN_M = 1.7;
         var R = 6371000;
         var mLat = (Math.PI / 180) * R;
 
@@ -2891,10 +2891,10 @@
         var group = L.layerGroup();
         loadLocalGeoJSON("RailLines_FR")
             .then(function(data) {
-                var base = L.geoJSON(data, { style: function() { return { color: "#15130f", weight: 3, lineCap: "butt", lineJoin: "round" }; } });
+                var base = L.geoJSON(data, { style: function() { return { color: "#15130f", weight: 1.8, lineCap: "butt", lineJoin: "round" }; } });
                 group.addLayer(base);
                 buildRailTies(data).forEach(function(pts) {
-                    L.polyline(pts, { color: "#15130f", weight: 2, lineCap: "butt", interactive: false }).addTo(group);
+                    L.polyline(pts, { color: "#15130f", weight: 1.5, lineCap: "butt", interactive: false }).addTo(group);
                 });
                 group.geoJsonData = data;
             })
