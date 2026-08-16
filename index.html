@@ -697,6 +697,25 @@
             background-position: center;
             background-repeat: no-repeat;
         }
+        .legend-sym--report {
+            border-radius: 50%;
+            background: #e74c3c;
+            border: 2px solid #7b241c;
+        }
+        .legend-clear-btn {
+            flex: 0 0 auto;
+            margin-left: auto;
+            padding: 3px 8px;
+            font: 600 10px/1.2 inherit;
+            color: #7b241c;
+            background: #fdecea;
+            border: 1px solid #f5c6c0;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+        .legend-clear-btn:hover { background: #fbd9d5; }
+        .legend-clear-btn[hidden] { display: none; }
+
         /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë. */
         .service-point-divicon {
             background: transparent !important;
@@ -2618,6 +2637,8 @@
         try {
             localStorage.setItem(PROBLEMS_STORAGE_KEY, JSON.stringify(list));
         } catch (e) {}
+        // Pika e vetme ku ndryshon numri i raporteve — mban të përditësuar butonin e legjendës.
+        if (typeof updateProblemReportsClearBtn === "function") updateProblemReportsClearBtn();
     }
 
     // Gjeneron një ID unik për një raport problemi.
@@ -2646,6 +2667,29 @@
                 addPersistedProblemMarker(item);
             });
         } catch (e) {}
+    }
+
+    /** Butoni „Fshi të gjitha“ te legjenda; fshihet kur s'ka asnjë raport të ruajtur. */
+    var problemReportsClearBtnEl = null;
+    function countStoredProblemReports() {
+        try {
+            var raw = localStorage.getItem(PROBLEMS_STORAGE_KEY);
+            if (!raw) return 0;
+            var list = JSON.parse(raw);
+            return Array.isArray(list) ? list.length : 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+    function updateProblemReportsClearBtn() {
+        if (problemReportsClearBtnEl) problemReportsClearBtnEl.hidden = countStoredProblemReports() === 0;
+    }
+    // Heq njëherësh të gjitha raportet — nga harta dhe nga memoria lokale.
+    function clearAllProblemReports() {
+        try {
+            localStorage.removeItem(PROBLEMS_STORAGE_KEY);
+        } catch (e) {}
+        if (typeof problemsReportLayer !== "undefined") problemsReportLayer.clearLayers();
     }
 
     // Hiq një raport nga memoria lokale dhe nga shtresa e hartës.
@@ -3314,7 +3358,8 @@
         })(),
         "Sherbimet e Transportit": serviceLayerByKey("Sherbimet e Transportit").layer,
         "Sherbimet e Emergjences": serviceLayerByKey("Sherbimet e Emergjences").layer,
-        "Institucionet Administrative": serviceLayerByKey("Institucionet Administrative").layer
+        "Institucionet Administrative": serviceLayerByKey("Institucionet Administrative").layer,
+        "Raportet e problemeve": problemsReportLayer
     };
 
     /**
@@ -3405,7 +3450,8 @@
         "Parkingu",
         "Rrugët",
         "Kufiret e Bizneseve",
-        "Hekurudha"
+        "Hekurudha",
+        "Raportet e problemeve"
     ];
     var LAYER_LEGEND_SYM = {
         "Kufiri": "legend-sym--kufi-v",
@@ -3413,7 +3459,8 @@
         "Rrugët": "legend-sym--road",
         "Kufiret e Bizneseve": "legend-sym--ndara",
         "Pika Informuese": "legend-sym--info-point",
-        "Hekurudha": "legend-sym--rail"
+        "Hekurudha": "legend-sym--rail",
+        "Raportet e problemeve": "legend-sym--report"
     };
 
     // Krijon elementin vizual të simbolit në legjendë për një shtresë të caktuar.
@@ -3654,6 +3701,33 @@
         inp.checked = true;
         inp.id = lid;
         var symEl = buildLegendSwatchElForLayer(key);
+        if (key === "Raportet e problemeve") {
+            var clearBtn = document.createElement("button");
+            clearBtn.type = "button";
+            clearBtn.className = "legend-clear-btn";
+            clearBtn.textContent = "Fshi të gjitha";
+            clearBtn.title = "Hiq të gjitha raportet e ruajtura";
+            clearBtn.addEventListener("click", function(ev) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                if (!confirm("Të fshihen të gjitha raportet e ruajtura?")) return;
+                clearAllProblemReports();
+                updateProblemReportsClearBtn();
+            });
+            var txtR = document.createElement("span");
+            txtR.className = "legend-text";
+            txtR.innerHTML = '<span class="legend-name"></span>';
+            txtR.querySelector(".legend-name").textContent = key;
+            label.appendChild(inp);
+            label.appendChild(symEl);
+            label.appendChild(txtR);
+            label.appendChild(clearBtn);
+            wireLayerCheckbox(inp, key);
+            layersDiv.appendChild(label);
+            problemReportsClearBtnEl = clearBtn;
+            updateProblemReportsClearBtn();
+            return;
+        }
         var txt = document.createElement("span");
         txt.className = "legend-text";
         txt.innerHTML = '<span class="legend-name"></span>';
@@ -5137,6 +5211,12 @@
         return null;
     }
 
+    /** Në desktop paneli është gjithnjë i dukshëm; në telefon vetëm kur fleta e poshtme është hapur. */
+    function isSidebarVisible() {
+        if (window.innerWidth >= 769) return true;
+        return document.body.classList.contains("app-sidebar-open");
+    }
+
     function focusBiznisetCardByFeature(bizFeature) {
         var listEl = document.getElementById("bizniset-list");
         if (!listEl || !bizFeature) return;
@@ -5145,9 +5225,14 @@
         for (i = 0; i < articles.length; i++) {
             if (articles[i]._biznisetFeature === bizFeature) {
                 articles[i].click();
-                try {
-                    articles[i].scrollIntoView({ block: "nearest", behavior: "smooth" });
-                } catch (e2) {}
+                // Vetëm kur paneli është vërtet i dukshëm. Në telefon ai rri poshtë ekranit
+                // dhe scrollIntoView e detyronte shfletuesin ta rrëshqiste faqen për ta zbuluar —
+                // dukej sikur paneli hapej vetë sa herë klikohej një biznes në hartë.
+                if (isSidebarVisible()) {
+                    try {
+                        articles[i].scrollIntoView({ block: "nearest", behavior: "smooth" });
+                    } catch (e2) {}
+                }
                 return;
             }
         }
