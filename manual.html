@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Manuali i përdorimit — The Village WebGIS</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#5f6b76; --accent:#0f2847; --rule:#dde3e9; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 16px 56px;
+    font: 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: #fff;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  header.cover {
+    margin: 0 -16px 24px;
+    padding: 28px 16px 22px;
+    background: var(--accent);
+    color: #fff;
+  }
+  .cover h1 { margin: 0 0 6px; font-size: 23px; line-height: 1.2; }
+  .cover p { margin: 0; color: #bfd0e4; font-size: 14px; }
+  dl.meta { display: grid; gap: 6px; margin: 0 0 28px; font-size: 13px; }
+  dl.meta > div { display: grid; grid-template-columns: 116px 1fr; gap: 10px; }
+  dl.meta dt { margin: 0; font-weight: 600; color: var(--muted); }
+  dl.meta dd { margin: 0; }
+  h2 {
+    margin: 30px 0 12px;
+    padding-bottom: 6px;
+    font-size: 17px;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+  p.lead { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 13.5px; }
+  thead th {
+    background: var(--accent); color: #fff; text-align: left;
+    padding: 8px 10px; font-size: 12.5px; font-weight: 700;
+  }
+  tbody th, tbody td {
+    padding: 9px 10px; vertical-align: top;
+    border-bottom: 1px solid var(--rule);
+  }
+  tbody th { text-align: left; color: var(--accent); font-weight: 700; }
+  tbody tr:nth-child(odd) { background: #fafbfc; }
+  .pdf-link { margin: 32px 0 0; font-size: 13px; color: var(--muted); }
+  .pdf-link a { color: var(--accent); }
+
+  /* Në telefon tabelat kthehen në blloqe — pa rrëshqitje anash. */
+  @media (max-width: 560px) {
+    table, thead, tbody, tr, th, td { display: block; width: 100% !important; }
+    thead { display: none; }
+    tbody tr {
+      margin: 0 0 12px; padding: 10px 12px;
+      border: 1px solid var(--rule); border-radius: 10px; background: #fafbfc;
+    }
+    tbody th, tbody td { border: 0; padding: 2px 0; }
+    tbody th { font-size: 14.5px; margin-bottom: 4px; }
+    tbody td { color: #33404b; }
+    tbody td + td { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--rule); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="cover">
+    <h1>Manuali i përdorimit</h1>
+    <p>WebGIS — The Village Shopping &amp; Fun, Ferizaj</p>
+  </header>
+  <dl class="meta"><div><dt>Universiteti</dt><dd>Universiteti i Prishtinës — Fakulteti i Inxhinierisë së Ndërtimit</dd></div><div><dt>Dega / Lënda</dt><dd>Gjeodezi — WebGIS</dd></div><div><dt>Profesori</dt><dd>Prof. Asoc. Dr. Bashkim Idrizi</dd></div><div><dt>Punoi</dt><dd>Genita Selmani</dd></div></dl>
+<h2>Pamja e ndërfaqes</h2>
+<table>
+<thead><tr><th style="width:30%">Pjesa</th><th style="width:70%">Çfarë përmban</th></tr></thead>
+<tbody>
+<tr><th scope="row">Paneli majtas</th><td>Dy skeda: “Shtresat” (çfarë shfaqet në hartë) dhe “Bizneset” (lista e bizneseve).</td></tr>
+<tr><th scope="row">Shiriti i veglave</th><td>Shtatë butona mbi hartë: ruajtje, shkarkim, matje, raportim, navigim, fshirje rruge, manual.</td></tr>
+<tr><th scope="row">Lart-djathtas</th><td>Shigjeta e veriut dhe butonat + / - për zmadhim.</td></tr>
+<tr><th scope="row">Poshtë</th><td>Koordinatat e kursorit (EPSG:9141) dhe shkalla aktuale e hartës.</td></tr>
+</tbody>
+</table>
+<h2>Veglat e hartës</h2>
+<p class="lead">Shtatë butonat mbi hartë, sipas radhës nga majtas.</p>
+<table>
+<thead><tr><th style="width:20%">Vegla</th><th style="width:33%">Për çfarë shërben</th><th style="width:47%">Si përdoret</th></tr></thead>
+<tbody>
+<tr><th scope="row">Ruaj foton</th><td>Ruan pamjen e hartës si figurë PNG.</td><td>Kliko një herë. Fotoja shkarkohet me shtresat që janë të ndezura.</td></tr>
+<tr><th scope="row">Shkarko GeoJSON</th><td>Merr të dhënat për punë në QGIS ose ArcGIS.</td><td>Kliko një herë; skedari shkarkohet menjëherë.</td></tr>
+<tr><th scope="row">Matja</th><td>Mat distancë ose sipërfaqe mbi hartë.</td><td>Kliko » zgjidh “Mat distancën” ose “Mat sipërfaqen” » kliko pikat në hartë. Rezultati del në një kuti; shenja × e fshin.</td></tr>
+<tr><th scope="row">Raporto problem</th><td>Shënon një problem në një pikë të caktuar.</td><td>Kliko » kliko vendin në hartë » plotëso formularin » ruaj. Pika del e kuqe.</td></tr>
+<tr><th scope="row">Navigim</th><td>Vizaton rrugën deri te një biznes.</td><td>Kliko » pastaj kliko biznesin. Del rruga me distancë dhe kohë ecjeje.</td></tr>
+<tr><th scope="row">Hiq rrugën</th><td>Pastron rrugën e vizatuar.</td><td>Kliko një herë.</td></tr>
+<tr><th scope="row">Manuali</th><td>Hap këtë dokument.</td><td>Kliko; mbyllet me × lart-djathtas.</td></tr>
+</tbody>
+</table>
+<h2>Paneli “Shtresat”</h2>
+<p class="lead">Çdo shtresë ka një kuti zgjedhjeje: hiq shenjën dhe shtresa fshihet nga harta.</p>
+<table>
+<thead><tr><th style="width:34%">Shtresa</th><th style="width:66%">Çfarë tregon</th></tr></thead>
+<tbody>
+<tr><th scope="row">Pika Informuese</th><td>Pika “TI JE KËTU” — prej saj niset çdo llogaritje rruge.</td></tr>
+<tr><th scope="row">Bizneset</th><td>Të gjitha bizneset. Shigjeta hap kategoritë, që mund të fiken veç e veç.</td></tr>
+<tr><th scope="row">Shërbimet e Transportit</th><td>Stacioni i autobusëve, i trenit dhe stacionet e taksive.</td></tr>
+<tr><th scope="row">Shërbimet e Emergjencës</th><td>Spitali, stacioni policor, zjarrfikësit.</td></tr>
+<tr><th scope="row">Institucionet Administrative</th><td>Komuna, Gjykata themelore, Posta.</td></tr>
+<tr><th scope="row">Kufiri / Parkingu / Rrugët</th><td>Kufiri i kompleksit, sipërfaqet e parkimit, rrjeti rrugor.</td></tr>
+<tr><th scope="row">Kufiret e Bizneseve</th><td>Ndarja e brendshme e njësive afariste.</td></tr>
+<tr><th scope="row">Hekurudha</th><td>Linja hekurudhore pranë kompleksit.</td></tr>
+<tr><th scope="row">Raportet e problemeve</th><td>Pikat që keni raportuar. Butoni “Fshi të gjitha” i heq njëherësh.</td></tr>
+</tbody>
+</table>
+<p class="lead">Kur ndizet një shtresë shërbimesh, harta zvogëlohet vetvetiu sa të duket edhe qendra edhe pikat e asaj shtrese, dhe pikat e bizneseve fshihen përkohësisht. Kur fiket, gjithçka kthehet si më parë.</p>
+<h2>Paneli “Bizneset”</h2>
+<table>
+<thead><tr><th style="width:30%">Veprimi</th><th style="width:70%">Si bëhet</th></tr></thead>
+<tbody>
+<tr><th scope="row">Gjej një biznes</th><td>Shkruaj emrin te fusha “Kërko”. Mund të shkruash edhe kategorinë, p.sh. “gastronomi”.</td></tr>
+<tr><th scope="row">Shiko listën</th><td>Bizneset janë të grupuara sipas kategorisë, me emrin e kategorisë si titull.</td></tr>
+<tr><th scope="row">Zgjidh një biznes</th><td>Kliko emrin në listë — harta zmadhohet mbi të dhe e thekson.</td></tr>
+<tr><th scope="row">Ndrysho pamjen</th><td>Te “Personalizim” ndryshohen ngjyra, transparenca, forma dhe madhësia e simboleve.</td></tr>
+<tr><th scope="row">Kthe si ishte</th><td>Butoni “Rivendos standardet” kthen cilësimet fillestare.</td></tr>
+</tbody>
+</table>
+<h2>Klikimi mbi hartë</h2>
+<table>
+<thead><tr><th style="width:30%">Kur klikon mbi</th><th style="width:70%">Çfarë ndodh</th></tr></thead>
+<tbody>
+<tr><th scope="row">Një biznes</th><td>Hapet një dritare me logon, kategorinë dhe përshkrimin e shkurtër të biznesit.</td></tr>
+<tr><th scope="row">Një stacion transporti</th><td>Vizatohet rruga më e shkurtër këmbësore nga qendra, me distancë dhe kohë ecjeje.</td></tr>
+<tr><th scope="row">Spital / polici / komunë</th><td>E njëjta gjë — rruga deri tek ajo pikë.</td></tr>
+<tr><th scope="row">Një raport të kuq</th><td>Shfaqet përshkrimi i problemit dhe butoni për ta hequr.</td></tr>
+</tbody>
+</table>
+<h2>Si duken bizneset</h2>
+<p class="lead">Simboli ndryshon sipas sa afër je, që harta të mbetet e lexueshme.</p>
+<table>
+<thead><tr><th style="width:30%">Kur je</th><th style="width:70%">Bizneset duken si</th></tr></thead>
+<tbody>
+<tr><th scope="row">Larg (pamja fillestare)</th><td>Pika me ngjyrën e kategorisë.</td></tr>
+<tr><th scope="row">Mesatarisht afër</th><td>Rreth me ngjyrën e kategorisë dhe logon brenda.</td></tr>
+<tr><th scope="row">Shumë afër</th><td>Vetëm logoja, e vendosur mbi objektin.</td></tr>
+</tbody>
+</table>
+<h2>Në telefon</h2>
+<table>
+<thead><tr><th style="width:30%">Veprimi</th><th style="width:70%">Si bëhet</th></tr></thead>
+<tbody>
+<tr><th scope="row">Hap panelin</th><td>Butoni i rrumbullakët poshtë-djathtas. Prek sërish ose jashtë tij për ta mbyllur.</td></tr>
+<tr><th scope="row">Zmadho hartën</th><td>Me dy gishta, ose me butonat + / -.</td></tr>
+<tr><th scope="row">Shiko një biznes</th><td>Prek biznesin — dritarja hapet pa e mbuluar hartën.</td></tr>
+</tbody>
+</table>
+<h2>Nëse diçka nuk shkon</h2>
+<table>
+<thead><tr><th style="width:36%">Problemi</th><th style="width:64%">Zgjidhja</th></tr></thead>
+<tbody>
+<tr><th scope="row">Harta nuk shfaqet</th><td>Kontrollo lidhjen me internetin.</td></tr>
+<tr><th scope="row">Nuk shoh ndryshimet e reja</th><td>Rifresko me Ctrl + R.</td></tr>
+<tr><th scope="row">Bizneset nuk duken</th><td>Sigurohu që shtresa “Bizneset” është e ndezur dhe se s’është fikur ndonjë kategori.</td></tr>
+<tr><th scope="row">Bizneset u zhdukën papritur</th><td>Ndoshta është ndezur një shtresë shërbimesh — fike atë.</td></tr>
+<tr><th scope="row">Rruga nuk vizatohet</th><td>Prit derisa harta të ngarkohet plotësisht dhe provo sërish.</td></tr>
+<tr><th scope="row">Fotoja del e zbrazët</th><td>Prit ngarkimin e plotë të hartës para se ta ruash.</td></tr>
+</tbody>
+</table>
+  <p class="pdf-link">Për shtyp: <a href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener">shkarko manualin si PDF</a>.</p>
+</div>
+</body>
+</html>

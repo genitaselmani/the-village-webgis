@@ -19,6 +19,7 @@
     <!-- html2canvas për screenshot -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -209,26 +210,10 @@
         }
         .manual-overlay[hidden] { display: none; }
         .manual-overlay__frame {
-            position: relative;
-            z-index: 1;
             width: 100%;
             height: 100%;
             border: 0;
-            background: #eceff2;
-        }
-        /* Rri poshtë kornizës; duket vetëm nëse shfletuesi s'e vizaton dot PDF-në brenda faqes. */
-        .manual-overlay__fallback {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 24px;
-            font-size: 13px;
-            color: #5f6b76;
+            background: #fff;
         }
         /* Noton mbi PDF-në, që mbyllja të jetë gjithmonë brenda dorës. */
         .manual-overlay__close {
@@ -1995,9 +1980,6 @@
     </div>
     <div id="manual-overlay" class="manual-overlay" hidden role="dialog" aria-modal="true" aria-label="Manuali i përdorimit">
         <iframe class="manual-overlay__frame" id="manual-frame" title="Manuali i përdorimit"></iframe>
-        <p class="manual-overlay__fallback">
-            Nëse manuali nuk shfaqet këtu, <a href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener">shkarkoje</a>.
-        </p>
         <button type="button" class="manual-overlay__close" id="manual-close" aria-label="Mbyll manualin dhe kthehu te harta">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
@@ -3005,7 +2987,9 @@
         });
     }
 
-    /** Manuali: hapet brenda faqes që të ketë gjithmonë një rrugë kthimi te harta. */
+    /** Manuali: hapet brenda faqes që të ketë gjithmonë një rrugë kthimi te harta.
+     *  Përmbajtja është HTML, jo PDF — shfletuesit në telefon shfaqin vetëm faqen e parë
+     *  të një PDF-je brenda faqes. Skedari PDF mbetet i lidhur brenda manualit, për shtyp. */
     (function initManualOverlay() {
         var openBtn = document.getElementById("manual-open");
         var overlay = document.getElementById("manual-overlay");
@@ -3014,8 +2998,8 @@
         if (!openBtn || !overlay || !closeBtn || !frame) return;
 
         function open() {
-            // Burimi vendoset vetëm në hapje, që PDF-ja të mos shkarkohet sa herë hapet harta.
-            if (!frame.getAttribute("src")) frame.setAttribute("src", "Manuali_i_perdorimit.pdf");
+            // Ngarkohet vetëm herën e parë, jo sa herë hapet harta.
+            if (!frame.getAttribute("src")) frame.setAttribute("src", "manual.html");
             overlay.hidden = false;
             closeBtn.focus();
         }
