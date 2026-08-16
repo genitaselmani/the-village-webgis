@@ -192,6 +192,12 @@
         @keyframes mapToolPulse {
             50% { opacity: 1; }
         }
+        /* Manuali është një <a> drejt PDF-së, jo <button>: heq stilin e parazgjedhur të linkut. */
+        a.map-tool-btn {
+            text-decoration: none;
+            color: #454545;
+            box-sizing: border-box; /* <button> e ka si parazgjedhje, <a> jo — pa të del 2px më i gjerë */
+        }
         .map-tool-btn svg {
             width: 20px;
             height: 20px;
@@ -1901,6 +1907,11 @@
             aria-label="Hiq rrugën e vizatuar nga harta">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
         </button>
+        <a class="map-tool-btn map-tool-btn--manual" href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener"
+            title="Manuali i përdorimit të WebGIS-it (PDF)"
+            aria-label="Manuali i përdorimit të WebGIS-it (PDF)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H18a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M4 17.5A1.5 1.5 0 0 1 5.5 16H19"/><path d="M8 7h7M8 10.5h7"/></svg>
+        </a>
     </div>
     <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
     <button type="button" id="mobile-panel-fab" class="mobile-panel-fab" aria-controls="sidebar" aria-expanded="false" aria-label="Hap menunë e hartës">☰</button>
