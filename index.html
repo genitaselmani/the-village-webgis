@@ -722,6 +722,27 @@
         .legend-clear-btn:hover { background: #fbd9d5; }
         .legend-clear-btn[hidden] { display: none; }
 
+        /** Pika e raportit të problemit. Vizatohet si marker (jo si formë vektoriale), që të rrijë
+            mbi markerët e bizneseve — përndryshe klikimi mbi të kapej nga logot dhe s'hiqej dot. */
+        .problem-report-divicon {
+            background: transparent !important;
+            border: none !important;
+        }
+        .problem-report-dot {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #e74c3c;
+            border: 2px solid #7b241c;
+            box-sizing: border-box;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+            cursor: pointer;
+        }
+        .problem-report-dot--draft {
+            border-color: #922b21;
+        }
+
         /** Marker i kategorizuar për stacionet e transportit (autobus/tren/taksi) në hartë. */
         .service-point-divicon {
             background: transparent !important;
@@ -2730,15 +2751,28 @@
     }
 
     // Shton një marker të kuq për një raport të ruajtur dhe lidh popup-in me veprimin „Hiq“.
+    /** Ikona e pikës së raportit; `draft` = pika e përkohshme para se raporti të ruhet. */
+    function buildProblemReportIcon(draft) {
+        var s = draft ? 18 : 16;
+        return L.divIcon({
+            className: "problem-report-divicon",
+            html: '<span class="problem-report-dot' + (draft ? " problem-report-dot--draft" : "") + '"></span>',
+            iconSize: [s, s],
+            iconAnchor: [Math.round(s / 2), Math.round(s / 2)],
+            popupAnchor: [0, -Math.round(s / 2)]
+        });
+    }
+
+    /** Mbi markerët e bizneseve (pa zhvendosje) dhe mbi pikën informuese (800). */
+    var PROBLEM_REPORT_Z = 1200;
+
     function addPersistedProblemMarker(item) {
         if (!item.id) item.id = generateProblemReportId();
         var ll = L.latLng(item.lat, item.lng);
-        var m = L.circleMarker(ll, {
-            radius: 8,
-            color: "#7b241c",
-            weight: 2,
-            fillColor: "#e74c3c",
-            fillOpacity: 0.95
+        var m = L.marker(ll, {
+            icon: buildProblemReportIcon(false),
+            zIndexOffset: PROBLEM_REPORT_Z,
+            title: "Raport problemi — kliko për ta hequr"
         }).addTo(problemsReportLayer);
         m._problemReportId = item.id;
         var html =
@@ -2788,12 +2822,10 @@
             map.removeLayer(problemDraftMarker);
             problemDraftMarker = null;
         }
-        problemDraftMarker = L.circleMarker(latlng, {
-            radius: 9,
-            color: "#922b21",
-            weight: 2,
-            fillColor: "#e74c3c",
-            fillOpacity: 0.95
+        problemDraftMarker = L.marker(latlng, {
+            icon: buildProblemReportIcon(true),
+            zIndexOffset: PROBLEM_REPORT_Z,
+            interactive: false
         }).addTo(map);
 
         var today = new Date().toISOString().slice(0, 10);
