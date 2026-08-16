@@ -198,6 +198,91 @@
             color: #454545;
             box-sizing: border-box; /* <button> e ka si parazgjedhje, <a> jo — pa të del 2px më i gjerë */
         }
+
+        /** Manuali hapet brenda aplikacionit, jo në skedë të re: në telefon skeda e re e PDF-së
+            shpesh s'ka kthim të qartë te harta. Ky mbivendosje ka gjithmonë butonin e mbylljes. */
+        .manual-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: #eceff2;
+            display: flex;
+            flex-direction: column;
+        }
+        .manual-overlay[hidden] { display: none; }
+        .manual-overlay__bar {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: max(10px, var(--safe-top)) 12px 10px;
+            background: #0f2847;
+            color: #fff;
+        }
+        .manual-overlay__title {
+            flex: 1 1 auto;
+            min-width: 0;
+            font-weight: 700;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .manual-overlay__link {
+            flex: 0 0 auto;
+            color: #c9d6e6;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+        .manual-overlay__close {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+            cursor: pointer;
+        }
+        .manual-overlay__close:hover { background: rgba(255, 255, 255, 0.24); }
+        .manual-overlay__close svg {
+            width: 22px;
+            height: 22px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+        }
+        .manual-overlay__body {
+            flex: 1 1 auto;
+            position: relative;
+            min-height: 0;
+        }
+        .manual-overlay__frame {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            background: #eceff2;
+        }
+        /* Rri poshtë kornizës; duket vetëm nëse shfletuesi s'e vizaton dot PDF-në brenda faqes. */
+        .manual-overlay__fallback {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            font-size: 13px;
+            color: #5f6b76;
+        }
         .map-tool-btn svg {
             width: 20px;
             height: 20px;
@@ -1928,11 +2013,26 @@
             aria-label="Hiq rrugën e vizatuar nga harta">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
         </button>
-        <a class="map-tool-btn map-tool-btn--manual" href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener"
-            title="Manuali i përdorimit të WebGIS-it (PDF)"
-            aria-label="Manuali i përdorimit të WebGIS-it (PDF)">
+        <button type="button" class="map-tool-btn map-tool-btn--manual" id="manual-open"
+            title="Manuali i përdorimit të WebGIS-it"
+            aria-label="Manuali i përdorimit të WebGIS-it">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H18a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M4 17.5A1.5 1.5 0 0 1 5.5 16H19"/><path d="M8 7h7M8 10.5h7"/></svg>
-        </a>
+        </button>
+    </div>
+    <div id="manual-overlay" class="manual-overlay" hidden role="dialog" aria-modal="true" aria-label="Manuali i përdorimit">
+        <div class="manual-overlay__bar">
+            <span class="manual-overlay__title">Manuali i përdorimit</span>
+            <a class="manual-overlay__link" href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener">Hap veçmas</a>
+            <button type="button" class="manual-overlay__close" id="manual-close" aria-label="Mbyll manualin dhe kthehu te harta">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <div class="manual-overlay__body">
+            <iframe class="manual-overlay__frame" id="manual-frame" title="Manuali i përdorimit"></iframe>
+            <p class="manual-overlay__fallback">
+                Nëse manuali nuk shfaqet këtu, <a href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener">hape veçmas ose shkarkoje</a>.
+            </p>
+        </div>
     </div>
     <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
     <button type="button" id="mobile-panel-fab" class="mobile-panel-fab" aria-controls="sidebar" aria-expanded="false" aria-label="Hap menunë e hartës">☰</button>
@@ -2936,6 +3036,32 @@
             syncMapCursorAfterProblemExit();
         });
     }
+
+    /** Manuali: hapet brenda faqes që të ketë gjithmonë një rrugë kthimi te harta. */
+    (function initManualOverlay() {
+        var openBtn = document.getElementById("manual-open");
+        var overlay = document.getElementById("manual-overlay");
+        var closeBtn = document.getElementById("manual-close");
+        var frame = document.getElementById("manual-frame");
+        if (!openBtn || !overlay || !closeBtn || !frame) return;
+
+        function open() {
+            // Burimi vendoset vetëm në hapje, që PDF-ja të mos shkarkohet sa herë hapet harta.
+            if (!frame.getAttribute("src")) frame.setAttribute("src", "Manuali_i_perdorimit.pdf");
+            overlay.hidden = false;
+            closeBtn.focus();
+        }
+        function close() {
+            overlay.hidden = true;
+            openBtn.focus();
+        }
+
+        openBtn.addEventListener("click", open);
+        closeBtn.addEventListener("click", close);
+        document.addEventListener("keydown", function(ev) {
+            if (ev.key === "Escape" && !overlay.hidden) close();
+        });
+    })();
 
     // Lidh butonin e raportit dhe ngarkimin e raporteve të vjetra.
     function initProblemReportUi() {
