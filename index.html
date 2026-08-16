@@ -206,61 +206,8 @@
             inset: 0;
             z-index: 3000;
             background: #eceff2;
-            display: flex;
-            flex-direction: column;
         }
         .manual-overlay[hidden] { display: none; }
-        .manual-overlay__bar {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: max(10px, var(--safe-top)) 12px 10px;
-            background: #0f2847;
-            color: #fff;
-        }
-        .manual-overlay__title {
-            flex: 1 1 auto;
-            min-width: 0;
-            font-weight: 700;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .manual-overlay__link {
-            flex: 0 0 auto;
-            color: #c9d6e6;
-            font-size: 12px;
-            text-decoration: underline;
-        }
-        .manual-overlay__close {
-            flex: 0 0 auto;
-            width: 44px;
-            height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 0;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.14);
-            color: #fff;
-            cursor: pointer;
-        }
-        .manual-overlay__close:hover { background: rgba(255, 255, 255, 0.24); }
-        .manual-overlay__close svg {
-            width: 22px;
-            height: 22px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2.2;
-            stroke-linecap: round;
-        }
-        .manual-overlay__body {
-            flex: 1 1 auto;
-            position: relative;
-            min-height: 0;
-        }
         .manual-overlay__frame {
             position: relative;
             z-index: 1;
@@ -282,6 +229,33 @@
             padding: 24px;
             font-size: 13px;
             color: #5f6b76;
+        }
+        /* Noton mbi PDF-në, që mbyllja të jetë gjithmonë brenda dorës. */
+        .manual-overlay__close {
+            position: absolute;
+            top: max(12px, var(--safe-top));
+            right: 12px;
+            z-index: 2;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(15, 40, 71, 0.92);
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+        }
+        .manual-overlay__close:hover { background: #0f2847; }
+        .manual-overlay__close svg {
+            width: 22px;
+            height: 22px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.4;
+            stroke-linecap: round;
         }
         .map-tool-btn svg {
             width: 20px;
@@ -2020,19 +1994,13 @@
         </button>
     </div>
     <div id="manual-overlay" class="manual-overlay" hidden role="dialog" aria-modal="true" aria-label="Manuali i përdorimit">
-        <div class="manual-overlay__bar">
-            <span class="manual-overlay__title">Manuali i përdorimit</span>
-            <a class="manual-overlay__link" href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener">Hap veçmas</a>
-            <button type="button" class="manual-overlay__close" id="manual-close" aria-label="Mbyll manualin dhe kthehu te harta">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-        </div>
-        <div class="manual-overlay__body">
-            <iframe class="manual-overlay__frame" id="manual-frame" title="Manuali i përdorimit"></iframe>
-            <p class="manual-overlay__fallback">
-                Nëse manuali nuk shfaqet këtu, <a href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener">hape veçmas ose shkarkoje</a>.
-            </p>
-        </div>
+        <iframe class="manual-overlay__frame" id="manual-frame" title="Manuali i përdorimit"></iframe>
+        <p class="manual-overlay__fallback">
+            Nëse manuali nuk shfaqet këtu, <a href="Manuali_i_perdorimit.pdf" target="_blank" rel="noopener">shkarkoje</a>.
+        </p>
+        <button type="button" class="manual-overlay__close" id="manual-close" aria-label="Mbyll manualin dhe kthehu te harta">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
     </div>
     <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
     <button type="button" id="mobile-panel-fab" class="mobile-panel-fab" aria-controls="sidebar" aria-expanded="false" aria-label="Hap menunë e hartës">☰</button>
