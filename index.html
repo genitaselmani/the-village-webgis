@@ -4795,8 +4795,11 @@
                 return buildBiznisetRawLogoIconRect(logoUrl, box.w * 0.62, box.h * 0.62);
             }
             // Pa poligon të përputhur (p.sh. rast pa Bizneset_ndara): madhësi e fiksuar, ende e madhe.
+            // Pa poligon të përputhur (bankomati, banka, autolarja): këto s'kanë gjurmë ndërtimore,
+            // prandaj marrin një madhësi modeste. Vlera e mëparshme (140-260px) i bënte të dukeshin
+            // më të mëdhenj se bizneset me sipërfaqe reale.
             var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
-            var szLarge = Math.max(140, Math.min(260, Math.round(170 + largeStep * 40)));
+            var szLarge = Math.max(56, Math.min(110, Math.round(70 + largeStep * 14)));
             return buildBiznisetRawLogoIcon(logoUrl, szLarge);
         }
         // Niveli "badge" (zoom 19, i vetmi në këtë nivel): madhësia e distinktivit = "Madhësia e pikës" (parazgjedhje 18px).
