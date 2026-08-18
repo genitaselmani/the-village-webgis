@@ -29,33 +29,27 @@
             --mobile-breakpoint: 768px;
             --safe-bottom: env(safe-area-inset-bottom, 0px);
             --safe-top: env(safe-area-inset-top, 0px);
-            /* Paletë: vjollcë e thellë si ngjyrë kryesore, sfond me nuancë të lehtë lila,
-               dhe një brez shumëngjyrësh (vjollcë → magenta → qelibar → teal) si theks. */
-            --mall-blue: #6d28d9;
-            --mall-blue-hover: #5b21b6;
-            --mall-bg-hover: #d9d1e8;
-            --mall-tint-hover: #ede9fe;
-            --mall-tint-hover-border: #a78bfa;
-            --mall-tint-shadow: rgba(109, 40, 217, 0.24);
-            --mall-bg: #f7f4fb;
-            --mall-border: #e6e0f0;
-            --mall-text: #241b3a;
-            --mall-muted: #635b7a;
-            --chip-gray: #ece7f5;
-            --chip-gray-dark: #d9d1e8;
-            --accent: #f97316;
+            --mall-blue: #2b6eff;
+            --mall-blue-hover: #0a3da8;
+            --mall-bg-hover: #b8b8b8;
+            --mall-tint-hover: #9eb3e8;
+            --mall-tint-hover-border: #3d5596;
+            --mall-tint-shadow: rgba(20, 50, 120, 0.35);
+            --mall-bg: #f2f2f2;
+            --mall-border: #e8e8e8;
+            --mall-text: #1a1a1a;
+            --mall-muted: #6b6b6b;
+            --chip-gray: #e5e5e5;
+            --chip-gray-dark: #d0d0d0;
+            --accent: #e67e22;
             --primary: var(--mall-blue);
-            --surface: #fffdfb;
-            --spectrum: linear-gradient(90deg, #6d28d9 0%, #c026d3 28%, #f97316 58%, #14b8a6 86%, #6d28d9 100%);
-            --header-bg: linear-gradient(180deg, #fffdfb 0%, #f2ecfa 100%);
-            --header-border: rgba(109, 40, 217, 0.18);
-            --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 2px 12px rgba(36, 27, 58, 0.08);
+            --header-bg: #e8f0fc;
+            --header-border: rgba(43, 110, 255, 0.2);
+            --header-shadow: 0 1px 0 rgba(255, 255, 255, 0.75) inset, 0 1px 4px rgba(15, 45, 100, 0.08);
         }
         html {
             height: 100%;
             -webkit-text-size-adjust: 100%;
-            /* Kutitë e zgjedhjes dhe rrëshqitësit marrin ngjyrën e temës, jo jeshilen e shfletuesit. */
-            accent-color: var(--mall-blue);
         }
         body {
             margin: 0;
@@ -71,7 +65,6 @@
         }
 
         header {
-            position: relative;
             flex-shrink: 0;
             min-height: 56px;
             height: auto;
@@ -86,16 +79,6 @@
             border-bottom: 1px solid var(--header-border);
             box-shadow: var(--header-shadow);
             box-sizing: border-box;
-        }
-        /* Brezi shumëngjyrësh lart — theksi kryesor i pamjes. */
-        header::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--spectrum);
         }
         .header-spacer {
             grid-column: 1;
@@ -123,7 +106,7 @@
         }
         .lang-switch__btn + .lang-switch__btn { border-left: 1px solid var(--mall-border); }
         .lang-switch__btn.is-active {
-            background: var(--mall-blue, #6d28d9);
+            background: var(--mall-blue, #0f2847);
             color: #fff;
         }
 
@@ -171,7 +154,7 @@
             font-weight: 700;
             letter-spacing: 0.03em;
             text-transform: uppercase;
-            color: #6d28d9;
+            color: #0f2847;
         }
         .header-academic-meta {
             margin: 0;
@@ -209,7 +192,7 @@
             border-radius: 10px;
             border: 1px solid rgba(0, 0, 0, 0.1);
             background: rgba(255, 255, 255, 0.93);
-            color: #4a4160;
+            color: #454545;
             cursor: pointer;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
@@ -218,7 +201,7 @@
         }
         .map-tool-btn:hover,
         .map-tool-btn:focus-visible {
-            background: #ece7f5;
+            background: #ececec;
             border-color: rgba(0, 0, 0, 0.14);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
             outline: none;
@@ -237,7 +220,7 @@
         /* Manuali është një <a> drejt PDF-së, jo <button>: heq stilin e parazgjedhur të linkut. */
         a.map-tool-btn {
             text-decoration: none;
-            color: #4a4160;
+            color: #454545;
             box-sizing: border-box; /* <button> e ka si parazgjedhje, <a> jo — pa të del 2px më i gjerë */
         }
 
@@ -274,7 +257,7 @@
             cursor: pointer;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
         }
-        .manual-overlay__close:hover { background: #6d28d9; }
+        .manual-overlay__close:hover { background: #0f2847; }
         .manual-overlay__close svg {
             width: 22px;
             height: 22px;
@@ -614,7 +597,7 @@
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.1em;
-            color: var(--mall-muted);
+            color: #8a8a8a;
             text-transform: uppercase;
             margin: 6px 0 12px;
         }
@@ -642,7 +625,7 @@
         }
         #layers-list::-webkit-scrollbar { width: 5px; }
         #layers-list::-webkit-scrollbar-track { background: transparent; }
-        #layers-list::-webkit-scrollbar-thumb { background: #d9d1e8; border-radius: 4px; }
+        #layers-list::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 4px; }
 
         .legend-list .legend-filter-row,
         .legend-bizneset-wrap {
@@ -656,7 +639,7 @@
             margin: 0;
             border-radius: 12px;
             border: 1px solid #e6e6e6;
-            background: var(--surface);
+            background: #fafafa;
             cursor: pointer;
             font-size: 13px;
             font-family: inherit;
@@ -802,8 +785,8 @@
                 90deg,
                 transparent 0px,
                 transparent 3px,
-                #f6f2e8 3px,
-                #f6f2e8 4.5px
+                #f4f1e8 3px,
+                #f4f1e8 4.5px
             );
             background-size: 100% 60%;
             background-position: center;
@@ -998,10 +981,10 @@
         .sidebar-tab:hover,
         .sidebar-tab:focus-visible { background: #f0f0f0; }
         .sidebar-tab.is-active {
-            background: linear-gradient(135deg, #6d28d9 0%, #c026d3 100%);
+            background: var(--mall-blue);
             color: #fff;
-            border-color: transparent;
-            box-shadow: 0 2px 10px rgba(109, 40, 217, 0.35);
+            border-color: var(--mall-blue);
+            box-shadow: 0 2px 8px rgba(43, 110, 255, 0.35);
         }
 
         .sidebar-panel { display: flex; flex-direction: column; min-height: 0; }
@@ -1053,7 +1036,7 @@
             margin-bottom: 10px;
             border: 1px solid var(--mall-border);
             border-radius: 14px;
-            background: var(--surface);
+            background: #fafafa;
             overflow: hidden;
             flex-shrink: 0;
         }
@@ -1249,7 +1232,7 @@
             border-radius: 14px;
             padding: 12px 12px 10px;
             margin-bottom: 10px;
-            background: var(--surface);
+            background: #fafafa;
             cursor: pointer;
             transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
@@ -1261,7 +1244,7 @@
         }
         .bizniset-card.is-selected {
             border-color: var(--mall-blue);
-            background: #ede9fe;
+            background: #eef3ff;
         }
         .bizniset-card-title {
             margin: 0 0 8px;
@@ -1322,7 +1305,7 @@
             width: 22px;
             height: 22px;
             opacity: 0.4;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d28d9' stroke-width='1.5'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / contain no-repeat;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b6eff' stroke-width='1.5'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3Cpolyline points='9 22 9 12 15 12 15 22'/%3E%3C/svg%3E") center / contain no-repeat;
         }
         .bizniset-card-main {
             flex: 1;
@@ -1337,7 +1320,7 @@
             margin-bottom: 12px;
             border-radius: 16px;
             overflow: hidden;
-            background: linear-gradient(135deg, #4c1d95 0%, #7e22ce 50%, #c026d3 130%);
+            background: linear-gradient(135deg, #0f2847 0%, #1a3d6e 48%, #2b6eff 160%);
             color: #fff;
             box-shadow: 0 8px 24px rgba(15, 40, 71, 0.35);
         }
@@ -1717,7 +1700,7 @@
             flex-shrink: 0;
             min-height: 30px;
             height: auto;
-            background: var(--surface);
+            background: #fafafa;
             color: var(--mall-muted);
             border-top: 1px solid var(--mall-border);
             display: grid;
@@ -1834,7 +1817,7 @@
             height: 56px;
             border-radius: 50%;
             border: none;
-            background: linear-gradient(135deg, #6d28d9 0%, #c026d3 100%);
+            background: var(--mall-blue);
             color: #fff;
             font-size: 22px;
             line-height: 1;
@@ -2191,7 +2174,7 @@
     </dialog>
 </div>
 
-<footer>
+<footer style="background-color: #e8f0fc;">
     <div id="coords-text" class="footer-coords" style="color: black; font-weight: bold"><b>EPSG:9141 · KOSOVAREF01 / Balkans zone 7 · E = — | N = —</b></div>
     <div id="bottom-center" aria-live="polite">Shkalla: —</div>
     <div class="footer-credit" style="color: black"><b>Genita Selmani</b></div>
