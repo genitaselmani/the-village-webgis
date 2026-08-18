@@ -4789,17 +4789,24 @@
             return buildBiznisetSymbolIcon(style);
         }
         if (tier === "logo-large") {
-            // Të gjitha logot në një kuti katrore me të njëjtën madhësi bazë: më parë madhësia
-            // ndiqte poligonin, çka i bënte logot të ndryshonin nga ~50 deri në ~420px dhe pamja
-            // dilte e çrregullt. Me `object-fit: contain` forma e secilës logo ruhet.
+            // Madhësia rritet me njësinë, por me rrënjë katrore — teknikë klasike kartografike për
+            // të ngushtuar diapazonin. Proporcioni i drejtpërdrejtë jepte ~8:1 midis logos më të madhe
+            // dhe më të voglës (pamje e çrregullt); madhësia krejt fikse i linte logot të humbura
+            // brenda dyqaneve të mëdha. Kjo e mban raportin rreth 2:1.
             var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
-            var szLarge = Math.round(80 + largeStep * 34); // 80 / 114 / 148
+            var base = 100 * Math.pow(1.42, largeStep); // rritet bashkë me shkallën
+            var lo = base * 0.8, hi = base * 1.3;       // brez i ngushtë: raporti mbetet ~1.6:1
             var box = getBiznisetPolygonPixelBox(feature);
+            var szLarge;
             if (box) {
-                // Zvogëlohet vetëm aty ku njësia është e ngushtë, që logoja të mos e teprojë atë.
-                szLarge = Math.min(szLarge, Math.max(30, Math.round(Math.min(box.w, box.h) * 0.85)));
+                var side = Math.min(box.w, box.h);
+                szLarge = Math.max(lo, Math.min(hi, 7.5 * Math.sqrt(side)));
+                // Kurrë më e madhe se vetë njësia — kjo mbizotëron mbi kufirin e poshtëm.
+                szLarge = Math.min(szLarge, side * 0.85);
+            } else {
+                szLarge = base; // pa gjurmë ndërtimore: madhësi e mesme
             }
-            return buildBiznisetRawLogoIcon(logoUrl, szLarge);
+            return buildBiznisetRawLogoIcon(logoUrl, Math.round(szLarge));
         }
         // Niveli "badge" (zoom 19, i vetmi në këtë nivel): madhësia e distinktivit = "Madhësia e pikës" (parazgjedhje 18px).
         var sz = Math.max(10, Math.min(48, Math.round(style.size != null ? style.size : BIZ_POINT_DEFAULTS.size)));
