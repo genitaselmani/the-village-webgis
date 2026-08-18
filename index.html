@@ -3557,7 +3557,7 @@
     var parkinguGeoJsonData = null;
 
     function buildParkinguPIcon(size) {
-        var s = Math.max(14, Math.min(34, Math.round(size)));
+        var s = Math.max(12, Math.min(24, Math.round(size)));
         return L.divIcon({
             className: "parking-p-divicon",
             html: '<span class="parking-p-badge" style="width:' + s + 'px;height:' + s + 'px;' +
@@ -3584,8 +3584,8 @@
             var wPx = Math.abs(se.x - nw.x);
             var hPx = Math.abs(se.y - nw.y);
             // Nën këtë prag shenja do të dilte jashtë poligonit dhe do ta mbulonte atë.
-            if (Math.min(wPx, hPx) < 20) return;
-            var size = Math.min(wPx, hPx) * 0.5;
+            if (Math.min(wPx, hPx) < 18) return;
+            var size = Math.min(wPx, hPx) * 0.35;
             L.marker(b.getCenter(), {
                 icon: buildParkinguPIcon(size),
                 interactive: false,
