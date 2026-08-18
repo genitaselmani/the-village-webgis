@@ -4657,7 +4657,7 @@
 
     /** Vetëm logo, pa sfond/rreth — siç është foto origjinale, e zmadhuar (kuti katrore, madhësi fikse). */
     function buildBiznisetRawLogoIcon(logoUrl, size) {
-        var s = Math.max(40, Math.min(260, size || 64));
+        var s = Math.max(30, Math.min(260, size || 64));
         var imgSize = Math.round(s * 0.8);
         var html = '<span class="biz-raw-logo" style="width:' + s + 'px;height:' + s + 'px;">' +
             '<img src="' + logoUrl + '" alt="" class="biz-raw-logo-img" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
@@ -4789,17 +4789,16 @@
             return buildBiznisetSymbolIcon(style);
         }
         if (tier === "logo-large") {
-            // E bazuar tek madhësia reale (në piksel) e poligonit të biznesit — mbulon shumicën e tij.
+            // Të gjitha logot në një kuti katrore me të njëjtën madhësi bazë: më parë madhësia
+            // ndiqte poligonin, çka i bënte logot të ndryshonin nga ~50 deri në ~420px dhe pamja
+            // dilte e çrregullt. Me `object-fit: contain` forma e secilës logo ruhet.
+            var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
+            var szLarge = Math.round(80 + largeStep * 34); // 80 / 114 / 148
             var box = getBiznisetPolygonPixelBox(feature);
             if (box) {
-                return buildBiznisetRawLogoIconRect(logoUrl, box.w * 0.62, box.h * 0.62);
+                // Zvogëlohet vetëm aty ku njësia është e ngushtë, që logoja të mos e teprojë atë.
+                szLarge = Math.min(szLarge, Math.max(30, Math.round(Math.min(box.w, box.h) * 0.85)));
             }
-            // Pa poligon të përputhur (p.sh. rast pa Bizneset_ndara): madhësi e fiksuar, ende e madhe.
-            // Pa poligon të përputhur (bankomati, banka, autolarja): këto s'kanë gjurmë ndërtimore,
-            // prandaj marrin një madhësi modeste. Vlera e mëparshme (140-260px) i bënte të dukeshin
-            // më të mëdhenj se bizneset me sipërfaqe reale.
-            var largeStep = map.getZoom() - (BIZ_ZOOM_TIER_BADGE_MAX + 1);
-            var szLarge = Math.max(56, Math.min(110, Math.round(70 + largeStep * 14)));
             return buildBiznisetRawLogoIcon(logoUrl, szLarge);
         }
         // Niveli "badge" (zoom 19, i vetmi në këtë nivel): madhësia e distinktivit = "Madhësia e pikës" (parazgjedhje 18px).
