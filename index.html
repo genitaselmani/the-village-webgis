@@ -691,6 +691,27 @@
             letter-spacing: -0.02em;
             user-select: none;
         }
+        /** Shenja "P" në mes të poligonit të parkimit; i njëjti pamje si swatch-i i legjendës. */
+        .parking-p-divicon {
+            background: transparent !important;
+            border: none !important;
+        }
+        .parking-p-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            background: #1565c0;
+            border: 1px solid #0d47a1;
+            border-radius: 4px;
+            color: #fff;
+            font-family: "Inter", system-ui, sans-serif;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            user-select: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+        }
         .legend-sym--road {
             background: #e8d5a8;
             border: 1px solid #3a2412;
@@ -2845,6 +2866,7 @@
     // Rindërton markerët e biznesit në çdo hap zoom-i (niveli "badge" ndryshon madhësinë brenda vetë diapazonit 19-20).
     map.on("zoomend", function() {
         if (typeof rebuildBiznisetSymbolsLayer === "function") rebuildBiznisetSymbolsLayer();
+        if (typeof rebuildParkinguLabels === "function") rebuildParkinguLabels();
         var rr = typeof layers !== "undefined" ? layers["Rrugët"] : null;
         if (rr && rr.casingLayer && rr.fillLayer) {
             rr.casingLayer.setStyle(roadCasingStyle);
@@ -3530,6 +3552,64 @@
 
     // Simboli klasik i hekurudhës: vijë e zezë e vetme + traversa të shkurtra pingule me të —
     // i dallueshëm qartë nga çdo shtresë tjetër (kafe e rrugëve, gri e ndërtesave, bezhë e kufirit).
+    /** Shenja "P" në mes të secilit poligon parkimi — i njëjti simbol si te legjenda. */
+    var parkinguLabelsLayer = L.layerGroup();
+    var parkinguGeoJsonData = null;
+
+    function buildParkinguPIcon(size) {
+        var s = Math.max(14, Math.min(34, Math.round(size)));
+        return L.divIcon({
+            className: "parking-p-divicon",
+            html: '<span class="parking-p-badge" style="width:' + s + 'px;height:' + s + 'px;' +
+                  'font-size:' + Math.round(s * 0.62) + 'px;">P</span>',
+            iconSize: [s, s],
+            iconAnchor: [Math.round(s / 2), Math.round(s / 2)]
+        });
+    }
+
+    /** Rindërton shenjat: madhësia ndjek poligonin dhe fshihen kur ai del shumë i vogël. */
+    function rebuildParkinguLabels() {
+        parkinguLabelsLayer.clearLayers();
+        if (!parkinguGeoJsonData || !parkinguGeoJsonData.features) return;
+        parkinguGeoJsonData.features.forEach(function(f) {
+            if (!f.geometry) return;
+            var gj, b;
+            try {
+                gj = L.geoJSON(f);
+                b = gj.getBounds();
+                if (!b.isValid()) return;
+            } catch (e) { return; }
+            var nw = map.latLngToContainerPoint(b.getNorthWest());
+            var se = map.latLngToContainerPoint(b.getSouthEast());
+            var wPx = Math.abs(se.x - nw.x);
+            var hPx = Math.abs(se.y - nw.y);
+            // Nën këtë prag shenja do të dilte jashtë poligonit dhe do ta mbulonte atë.
+            if (Math.min(wPx, hPx) < 20) return;
+            var size = Math.min(wPx, hPx) * 0.5;
+            L.marker(b.getCenter(), {
+                icon: buildParkinguPIcon(size),
+                interactive: false,
+                keyboard: false
+            }).addTo(parkinguLabelsLayer);
+        });
+    }
+
+    function buildParkinguLayer() {
+        var group = L.layerGroup();
+        loadLocalGeoJSON("Parkingu")
+            .then(function(data) {
+                var geo = L.geoJSON(data, { style: function() { return PARKINGU_STYLE; } });
+                group.addLayer(geo);
+                group.geoJsonLayer = geo;
+                group.geoJsonData = data;
+                parkinguGeoJsonData = data;
+                group.addLayer(parkinguLabelsLayer);
+                rebuildParkinguLabels();
+            })
+            .catch(function(err) { console.error("[data] Parkingu nuk u ngarkua:", err); });
+        return group;
+    }
+
     function buildHekurudhaLayer() {
         var group = L.layerGroup();
         loadLocalGeoJSON("RailLines_FR")
@@ -3783,7 +3863,7 @@
     /** Renditja e shtimit në hartë përafron rendin e dikurshëm zIndex të WMS (fund → sipër). */
     var layers = {
         "Kufiri": getLocalLayer("Kufiri_village", function() { return KUFIRI_STYLE; }).addTo(map),
-        "Parkingu": getLocalLayer("Parkingu", function() { return PARKINGU_STYLE; }).addTo(map),
+        "Parkingu": buildParkinguLayer().addTo(map),
         "Hekurudha": buildHekurudhaLayer().addTo(map),
         "Rrugët": buildRruguetLayer().addTo(map),
         "Kufiret e Bizneseve": getLocalLayer("Bizneset_ndara", function() { return NDARA_STYLE; }).addTo(map),
