@@ -3557,7 +3557,7 @@
     var parkinguGeoJsonData = null;
 
     function buildParkinguPIcon(size) {
-        var s = Math.max(10, Math.min(18, Math.round(size)));
+        var s = Math.max(9, Math.min(15, Math.round(size)));
         return L.divIcon({
             className: "parking-p-divicon",
             html: '<span class="parking-p-badge" style="width:' + s + 'px;height:' + s + 'px;' +
@@ -3579,6 +3579,57 @@
         return 20;                   // 1:500 e më afër — të gjitha
     }
 
+    /** Distanca nga pika (px,py) te segmenti (ax,ay)-(bx,by), në gradë. */
+    function distToSegment(px, py, ax, ay, bx, by) {
+        var dx = bx - ax, dy = by - ay;
+        var len2 = dx * dx + dy * dy;
+        var tt = len2 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
+        tt = Math.max(0, Math.min(1, tt));
+        var qx = ax + tt * dx, qy = ay + tt * dy;
+        return Math.hypot(px - qx, py - qy);
+    }
+
+    /**
+     * Pika ku vendoset etiketa: brenda poligonit dhe sa më larg skajeve.
+     * Qendra e kutisë kufizuese NUK vlen — te poligonet në formë L-je ajo bie jashtë tyre
+     * dhe etiketa përfundon mbi një objekt fqinj.
+     */
+    function polygonLabelPoint(geom) {
+        if (!geom) return null;
+        var groups = geom.type === "Polygon" ? [geom.coordinates]
+                   : geom.type === "MultiPolygon" ? geom.coordinates : [];
+        var best = null, bestDepth = -1;
+        groups.forEach(function(rings) {
+            var outer = rings[0];
+            if (!outer || outer.length < 3) return;
+            var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            outer.forEach(function(c) {
+                if (c[0] < minX) minX = c[0];
+                if (c[0] > maxX) maxX = c[0];
+                if (c[1] < minY) minY = c[1];
+                if (c[1] > maxY) maxY = c[1];
+            });
+            var N = 24;
+            for (var i = 0; i <= N; i++) {
+                for (var j = 0; j <= N; j++) {
+                    var x = minX + (maxX - minX) * (i / N);
+                    var y = minY + (maxY - minY) * (j / N);
+                    if (!pointInPolygonRings(x, y, rings)) continue;
+                    // "Thellësia": distanca deri te skaji më i afërt i çdo unaze.
+                    var depth = Infinity;
+                    rings.forEach(function(ring) {
+                        for (var k = 0; k < ring.length - 1; k++) {
+                            var d = distToSegment(x, y, ring[k][0], ring[k][1], ring[k + 1][0], ring[k + 1][1]);
+                            if (d < depth) depth = d;
+                        }
+                    });
+                    if (depth > bestDepth) { bestDepth = depth; best = [y, x]; }
+                }
+            }
+        });
+        return best ? L.latLng(best[0], best[1]) : null;
+    }
+
     /** Rindërton shenjat: madhësia ndjek poligonin dhe fshihen kur ai del shumë i vogël. */
     function rebuildParkinguLabels() {
         parkinguLabelsLayer.clearLayers();
@@ -3597,8 +3648,10 @@
             var wPx = Math.abs(se.x - nw.x);
             var hPx = Math.abs(se.y - nw.y);
             if (Math.min(wPx, hPx) < minSide) return;
-            var size = Math.min(wPx, hPx) * 0.30;
-            L.marker(b.getCenter(), {
+            var at = polygonLabelPoint(f.geometry);
+            if (!at) return;
+            var size = Math.min(wPx, hPx) * 0.26;
+            L.marker(at, {
                 icon: buildParkinguPIcon(size),
                 interactive: false,
                 keyboard: false
