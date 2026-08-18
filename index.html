@@ -83,7 +83,31 @@
         .header-spacer {
             grid-column: 1;
             min-width: 0;
-            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+        /** Ndërrimi i gjuhës: prek vetëm tekstet, jo funksionimin e hartës. */
+        .lang-switch {
+            display: inline-flex;
+            border: 1px solid var(--mall-border);
+            border-radius: 999px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .lang-switch__btn {
+            padding: 5px 11px;
+            border: 0;
+            background: transparent;
+            font: 700 11px/1 inherit;
+            letter-spacing: 0.04em;
+            color: var(--mall-muted);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .lang-switch__btn + .lang-switch__btn { border-left: 1px solid var(--mall-border); }
+        .lang-switch__btn.is-active {
+            background: var(--mall-blue, #0f2847);
+            color: #fff;
         }
 
         .header-title {
@@ -1793,17 +1817,26 @@
 
         @media (max-width: 768px) {
             header {
+                position: relative;
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto;
                 justify-items: center;
                 padding: max(6px, var(--safe-top)) 12px 6px;
                 gap: 4px;
             }
-            .header-spacer { display: none; }
+            /* Noton në cepin lart-majtas në vend që të zërë një rresht të tërë —
+               një rresht i veçantë do t'i hiqte hartës rreth 4% të lartësisë. */
+            .header-spacer {
+                position: absolute;
+                top: max(6px, var(--safe-top));
+                left: 10px;
+                z-index: 2;
+            }
             .header-title {
                 grid-column: 1;
                 grid-row: 1;
                 max-width: 100%;
+                padding-left: 84px; /* hapësirë për çelësin e gjuhës */
             }
             .header-academic {
                 grid-column: 1;
@@ -1903,7 +1936,12 @@
 <body>
 
 <header>
-    <div class="header-spacer" aria-hidden="true"></div>
+    <div class="header-spacer">
+        <div class="lang-switch" role="group" aria-label="Gjuha / Language">
+            <button type="button" class="lang-switch__btn is-active" id="lang-sq" lang="sq" aria-pressed="true">AL</button>
+            <button type="button" class="lang-switch__btn" id="lang-en" lang="en" aria-pressed="false">EN</button>
+        </div>
+    </div>
     <div class="header-title">
         <strong>QENDRA TREGTARE "THE VILLAGE SHOPPING & FUN"</strong><br>
     </div>
@@ -2129,6 +2167,283 @@
     /** KOSOVAREF01 / Balkans zone 7 — replace MGI Balkans z.7 në Kosovë; përdorim me WGS84 (shiko EPSG:9144). */
     proj4.defs("EPSG:9141", "+proj=tmerc +lat_0=0 +lon_0=21 +k=0.9999 +x_0=7500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
     proj4.defs("EPSG:4326", "+proj=longlat +datum=WGS84 +no_defs");
+
+    /* ======================= Gjuha (shqip / anglisht) =========================
+     * Përkthimi ndodh VETËM në pikën e shfaqjes. Vargjet shqipe mbeten çelësa të
+     * brendshëm (emra shtresash, vlera `Lloji`, kategori nga të dhënat), prandaj
+     * ndërrimi i gjuhës nuk prek asnjë funksion të hartës.
+     * ======================================================================= */
+    var LANG_KEY = "webgis_thevillage_lang";
+    var lang = "sq";
+    try {
+        if (localStorage.getItem(LANG_KEY) === "en") lang = "en";
+    } catch (eLang) {}
+
+    var I18N_EN = {
+        // Kokë dhe panel
+        "Universiteti i Prishtinës": "University of Prishtina",
+        "Fakulteti i Inxhinierisë së Ndërtimit": "Faculty of Civil Engineering",
+        "Dega:": "Department:",
+        "Lënda:": "Course:",
+        "Profesori:": "Professor:",
+        "Gjeodezi": "Geodesy",
+        "Konteksti akademik": "Academic context",
+        "Shtresat": "Layers",
+        "Bizneset": "Businesses",
+        "Kërko": "Search",
+        "Legjenda · shtresat": "Legend · layers",
+        "Shtresat dhe legjenda e bizneseve": "Layers and business legend",
+        "Shtresat dhe navigimi": "Layers and navigation",
+        "Pamje paneli": "Panel view",
+        "The Village · Menu": "The Village · Menu",
+        "The Village · Outlet": "The Village · Outlet",
+        "Mbyll panelin": "Close panel",
+        "Hap menunë e hartës": "Open map menu",
+        "Duke ngarkuar bizneset…": "Loading businesses…",
+        "Gabim në ngarkim: ": "Loading error: ",
+        "biznese": "businesses",
+
+        // Emrat e shtresave
+        "Pika Informuese": "Information Point",
+        "Sherbimet e Transportit": "Transport Services",
+        "Sherbimet e Emergjences": "Emergency Services",
+        "Institucionet Administrative": "Administrative Institutions",
+        "Kufiri": "Boundary",
+        "Parkingu": "Parking",
+        "Rrugët": "Roads",
+        "Kufiret e Bizneseve": "Business Units",
+        "Hekurudha": "Railway",
+        "Raportet e problemeve": "Problem reports",
+
+        // Kategoritë e bizneseve
+        "Aksesore dhe kozmetike": "Accessories and cosmetics",
+        "Elektronike": "Electronics",
+        "Gastronomi": "Food and drink",
+        "Market": "Supermarket",
+        "Mode": "Fashion",
+        "Sherbime": "Services",
+        "Amviseri": "Home goods",
+        "Të tjera": "Other",
+        "TI JE KËTU": "YOU ARE HERE",
+        "Ti je këtu!": "You are here!",
+        "Pika informuese — kliko": "Information point — click",
+
+        // Kategoritë e shërbimeve
+        "Stacion i autobusëve": "Bus station",
+        "Stacion i trenit": "Train station",
+        "Stacion i taksive": "Taxi rank",
+        "Spitali i përgjithshem-Ferizaj": "General Hospital — Ferizaj",
+        "Stacioni Policor": "Police station",
+        "Stacioni i Zjarrfikësve": "Fire station",
+        "Komuna e Ferizajit": "Municipality of Ferizaj",
+        "Gjykata themelore": "Basic Court",
+        "Posta": "Post office",
+
+        // Veglat e hartës
+        "Veprime të hartës": "Map actions",
+        "Ruaj hartën si foto PNG": "Save map as PNG image",
+        "Shkarkoni shtresat si GeoJSON": "Download layers as GeoJSON",
+        "Vegla e matjes (distancë / sipërfaqe)": "Measure tool (distance / area)",
+        "Opsionet e matjes": "Measure options",
+        "Mat distancën": "Measure distance",
+        "Mat sipërfaqen": "Measure area",
+        "Raporto problem në hartë": "Report a problem on the map",
+        "Navigim deri në një biznes": "Navigate to a business",
+        "Klikoni biznesin e destinacionit në hartë": "Click the destination business on the map",
+        "Hiq rrugën e vizatuar nga harta": "Clear the drawn route from the map",
+        "Manuali i përdorimit të WebGIS-it": "WebGIS user manual",
+        "Manuali i përdorimit": "User manual",
+        "Mbyll manualin dhe kthehu te harta": "Close the manual and return to the map",
+        "Fshij matjen": "Clear measurement",
+        "Distanca totale:": "Total distance:",
+        "Sipërfaqja totale:": "Total area:",
+        "Shkalla: ": "Scale: ",
+        "Shkalla: —": "Scale: —",
+        "Shkalla: -": "Scale: -",
+
+        // Popup-i i biznesit dhe rrugët
+        "Distanca nga The Village: ": "Distance from The Village: ",
+        "Koha e ecjes: ~": "Walking time: ~",
+        " metra": " metres",
+        " min": " min",
+        "Distanca: ": "Distance: ",
+        "Biznesi": "Business",
+        "Pika": "Point",
+
+        // Personalizimi
+        "Personalizim — theksimi i biznesit në hartë": "Customisation — business highlight on the map",
+        "Ngjyra e mbushjes": "Fill colour",
+        "Ngjyra e kufirit": "Border colour",
+        "Transparenca e mbushjes": "Fill opacity",
+        "Stili i kufirit (vija)": "Border style (line)",
+        "Gjerësia": "Width",
+        "Forma e pikës së biznesit në hartë": "Business point shape on the map",
+        "Madhësia e pikës": "Point size",
+        "Ngjyra kur mungon kategoria": "Colour when category is missing",
+        "Kufiri i pikës": "Point border",
+        "Gjerësia e kufirit të pikës": "Point border width",
+        "Rivendos standardet (theksimi)": "Reset defaults (highlight)",
+        "Rivendos në vlerat parazgjedhje": "Reset to default values",
+        "Vijë e plotë": "Solid line",
+        "Vizë të gjata": "Long dashes",
+        "Vizë të shkurtra": "Short dashes",
+        "Rreth": "Circle",
+        "Katror": "Square",
+        "Romb": "Diamond",
+        "Trekëndësh": "Triangle",
+        "Yll (5 cepa)": "Star (5 points)",
+        "Mbushja": "Fill",
+        "Vija": "Line",
+        "Forma": "Shape",
+        "Fallback": "Fallback",
+        "Dash pattern": "Dash pattern",
+        "Filtra": "Filters",
+        "Palos / hap kategoritë": "Collapse / expand categories",
+        "Palos / hap nëntë kategoritë": "Collapse / expand the sub-categories",
+
+        // Raportimi i problemit
+        "Raporto problem": "Report a problem",
+        "Lloji i problemit": "Problem type",
+        "Përshkrimi": "Description",
+        "Data": "Date",
+        "Koordinatat Kosovaref01": "Kosovaref01 coordinates",
+        "— Zgjidhni —": "— Select —",
+        "Demtim material": "Material damage",
+        "Ndotje / mbeturina": "Pollution / litter",
+        "Ndriçimi / energji": "Lighting / power",
+        "Rrjedhje ose infrastrukturë e dëmtuar": "Leak or damaged infrastructure",
+        "Shenja / orientim i prishur": "Broken sign / wayfinding",
+        "Zhurmë / bezdisje": "Noise / nuisance",
+        "Tjetër": "Other",
+        "Ruaj": "Save",
+        "Anulo": "Cancel",
+        "Mbyll": "Close",
+        "Hiq nga harta": "Remove from map",
+        "Fshi të gjitha": "Delete all",
+        "Hiq të gjitha raportet e ruajtura": "Remove all saved reports",
+        "Raport problemi — kliko për ta hequr": "Problem report — click to remove",
+        "Raport përmes Gmail": "Report via Gmail",
+        "Marrësi (Tek / To)": "Recipient (To)",
+        "Gmail në shfletues": "Gmail in browser",
+        "Raport problemi — The Village WebGIS": "Problem report — The Village WebGIS",
+        "Klikoni në hartë ku ndodhi problemi. Ikonës së anulimit te veprimet e hartës.":
+            "Click on the map where the problem is. Use the cancel icon in the map actions to stop.",
+        "Problem": "Problem",
+
+        // Mesazhe
+        "Gabim në ruajtjen e hartës. Provoni përsëri.": "Could not save the map. Please try again.",
+        "Gabim gjatë përgatitjes së GeoJSON (shiko console).": "Could not prepare the GeoJSON (see console).",
+        "Ju lutem zgjidhni llojin e problemit.": "Please choose the problem type.",
+        "Ju lutem klikoni mbi një biznes (ndërtesë gri) për të marrë udhëzimet.":
+            "Please click a business (grey building) to get directions.",
+        "Pika e nisjes 'TI JE KËTU' nuk është ngarkuar ende. Provoni përsëri.":
+            "The 'YOU ARE HERE' starting point has not loaded yet. Please try again.",
+        "Të fshihen të gjitha raportet e ruajtura?": "Delete all saved reports?",
+        "Thekso në hartë: ": "Highlight on map: ",
+        "Përshkrim i shkurtër i problemit…": "Short description of the problem…",
+        "Kliko përsëri për të rifokusuar kufijtë në hartë.": "Click again to re-focus the boundaries on the map.",
+        "Gjuha / Language": "Gjuha / Language"
+    };
+
+    // Çelësat pastrohen nga hapësirat anësore që kërkimi të mos dështojë për vargje
+    // si "Shkalla: " ose " metra", ku hapësira është pjesë e formatimit, jo e fjalës.
+    // Edhe vlerat pastrohen: hapësirat anësore të origjinalit ruhen nga replace-i më poshtë,
+    // prandaj po t'i mbanin edhe vlerat, do të dilnin të dyfishuara ("Scale:  1:4,000").
+    var I18N_EN_NORM = {};
+    Object.keys(I18N_EN).forEach(function(k) { I18N_EN_NORM[k.trim()] = I18N_EN[k].trim(); });
+
+    /** Përkthen një varg vetëm për shfaqje; kthen origjinalin nëse s'ka përkthim. */
+    function t(s) {
+        if (lang !== "en" || s == null) return s;
+        var k = String(s).trim();
+        if (Object.prototype.hasOwnProperty.call(I18N_EN_NORM, k)) {
+            // Ruaj hapësirat anësore të origjinalit (p.sh. "Shkalla: " → "Scale: ").
+            return String(s).replace(k, I18N_EN_NORM[k]);
+        }
+        return s;
+    }
+
+    /* Përkthimi i DOM-it statik: teksti origjinal shqip ruhet te vetë nyja, që kthimi
+     * në shqip të jetë i saktë pa e rifreskuar faqen. */
+    var I18N_ORIG = "__sqText";
+    var I18N_ATTRS = ["title", "aria-label", "placeholder"];
+
+    function i18nTranslateNode(node) {
+        if (node.nodeType === 3) {
+            var raw = node[I18N_ORIG];
+            if (raw === undefined) {
+                raw = node.nodeValue;
+                if (!raw || !raw.trim()) return;
+                node[I18N_ORIG] = raw;
+            }
+            node.nodeValue = lang === "en" ? t(raw) : raw;
+            return;
+        }
+        if (node.nodeType !== 1) return;
+        I18N_ATTRS.forEach(function(attr) {
+            if (!node.hasAttribute(attr)) return;
+            var key = I18N_ORIG + "_" + attr;
+            var orig = node[key];
+            if (orig === undefined) {
+                orig = node.getAttribute(attr);
+                node[key] = orig;
+            }
+            node.setAttribute(attr, lang === "en" ? t(orig) : orig);
+        });
+    }
+
+    /** Përkthen një degë të DOM-it. Harta (#map) përjashtohet — përmbajtja e saj
+     *  gjenerohet nga Leaflet dhe përkthehet me t() aty ku ndërtohet. */
+    function applyI18nTo(root) {
+        if (!root) return;
+        i18nTranslateNode(root);
+        var walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+            acceptNode: function(n) {
+                var el = n.nodeType === 1 ? n : n.parentNode;
+                if (el && el.closest && el.closest("#map")) return NodeFilter.FILTER_REJECT;
+                if (el && (el.tagName === "SCRIPT" || el.tagName === "STYLE")) return NodeFilter.FILTER_REJECT;
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+        var n;
+        while ((n = walker.nextNode())) i18nTranslateNode(n);
+    }
+
+    function applyI18n() {
+        ["header", "#sidebar", ".map-toolbar", "footer", "#manual-overlay", "#problem-report-compose-dialog"]
+            .forEach(function(sel) {
+                document.querySelectorAll(sel).forEach(applyI18nTo);
+            });
+        document.documentElement.lang = lang;
+    }
+
+    /** Ndërron gjuhën dhe rindërton pjesët që gjenerohen nga JS. */
+    function setLang(next) {
+        if (next !== "sq" && next !== "en") return;
+        lang = next;
+        try { localStorage.setItem(LANG_KEY, lang); } catch (e1) {}
+
+        var sqBtn = document.getElementById("lang-sq");
+        var enBtn = document.getElementById("lang-en");
+        if (sqBtn && enBtn) {
+            sqBtn.classList.toggle("is-active", lang === "sq");
+            enBtn.classList.toggle("is-active", lang === "en");
+            sqBtn.setAttribute("aria-pressed", lang === "sq" ? "true" : "false");
+            enBtn.setAttribute("aria-pressed", lang === "en" ? "true" : "false");
+        }
+
+        // Rindërto ato pjesë ku teksti është krijuar nga JS.
+        if (typeof rebuildLayersLegend === "function") rebuildLayersLegend();
+        if (typeof biznisetGeoJson !== "undefined" && biznisetGeoJson && typeof renderBiznisetList === "function") {
+            var fi = document.getElementById("bizniset-filter");
+            renderBiznisetList(biznisetGeoJson.features, fi ? fi.value : "");
+        }
+        if (typeof map !== "undefined" && map) map.closePopup();
+        if (typeof updateMeasureDisplay === "function") updateMeasureDisplay();
+        if (typeof updateScaleDisplayFinal === "function") updateScaleDisplayFinal();
+
+        applyI18n();
+    }
 
     /**
      * Të dhënat e shtresave janë skedarë statikë GeoJSON (EPSG:4326) në ./data/, eksportuar një herë nga
@@ -2379,7 +2694,7 @@
                 ' src="' + escapeHtmlText(photoUrl) + '" alt="" onerror="this.style.display=\'none\'">';
         }
         html += '<h4 class="biz-map-popup-title">' + escapeHtmlText(title) + '</h4>';
-        if (cat) html += '<p class="biz-map-popup-cat">' + escapeHtmlText(cat) + '</p>';
+        if (cat) html += '<p class="biz-map-popup-cat">' + escapeHtmlText(t(cat)) + '</p>';
         if (desc) html += '<p class="biz-map-popup-desc">' + escapeHtmlText(desc) + '</p>';
         html += '</div>';
         return html;
@@ -2518,9 +2833,9 @@
             var scale = Math.round(metersPerPixel * 96 / 0.0254);
 
             document.getElementById("bottom-center").innerHTML =
-                "Shkalla: 1:" + scale.toLocaleString();
+                t("Shkalla: ") + "1:" + scale.toLocaleString();
         } catch (e) {
-            document.getElementById("bottom-center").innerHTML = "Shkalla: -";
+            document.getElementById("bottom-center").innerHTML = t("Shkalla: -");
         }
     }
     map.on("zoomend", updateScaleDisplayFinal);
@@ -2822,7 +3137,7 @@
         var m = L.marker(ll, {
             icon: buildProblemReportIcon(false),
             zIndexOffset: PROBLEM_REPORT_Z,
-            title: "Raport problemi — kliko për ta hequr"
+            title: t("Raport problemi — kliko për ta hequr")
         }).addTo(problemsReportLayer);
         m._problemReportId = item.id;
         var html =
@@ -2830,7 +3145,7 @@
             "<strong>" + escapeHtmlProblem(item.type || "Problem") + "</strong><br>" +
             escapeHtmlProblem(item.desc || "").replace(/\n/g, "<br>") +
             (item.date ? "<br><small>" + escapeHtmlProblem(item.date) + "</small>" : "") +
-            "<button type=\"button\" class=\"btn-problem-hiq\" data-problem-hiq=\"1\">Hiq nga harta</button>" +
+            "<button type=\"button\" class=\"btn-problem-hiq\" data-problem-hiq=\"1\">" + t("Hiq nga harta") + "</button>" +
             "</div>";
         m.bindPopup(html, {
             maxWidth: 320,
@@ -2884,27 +3199,27 @@
         var wrap = document.createElement("div");
         wrap.className = "problem-popup-form";
         wrap.innerHTML =
-            "<h3>Raporto problem</h3>" +
-            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-type\">Lloji i problemit</label>" +
+            "<h3>" + t("Raporto problem") + "</h3>" +
+            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-type\">" + t("Lloji i problemit") + "</label>" +
             "<select id=\"problem-form-type\" required>" +
-            "<option value=\"\">— Zgjidhni —</option>" +
-            "<option value=\"Demtim material\">Demtim material</option>" +
-            "<option value=\"Rrjedhje ose infrastrukturë e dëmtuar\">Rrjedhje ose infrastrukturë e dëmtuar</option>" +
-            "<option value=\"Mungesë e ndriçimit / energjisë\">Ndriçimi / energji</option>" +
-            "<option value=\"Ndotje / mbeturina\">Ndotje / mbeturina</option>" +
-            "<option value=\"Zhurmë / bezdisje\">Zhurmë / bezdisje</option>" +
-            "<option value=\"Shenja / orientim\">Shenja / orientim i prishur</option>" +
-            "<option value=\"Tjetër\">Tjetër</option>" +
+            "<option value=\"\">" + t("— Zgjidhni —") + "</option>" +
+            "<option value=\"Demtim material\">" + t("Demtim material") + "</option>" +
+            "<option value=\"Rrjedhje ose infrastrukturë e dëmtuar\">" + t("Rrjedhje ose infrastrukturë e dëmtuar") + "</option>" +
+            "<option value=\"Mungesë e ndriçimit / energjisë\">" + t("Ndriçimi / energji") + "</option>" +
+            "<option value=\"Ndotje / mbeturina\">" + t("Ndotje / mbeturina") + "</option>" +
+            "<option value=\"Zhurmë / bezdisje\">" + t("Zhurmë / bezdisje") + "</option>" +
+            "<option value=\"Shenja / orientim\">" + t("Shenja / orientim i prishur") + "</option>" +
+            "<option value=\"Tjetër\">" + t("Tjetër") + "</option>" +
             "</select></div>" +
-            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-desc\">Përshkrimi</label>" +
-            "<textarea id=\"problem-form-desc\" placeholder=\"Përshkrim i shkurtër i problemit…\" maxlength=\"2000\"></textarea></div>" +
-            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-date\">Data</label>" +
+            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-desc\">" + t("Përshkrimi") + "</label>" +
+            "<textarea id=\"problem-form-desc\" placeholder=\"" + t("Përshkrim i shkurtër i problemit…") + "\" maxlength=\"2000\"></textarea></div>" +
+            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-date\">" + t("Data") + "</label>" +
             "<input type=\"date\" id=\"problem-form-date\" value=\"" + today + "\" /></div>" +
-            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-coords\">Koordinatat Kosovaref01</label>" +
+            "<div class=\"pr-row\"><label class=\"pr-lbl\" for=\"problem-form-coords\">" + t("Koordinatat Kosovaref01") + "</label>" +
             "<input id=\"problem-form-coords\" type=\"text\" readonly value=\"" + escapeHtmlProblem(coordLine) + "\" /></div>" +
             "<div class=\"pr-actions\">" +
-            "<button type=\"button\" class=\"btn-pr-save\" id=\"problem-form-save\">Ruaj</button>" +
-            "<button type=\"button\" class=\"btn-pr-cancel\" id=\"problem-form-cancel\">Anulo</button>" +
+            "<button type=\"button\" class=\"btn-pr-save\" id=\"problem-form-save\">" + t("Ruaj") + "</button>" +
+            "<button type=\"button\" class=\"btn-pr-cancel\" id=\"problem-form-cancel\">" + t("Anulo") + "</button>" +
             "</div>";
 
         var popup = L.popup({
@@ -2937,7 +3252,7 @@
             var dateEl = wrap.querySelector("#problem-form-date");
             var type = typeEl ? typeEl.value.trim() : "";
             if (!type) {
-                alert("Ju lutem zgjidhni llojin e problemit.");
+                alert(t("Ju lutem zgjidhni llojin e problemit."));
                 return;
             }
             var desc = descEl ? descEl.value.trim() : "";
@@ -3458,9 +3773,9 @@
             }
             var walkingTime = Math.ceil(totalDistance / 1.4);
             marker.bindPopup(
-                "<b>" + escapeHtmlText(lloji) + "</b><br>" +
-                "Distanca nga The Village: " + totalDistance.toFixed(0) + " m<br>" +
-                "Koha e ecjes: ~" + Math.ceil(walkingTime / 60) + " min"
+                "<b>" + escapeHtmlText(t(lloji)) + "</b><br>" +
+                t("Distanca nga The Village: ") + totalDistance.toFixed(0) + " m<br>" +
+                t("Koha e ecjes: ~") + Math.ceil(walkingTime / 60) + t(" min")
             ).openPopup();
         });
     }
@@ -3543,10 +3858,10 @@
             }),
             interactive: true,
             keyboard: true,
-            title: "Pika informuese — kliko",
+            title: t("Pika informuese — kliko"),
             zIndexOffset: 800
         });
-        pikaInformueseMarker.bindPopup("<strong>Ti je këtu!</strong>", {
+        pikaInformueseMarker.bindPopup("<strong>" + t("Ti je këtu!") + "</strong>", {
             maxWidth: 240,
             className: "pika-informuese-popup",
             closeButton: true,
@@ -3607,7 +3922,9 @@
 
     // Lidh checkbox-in e legjendës me shtimin/heqjen e shtresës në hartë.
     function wireLayerCheckbox(inputEl, mapKey) {
-        inputEl.checked = true;
+        // Lexohet gjendja reale e hartës, jo një vlerë fikse — legjenda rindërtohet
+        // kur ndërrohet gjuha dhe ndezjet/fikjet nuk duhet të humbin.
+        inputEl.checked = map.hasLayer(layers[mapKey]);
         inputEl.onchange = function() {
             if (this.checked) map.addLayer(layers[mapKey]); else map.removeLayer(layers[mapKey]);
         };
@@ -3622,6 +3939,11 @@
     }
 
     var layersDiv = document.getElementById("layers-list");
+
+    /** Ndërton legjendën. Thirret sërish kur ndërrohet gjuha; gjendja e shtresave
+     *  lexohet nga vetë harta, prandaj ndezjet/fikjet ruhen. */
+    function rebuildLayersLegend() {
+    layersDiv.innerHTML = "";
     ORDERED_LAYER_KEYS.forEach(function(key) {
         if (!layers[key]) return;
         var lid = layerIdForKey(key);
@@ -3642,13 +3964,14 @@
             sym.setAttribute("aria-hidden", "true");
             var nameLbl = document.createElement("span");
             nameLbl.className = "legend-text";
-            nameLbl.innerHTML = '<span class="legend-name">Bizneset</span>';
+            nameLbl.innerHTML = '<span class="legend-name"></span>';
+            nameLbl.querySelector(".legend-name").textContent = t("Bizneset");
             var collapseBtn = document.createElement("button");
             collapseBtn.type = "button";
             collapseBtn.className = "legend-collapse-btn";
             collapseBtn.setAttribute("aria-expanded", "true");
             collapseBtn.setAttribute("aria-controls", "legend-bizneset-subs");
-            collapseBtn.title = "Palos / hap nëntë kategoritë";
+            collapseBtn.title = t("Palos / hap nëntë kategoritë");
             collapseBtn.textContent = "▾";
             parentRow.appendChild(mainCb);
             parentRow.appendChild(sym);
@@ -3674,7 +3997,7 @@
                 dot.style.backgroundColor = row.color;
                 var sn = document.createElement("span");
                 sn.className = "legend-name";
-                sn.textContent = row.label;
+                sn.textContent = t(row.label);
                 subLbl.appendChild(subCb);
                 subLbl.appendChild(dot);
                 subLbl.appendChild(sn);
@@ -3699,7 +4022,7 @@
             oDot.style.backgroundColor = "#95a5a6";
             var oN = document.createElement("span");
             oN.className = "legend-name";
-            oN.textContent = "Të tjera";
+            oN.textContent = t("Të tjera");
             subOther.appendChild(oCb);
             subOther.appendChild(oDot);
             subOther.appendChild(oN);
@@ -3719,7 +4042,7 @@
             wrap.appendChild(parentRow);
             wrap.appendChild(hint);
             wrap.appendChild(subs);
-            mainCb.checked = true;
+            mainCb.checked = map.hasLayer(layers[key]);
             mainCb.onchange = function() {
                 if (this.checked) map.addLayer(layers[key]); else map.removeLayer(layers[key]);
                 setBiznesetSubsDisabled(!this.checked);
@@ -3738,18 +4061,18 @@
             svcParentRow.className = "legend-row legend-row--parent";
             var svcInp = document.createElement("input");
             svcInp.type = "checkbox";
-            svcInp.checked = false; // e ndalur (off) kur hapet webgis
+            svcInp.checked = svc.isOn(); // e ndalur kur hapet webgis; pas rindërtimit ruan gjendjen
             svcInp.id = lid;
             var svcNameLbl = document.createElement("span");
             svcNameLbl.className = "legend-text";
             svcNameLbl.innerHTML = '<span class="legend-name"></span>';
-            svcNameLbl.querySelector(".legend-name").textContent = key;
+            svcNameLbl.querySelector(".legend-name").textContent = t(key);
             var svcCollapseBtn = document.createElement("button");
             svcCollapseBtn.type = "button";
             svcCollapseBtn.className = "legend-collapse-btn";
             svcCollapseBtn.setAttribute("aria-expanded", "true");
             svcCollapseBtn.setAttribute("aria-controls", svc.cfg.subsId);
-            svcCollapseBtn.title = "Palos / hap kategoritë";
+            svcCollapseBtn.title = t("Palos / hap kategoritë");
             svcCollapseBtn.textContent = "▾";
             svcParentRow.appendChild(svcInp);
             svcParentRow.appendChild(svcNameLbl);
@@ -3766,13 +4089,13 @@
                 subCb.type = "checkbox";
                 subCb.className = "legend-service-subcb";
                 subCb.checked = svc.enabled[lloji] !== false;
-                subCb.disabled = true; // aktivizohet vetëm kur shtresa kryesore është e ndezur
+                subCb.disabled = !svc.isOn(); // aktive vetëm kur shtresa kryesore është e ndezur
                 var dot = document.createElement("span");
                 dot.className = "legend-service-swatch";
                 dot.innerHTML = svc.badgeHtml(lloji);
                 var sn = document.createElement("span");
                 sn.className = "legend-name";
-                sn.textContent = lloji;
+                sn.textContent = t(lloji);
                 subLbl.appendChild(subCb);
                 subLbl.appendChild(dot);
                 subLbl.appendChild(sn);
@@ -3826,19 +4149,19 @@
             var clearBtn = document.createElement("button");
             clearBtn.type = "button";
             clearBtn.className = "legend-clear-btn";
-            clearBtn.textContent = "Fshi të gjitha";
-            clearBtn.title = "Hiq të gjitha raportet e ruajtura";
+            clearBtn.textContent = t("Fshi të gjitha");
+            clearBtn.title = t("Hiq të gjitha raportet e ruajtura");
             clearBtn.addEventListener("click", function(ev) {
                 ev.preventDefault();
                 ev.stopPropagation();
-                if (!confirm("Të fshihen të gjitha raportet e ruajtura?")) return;
+                if (!confirm(t("Të fshihen të gjitha raportet e ruajtura?"))) return;
                 clearAllProblemReports();
                 updateProblemReportsClearBtn();
             });
             var txtR = document.createElement("span");
             txtR.className = "legend-text";
             txtR.innerHTML = '<span class="legend-name"></span>';
-            txtR.querySelector(".legend-name").textContent = key;
+            txtR.querySelector(".legend-name").textContent = t(key);
             label.appendChild(inp);
             label.appendChild(symEl);
             label.appendChild(txtR);
@@ -3852,13 +4175,15 @@
         var txt = document.createElement("span");
         txt.className = "legend-text";
         txt.innerHTML = '<span class="legend-name"></span>';
-        txt.querySelector(".legend-name").textContent = key;
+        txt.querySelector(".legend-name").textContent = t(key);
         label.appendChild(inp);
         label.appendChild(symEl);
         label.appendChild(txt);
         wireLayerCheckbox(inp, key);
         layersDiv.appendChild(label);
     });
+    }
+    rebuildLayersLegend();
 
     document.getElementById("mall-search").addEventListener("input", function(e) {
         var q = (e.target.value || "").toLowerCase().trim();
@@ -5029,7 +5354,7 @@
                 lastCategory = cat;
                 var catHeader = document.createElement("h3");
                 catHeader.className = "bizniset-category-header";
-                catHeader.textContent = cat;
+                catHeader.textContent = t(cat);
                 listEl.appendChild(catHeader);
             }
             var article = document.createElement("article");
@@ -5069,7 +5394,7 @@
             article.appendChild(row);
             article.setAttribute("tabindex", "0");
             article.setAttribute("role", "button");
-            article.setAttribute("aria-label", "Thekso në hartë: " + biznisetFeatureTitle(props, i));
+            article.setAttribute("aria-label", t("Thekso në hartë: ") + biznisetFeatureTitle(props, i));
             article.addEventListener("click", function() {
                 if (biznisetSelectedCardEl) biznisetSelectedCardEl.classList.remove("is-selected");
                 biznisetSelectedCardEl = article;
@@ -5088,7 +5413,7 @@
         });
         fillBiznisetCardThumbs(listEl);
         if (biznisetGeoJson && total > 0) {
-            statusEl.textContent = q ? (shown + " / " + total + " biznese") : (total + " biznese");
+            statusEl.textContent = q ? (shown + " / " + total + " " + t("biznese")) : (total + " " + t("biznese"));
         }
     }
 
@@ -5104,7 +5429,7 @@
         biznisetFetchInFlight = true;
         var statusEl = document.getElementById("bizniset-status");
         var filterInput = document.getElementById("bizniset-filter");
-        statusEl.textContent = "Duke ngarkuar bizneset…";
+        statusEl.textContent = t("Duke ngarkuar bizneset…");
         biznisetFeaturesLoadPromise = loadLocalGeoJSON("Bizniset")
             .then(function(data) {
                 biznisetFetchInFlight = false;
@@ -5253,7 +5578,7 @@
             })
             .catch(function(err) {
                 console.error("[GeoJSON export]", err);
-                alert("Gabim gjatë përgatitjes së GeoJSON (shiko console).");
+                alert(t("Gabim gjatë përgatitjes së GeoJSON (shiko console)."));
             })
             .then(function() {
                 orig.forEach(function(o) {
@@ -5426,6 +5751,16 @@
     var highlightLayer = null; // Theksim vizual (pastrohet nga clearBiznisetSelectionUI; pa WMS hover)
 
     initProblemReportUi();
+
+    // Çelësi i gjuhës. setLang() rindërton legjendën dhe listën, prandaj thirret pasi
+    // të gjitha pjesët e ndërfaqes janë ndërtuar një herë.
+    (function initLangSwitch() {
+        var sqBtn = document.getElementById("lang-sq");
+        var enBtn = document.getElementById("lang-en");
+        if (sqBtn) sqBtn.addEventListener("click", function() { setLang("sq"); });
+        if (enBtn) enBtn.addEventListener("click", function() { setLang("en"); });
+        setLang(lang); // zbaton gjuhën e ruajtur nga hera e kaluar
+    })();
     initProblemReportComposeDialog();
 
     (function initBizLegendMapIfNeeded() {
@@ -5629,13 +5964,13 @@
 
         if (isNavActive) {
             btn.classList.add("map-tool-btn--on");
-            btn.title = "Klikoni biznesin e destinacionit në hartë";
-            btn.setAttribute("aria-label", "Klikoni biznesin e destinacionit në hartë");
+            btn.title = t("Klikoni biznesin e destinacionit në hartë");
+            btn.setAttribute("aria-label", t("Klikoni biznesin e destinacionit në hartë"));
             map.getContainer().style.cursor = "crosshair";
         } else {
             btn.classList.remove("map-tool-btn--on");
-            btn.title = "Navigim deri në një biznes";
-            btn.setAttribute("aria-label", "Navigim deri në një biznes");
+            btn.title = t("Navigim deri në një biznes");
+            btn.setAttribute("aria-label", t("Navigim deri në një biznes"));
             map.getContainer().style.cursor = "";
             resetNav();
         }
@@ -5687,7 +6022,7 @@
 
         // NAVIGIMI — aktiv
         if (!pikaNisjes || pikaNisjes.length !== 2) {
-            alert("Pika e nisjes 'TI JE KËTU' nuk është ngarkuar ende. Provoni përsëri.");
+            alert(t("Pika e nisjes 'TI JE KËTU' nuk është ngarkuar ende. Provoni përsëri."));
             return;
         }
 
@@ -5746,15 +6081,15 @@
 
                     destinationMarker.bindPopup(
                         `<b>${businessName}</b><br>` +
-                        `Distanca: ${totalDistance.toFixed(0)} metra<br>` +
-                        `Koha e ecjes: ~${Math.ceil(walkingTime / 60)} minuta`
+                        `${t("Distanca: ")}${totalDistance.toFixed(0)}${t(" metra")}<br>` +
+                        `${t("Koha e ecjes: ~")}${Math.ceil(walkingTime / 60)}${t(" min")}`
                     ).openPopup();
 
                     console.log("✓ Rruga gjetur:", routeCoords.length, "pika,", totalDistance.toFixed(0), "metra");
                 });
             } else {
                 clearBiznisetSelectionUI();
-                alert("Ju lutem klikoni mbi një biznes (ndërtesë gri) për të marrë udhëzimet.");
+                alert(t("Ju lutem klikoni mbi një biznes (ndërtesë gri) për të marrë udhëzimet."));
             }
         });
     });
@@ -5773,8 +6108,8 @@
         var btn = document.getElementById('nav-btn');
         if (btn) {
             btn.classList.remove("map-tool-btn--on");
-            btn.title = "Navigim deri në një biznes";
-            btn.setAttribute("aria-label", "Navigim deri në një biznes");
+            btn.title = t("Navigim deri në një biznes");
+            btn.setAttribute("aria-label", t("Navigim deri në një biznes"));
         }
         map.getContainer().style.cursor = "";
     }
@@ -5848,7 +6183,7 @@
             })
             .catch(function(error) {
                 console.error("✗ Gabim në ruajtjen e hartës:", error);
-                alert("Gabim në ruajtjen e hartës. Provoni përsëri.");
+                alert(t("Gabim në ruajtjen e hartës. Provoni përsëri."));
                 releaseBtn();
             });
     }
@@ -6054,7 +6389,7 @@
             var area = calculatePolygonArea(measurePoints);
             L.popup({ closeButton: false })
                 .setLatLng(latlng)
-                .setContent(buildMeasurePopupContent(`<b>Sipërfaqja totale:</b><br>${formatArea(area)}`))
+                .setContent(buildMeasurePopupContent(`<b>${t("Sipërfaqja totale:")}</b><br>${formatArea(area)}`))
                 .openOn(map);
             console.log("📐 Sipërfaqja:", formatArea(area));
             return;
@@ -6083,7 +6418,7 @@
 
             L.popup({ closeButton: false })
                 .setLatLng(latlng)
-                .setContent(buildMeasurePopupContent(`<b>Distanca totale:</b><br>${totalDistance.toFixed(2)} metra`))
+                .setContent(buildMeasurePopupContent(`<b>${t("Distanca totale:")}</b><br>${totalDistance.toFixed(2)}${t(" metra")}`))
                 .openOn(map);
 
             console.log("📏 Distanca:", totalDistance.toFixed(2), "metra");
