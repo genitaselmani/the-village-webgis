@@ -2784,6 +2784,15 @@
         preferCanvas: true
     });
 
+    /**
+     * Kufiri i kompleksit vizatohet në një panel të vetin nën panelin e zakonshëm të vektorëve
+     * (400), që të mbetet gjithmonë poshtë parkingut e shtresave të tjera. Pa këtë, radha varej
+     * nga cili fetch kthehej i pari: kur Kufiri_village mbërrinte i fundit, vija e tij me pika
+     * dhe mbushja e lehtë binin mbi poligonet e parkingut dhe krijonin paqartësi.
+     */
+    map.createPane("kufiriPane");
+    map.getPane("kufiriPane").style.zIndex = 350;
+
     // Rrota e miut: një hap = një shkallë fikse (1:4000 → 1:2000 → …), pa vlera të ndërmjetme.
     map.getContainer().addEventListener("wheel", function(ev) {
         ev.preventDefault();
@@ -3441,11 +3450,13 @@
     loadBiznesetNdaraWfs().catch(function() {});
 
     // Krijon një shtresë Leaflet (grup) nga një GeoJSON lokal. Kthehet menjëherë (grup bosh, shtohet vetë kur mbaron ngarkimi).
-    function getLocalLayer(name, styleFn, pointToLayerFn) {
+    function getLocalLayer(name, styleFn, pointToLayerFn, pane) {
         var group = L.layerGroup();
         loadLocalGeoJSON(name)
             .then(function(data) {
-                var geo = L.geoJSON(data, { style: styleFn, pointToLayer: pointToLayerFn });
+                var opts = { style: styleFn, pointToLayer: pointToLayerFn };
+                if (pane) opts.pane = pane;
+                var geo = L.geoJSON(data, opts);
                 group.addLayer(geo);
                 group.geoJsonLayer = geo;
                 group.geoJsonData = data;
@@ -3927,7 +3938,7 @@
 
     /** Renditja e shtimit në hartë përafron rendin e dikurshëm zIndex të WMS (fund → sipër). */
     var layers = {
-        "Kufiri": getLocalLayer("Kufiri_village", function() { return KUFIRI_STYLE; }).addTo(map),
+        "Kufiri": getLocalLayer("Kufiri_village", function() { return KUFIRI_STYLE; }, null, "kufiriPane").addTo(map),
         "Parkingu": buildParkinguLayer().addTo(map),
         "Hekurudha": buildHekurudhaLayer().addTo(map),
         "Rrugët": buildRruguetLayer().addTo(map),
