@@ -14,10 +14,42 @@ OGC (WMS + WFS) përmes GeoServer-it në një server cloud me URL publike.
 
 ---
 
+## Pa server fare — nëse mjafton "t'i hapë profesori në QGIS"
+
+Nuk të duhet as server e as llogari cloud nëse qëllimi është thjesht që dikush tjetër t'i
+hapë shtresat në QGIS nga kudo. GeoPackage-u ndodhet tashmë në GitHub Pages, dhe QGIS-i
+di t'i lexojë skedarët drejtpërdrejt nga interneti:
+
+**Një adresë e vetme, të 10 shtresat.** Në QGIS: *Layer → Add Layer → Add Vector Layer*,
+te **Source Type** zgjidh **Protocol: HTTP(S)**, dhe vendos:
+
+```
+/vsicurl/https://genitaselmani.github.io/the-village-webgis/geoserver/thevillage.gpkg
+```
+
+Ose një shtresë e vetme si GeoJSON, p.sh.:
+
+```
+https://genitaselmani.github.io/the-village-webgis/data/Bizniset.geojson
+```
+
+Kjo funksionon përgjithmonë, falas, pa asnjë kompjuter të ndezur, dhe jep gjeometrinë
+**bashkë me atributet** — pra po aq sa jep WFS-ja në praktikë.
+
+> **Kufizimi, ndershëm:** kjo nuk është protokolli WMS/WFS. Nuk ka GetCapabilities dhe
+> nuk mund t'i filtrosh objektet nga serveri. Nëse detyra e kërkon shprehimisht publikimin
+> si shërbime OGC, atëherë duhet GeoServer-i sipas hapave më poshtë.
+
+Teknikisht funksionon sepse GitHub Pages i përgjigjet kërkesave me interval bajtash
+(`Accept-Ranges: bytes`, HTTP 206) — pa këtë, GDAL nuk do ta lexonte dot GeoPackage-un
+nga larg pa e shkarkuar të tërin.
+
+---
+
 > **Për Oracle Cloud (ARM):** ndiq [ORACLE-CLOUD.md](ORACLE-CLOUD.md) dhe përdor
 > `docker-compose.arm64.yml` — imazhi zyrtar OSGeo është vetëm amd64.
 
-## 1. Merr një server
+## 1. Merr një server (vetëm nëse të duhen WMS/WFS të vërteta)
 
 | Opsioni | Kostoja | Shënim |
 |---|---|---|
