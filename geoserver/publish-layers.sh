@@ -111,6 +111,59 @@ for layer in "${LAYERS[@]}"; do
   echo "  shtresa '$layer' u publikua"
 done
 
+# 4) Stilet
+# Pa këto GeoServer-i i vizaton të gjitha shtresat me stilin gri të parazgjedhur, çka do të
+# thotë se WMS-ja nuk do t'i ngjante aspak hartës në WebGIS. Skedarët .sld janë të njëjtët
+# që përdor QGIS-i te projekti origjinal.
+#
+# Emri i skedarit → shtresa së cilës i caktohet si stil parazgjedhës.
+# Shënim: Biznesetllogo.sld nuk përdoret këtu. Ai mbështetet te variabla ${logo_path} e
+# QGIS-it, të cilën GeoServer-i nuk e njeh — pikat do të dilnin bosh. Në vend të tij përdoret
+# bizniset_kategori.sld, që i ngjyros bizneset sipas fushës 'Kategoria' me pikërisht ngjyrat
+# e legjendës së WebGIS-it.
+STYLE_FILES=(
+  "rruget.sld:Rruget"
+  "Parkingu.sld:Parkingu"
+  "hekurudha.sld:RailLines_FR"
+  "pike_informuse.sld:Pike_informuse"
+  "bizniset_kategori.sld:Bizniset"
+)
+
+STYLE_DIR="$(dirname "$0")/styles"
+if [ -d "$STYLE_DIR" ]; then
+  echo ""
+  echo "==> Stilet"
+  for entry in "${STYLE_FILES[@]}"; do
+    file="${entry%%:*}"; target="${entry##*:}"
+    path="$STYLE_DIR/$file"
+    [ -f "$path" ] || { echo "  '$file' mungon — kapërcehet"; continue; }
+    style="${file%.sld}"
+
+    # SLD 1.1 (Symbology Encoding) do content-type të vetin; 1.0 do tjetrin. Provohen të dy.
+    if [ "$(http_code "$GS_URL/rest/workspaces/$WORKSPACE/styles/$style")" = "200" ]; then
+      curl_gs -X PUT -H "Content-Type: application/vnd.ogc.se+xml" --data-binary "@$path" \
+        "$GS_URL/rest/workspaces/$WORKSPACE/styles/$style" >/dev/null 2>&1 ||
+      curl_gs -X PUT -H "Content-Type: application/vnd.ogc.sld+xml" --data-binary "@$path" \
+        "$GS_URL/rest/workspaces/$WORKSPACE/styles/$style" >/dev/null
+      echo "  stili '$style' u përditësua"
+    else
+      curl_gs -X POST -H "Content-Type: application/vnd.ogc.se+xml" --data-binary "@$path" \
+        "$GS_URL/rest/workspaces/$WORKSPACE/styles?name=$style" >/dev/null 2>&1 ||
+      curl_gs -X POST -H "Content-Type: application/vnd.ogc.sld+xml" --data-binary "@$path" \
+        "$GS_URL/rest/workspaces/$WORKSPACE/styles?name=$style" >/dev/null
+      echo "  stili '$style' u ngarkua"
+    fi
+
+    # Caktimi si stil parazgjedhës i shtresës. Këtu PUT-i i pjesshëm është i sigurt:
+    # ndryshon vetëm defaultStyle dhe s'prek pjesën tjetër të konfigurimit të shtresës.
+    curl_gs -X PUT -H "Content-Type: application/json" \
+      -d "{\"layer\":{\"defaultStyle\":{\"name\":\"$WORKSPACE:$style\"}}}" \
+      "$GS_URL/rest/layers/$WORKSPACE:$target" >/dev/null
+    echo "    → caktuar si parazgjedhje për '$target'"
+  done
+  echo "  (Kufiri_village, Bizneset_ndara dhe tri shtresat e shërbimeve nuk kanë .sld — mbeten me stilin gri)"
+fi
+
 echo ""
 echo "==> Gati. Endpoint-et:"
 echo "  WMS  GetCapabilities: $GS_URL/$WORKSPACE/wms?service=WMS&version=1.3.0&request=GetCapabilities"

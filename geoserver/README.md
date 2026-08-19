@@ -166,9 +166,20 @@ kopjo `epsg.properties` te `data_dir/user_projections/` dhe rinis kontejnerin.
 
 ## Stilet
 
-Skedarët `.sld` në rrënjë të projektit (`rruget.sld`, `Parkingu.sld`, `hekurudha.sld`,
-`pike_informuse.sld`, `Biznesetllogo.sld`, `Objektet_jasht.sld`) ngarkohen te
-`Styles → Add a new style` dhe caktohen si stil parazgjedhës i shtresës përkatëse.
+`publish-layers.sh` i ngarkon vetë stilet nga dosja `styles/` dhe i cakton si parazgjedhje:
 
-Tri shtresat e reja — transporti, emergjenca dhe institucionet — **nuk kanë ende SLD**;
-pa të, GeoServer u vë një stil gri të parazgjedhur.
+| Stili | Shtresa |
+|---|---|
+| `rruget.sld` | Rruget |
+| `Parkingu.sld` | Parkingu |
+| `hekurudha.sld` | RailLines_FR |
+| `pike_informuse.sld` | Pike_informuse |
+| `bizniset_kategori.sld` | Bizniset |
+
+`bizniset_kategori.sld` është shkruar posaçërisht për GeoServer: i ngjyros bizneset sipas
+fushës `Kategoria` me pikërisht ngjyrat e legjendës së WebGIS-it. Nuk përdoret
+`Biznesetllogo.sld` i QGIS-it, sepse ai mbështetet te variabla `${logo_path}` që GeoServer-i
+nuk e njeh — pikat do të dilnin bosh.
+
+Pa stil mbeten **Kufiri_village**, **Bizneset_ndara** dhe tri shtresat e shërbimeve
+(transporti, emergjenca, institucionet) — GeoServer u vë stilin gri të parazgjedhur.
