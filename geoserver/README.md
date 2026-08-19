@@ -21,13 +21,20 @@ hapë shtresat në QGIS nga kudo. GeoPackage-u ndodhet tashmë në GitHub Pages,
 di t'i lexojë skedarët drejtpërdrejt nga interneti:
 
 **Një adresë e vetme, të 10 shtresat.** Në QGIS: *Layer → Add Layer → Add Vector Layer*,
-te **Source Type** zgjidh **Protocol: HTTP(S)**, dhe vendos:
+te **Source Type** zgjidh **Protocol: HTTP(S), cloud storage**, te **Type** lër
+`HTTP/HTTPS/FTP`, dhe te **URI** vendos adresën e thjeshtë:
 
 ```
-/vsicurl/https://genitaselmani.github.io/the-village-webgis/geoserver/thevillage.gpkg
+https://genitaselmani.github.io/the-village-webgis/geoserver/thevillage.gpkg
 ```
 
-Ose një shtresë e vetme si GeoJSON, p.sh.:
+Pastaj `Add` → hapet lista e shtresave → zgjidhi të gjitha.
+
+> **Mos e shkruaj `/vsicurl/` në këtë fushë.** QGIS e vë vetë; nëse e shton edhe ti, del
+> `/vsicurl/http:///vsicurl/https://…` dhe gabimi *"is not a valid or recognized data
+> source"*. Prefiksi `/vsicurl/` shkruhet vetëm kur e vendos adresën te **Source Type: File**.
+
+Ose një shtresë e vetme si GeoJSON — te po ajo fushë:
 
 ```
 https://genitaselmani.github.io/the-village-webgis/data/Bizniset.geojson
