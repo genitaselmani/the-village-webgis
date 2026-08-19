@@ -6,6 +6,7 @@ OGC (WMS + WFS) përmes GeoServer-it në një server cloud me URL publike.
 | Skedari | Roli |
 |---|---|
 | `thevillage.gpkg` | Të 10 shtresat në një GeoPackage (WGS84 / EPSG:4326) |
+| `setup-server.sh` | **Ngritja e plotë me një komandë** — Docker, GeoServer, shtresat, portat, verifikimi |
 | `docker-compose.yml` | GeoServer 2.25.3 me CORS të aktivizuar |
 | `.env.example` | Shablloni i kredencialeve — kopjoje si `.env` |
 | `publish-layers.sh` | Krijon workspace, datastore dhe të 10 shtresat përmes REST API |
@@ -25,14 +26,7 @@ OGC (WMS + WFS) përmes GeoServer-it në një server cloud me URL publike.
 
 Kërkesa minimale: **2 GB RAM**, Ubuntu 22.04+, portat **80**, **443** dhe **8080** të hapura.
 
-## 2. Instalo Docker
-
-```bash
-curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker $USER   # pastaj dil e hyr sërish
-```
-
-## 3. Kopjo skedarët dhe nise GeoServer-in
+## 2. Kopjo skedarët dhe nis gjithçka
 
 Nga kompjuteri yt:
 
@@ -40,28 +34,19 @@ Nga kompjuteri yt:
 scp -r geoserver/ user@IP-E-SERVERIT:~/thevillage-geoserver
 ```
 
-Në server:
+Në server, një komandë e vetme:
 
 ```bash
-cd ~/thevillage-geoserver
-cp .env.example .env
-nano .env          # vendos një fjalëkalim të fortë
-docker compose up -d
-docker compose logs -f    # prit derisa të shfaqet "Server startup"
+cd ~/thevillage-geoserver && sudo bash setup-server.sh
 ```
 
-## 4. Publiko shtresat
+Instalon Docker-in, krijon fjalëkalimin, zgjedh imazhin sipas arkitekturës, nis GeoServer-in,
+hap portën, publikon të 10 shtresat, vendos Proxy Base URL dhe në fund verifikon se sa shtresa
+duken **pa fjalëkalim**. Idempotent — ekzekutoje sërish pa frikë.
 
-```bash
-GEOSERVER_URL=http://localhost:8080/geoserver \
-GEOSERVER_USER=admin \
-GEOSERVER_PASS='fjalekalimi-yt' \
-bash publish-layers.sh
-```
+## 3. Verifiko
 
-Skripti është idempotent — ri-ekzekutimi nuk prish asgjë.
-
-## 5. Verifiko
+Skripti e bën vetë këtë kontroll dhe i shtyp adresat në fund. Për ta parë me sy:
 
 ```
 http://IP-E-SERVERIT:8080/geoserver/thevillage/wms?service=WMS&version=1.3.0&request=GetCapabilities

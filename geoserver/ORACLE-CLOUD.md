@@ -28,40 +28,23 @@ Regjistrohu te [cloud.oracle.com](https://cloud.oracle.com) → *Start for free*
 Domain* tjetër, ul OCPU-të në 1, ose riprovo më vonë. Kalimi i llogarisë në *Pay As You Go*
 (burimet Always Free mbeten falas) e rrit ndjeshëm mundësinë e krijimit.
 
-## 3. Hap portat — në DY vende
+## 3. Hap portën te Security List
 
-Ky është hapi që harrohet më shpesh dhe bën që gjithçka të duket e prishur.
-
-**a) Security List e rrjetit virtual**
+Porti duhet hapur në **dy** vende. Atë brenda makinës (`iptables`) e bën vetë
+`setup-server.sh` te hapi tjetër; këtë këtu duhet ta bësh ti nga paneli, sepse është
+cilësim i rrjetit, jo i serverit:
 
 *Networking → Virtual Cloud Networks → VCN-ja jote → Security Lists → Default → Add Ingress Rules*
 
 | Source CIDR | Protokolli | Porti |
 |---|---|---|
 | `0.0.0.0/0` | TCP | `8080` |
-| `0.0.0.0/0` | TCP | `80` dhe `443` (për HTTPS më vonë) |
+| `0.0.0.0/0` | TCP | `80` dhe `443` (vetëm nëse më vonë shton HTTPS) |
 
-**b) Muri i zjarrit brenda vetë makinës**
+Ky është hapi që harrohet më shpesh dhe bën që gjithçka të duket e prishur: serveri punon,
+por asgjë nuk hapet nga jashtë.
 
-Imazhet Ubuntu të Oracle-it vijnë me rregulla `iptables` që bllokojnë gjithçka përveç SSH-së.
-Edhe pasi ta hapësh Security List-in, porti mbetet i mbyllur derisa të ekzekutosh:
-
-```bash
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 8080 -j ACCEPT
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
-sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT
-sudo netfilter-persistent save
-```
-
-## 4. Docker
-
-```bash
-curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker $USER
-exit          # dil dhe hyr sërish që grupi të aktivizohet
-```
-
-## 5. Kopjo skedarët dhe nis GeoServer-in
+## 4. Kopjo skedarët dhe nis gjithçka me një komandë
 
 Nga kompjuteri yt:
 
@@ -72,27 +55,29 @@ scp -i çelesi.key -r geoserver/ ubuntu@IP-PUBLIKE:~/thevillage
 Në server:
 
 ```bash
-cd ~/thevillage
-cp .env.example .env
-nano .env                 # vendos fjalëkalim të fortë
-docker compose -f docker-compose.arm64.yml up -d
-docker compose -f docker-compose.arm64.yml logs -f
+cd ~/thevillage && sudo bash setup-server.sh
 ```
 
-> Përdor **`docker-compose.arm64.yml`**, jo `docker-compose.yml`. Imazhi zyrtar OSGeo
-> ndërtohet vetëm për amd64 dhe nuk niset në Ampere; varianti ARM përdor `kartoza/geoserver`.
+Kaq. `setup-server.sh` i bën vetë të gjitha hapat që dikur ishin manualë:
 
-## 6. Publiko shtresat
+| Hapi | Çfarë bën |
+|---|---|
+| Arkitektura | zgjedh `docker-compose.arm64.yml` te ARM, `docker-compose.yml` te amd64 |
+| Docker | e instalon nëse mungon |
+| Fjalëkalimi | krijon `.env` me fjalëkalim të rastësishëm 20-shkronjësh (nuk e mbishkruan nëse ekziston) |
+| Portat | shton rregullin `iptables` brenda makinës dhe e ruan |
+| GeoServer | e nis dhe pret derisa të përgjigjet (deri 5 min) |
+| Shtresat | ekzekuton `publish-layers.sh` me shtegun e duhur të GeoPackage-ut |
+| Proxy Base URL | e zbulon IP-në publike dhe e vendos pa i prishur settings-at e tjera |
+| Verifikimi | numëron shtresat te GetCapabilities **pa fjalëkalim** — pra ashtu si i sheh një i huaj |
 
-```bash
-GEOSERVER_URL=http://localhost:8080/geoserver \
-GEOSERVER_USER=admin \
-GEOSERVER_PASS='fjalekalimi-yt' \
-GPKG_PATH=/opt/geoserver/data_dir/data/thevillage.gpkg \
-bash publish-layers.sh
-```
+Në fund shtyp adresat e gata dhe fjalëkalimin e adminit. Skripti është idempotent —
+mund ta ekzekutosh sërish pa frikë.
 
-## 7. Provo nga jashtë
+> Imazhi zyrtar OSGeo ndërtohet vetëm për amd64 dhe nuk niset në Ampere; prandaj te
+> ARM përdoret `kartoza/geoserver`. Skripti e zgjedh vetë — s'ke pse ta mendosh.
+
+## 5. Provo nga jashtë
 
 ```
 http://IP-PUBLIKE:8080/geoserver/thevillage/wms?service=WMS&version=1.3.0&request=GetCapabilities
@@ -105,16 +90,18 @@ Këto adresa mund t'ia japësh profesorit për QGIS.
 
 ## Dy gjëra pa të cilat nuk duhet lënë online
 
-**Fjalëkalimi.** Serveri do të jetë i hapur për krejt internetin. Ndërroje fjalëkalimin e
-administratorit te `.env` para nisjes së parë, dhe mos e lër kurrë `geoserver`.
+**Fjalëkalimi.** Serveri do të jetë i hapur për krejt internetin. `setup-server.sh` e krijon
+vetë një fjalëkalim të rastësishëm dhe e ruan te `.env` (me leje `600`), kështu që nuk mbetet
+kurrë `geoserver`. Mos e ngarko `.env` në git — është te `.gitignore`.
 
-**Proxy Base URL.** Te *Settings → Global* vendos adresën publike, p.sh.
-`http://IP-PUBLIKE:8080/geoserver`. Pa të, në disa konfigurime GetCapabilities kthen URL-a
-të brendshme që klienti nuk i arrin dot. Ndryshoje sërish nëse më vonë kalon në HTTPS me domen.
+**Proxy Base URL.** Pa të, në disa konfigurime GetCapabilities kthen URL-a të brendshme që
+klienti nuk i arrin dot. Skripti e zbulon IP-në publike dhe e vendos vetë; ndryshoje sërish
+nëse më vonë kalon në HTTPS me domen (*Settings → Global*).
 
 *(Ki parasysh: mos e ndrysho këtë cilësim përmes REST me një trup të pjesshëm JSON — ai
 zëvendëson krejt bllokun e settings-ave dhe fshin fusha si `charset`, çka nxjerr gabime te
-të gjitha shtresat. Përdor panelin web.)*
+të gjitha shtresat. Skripti prandaj i lexon settings-at të plota, ndryshon vetëm një fushë
+dhe i kthen të plota.)*
 
 ## HTTPS (nevojitet vetëm nëse WebGIS-i do t'i thërrasë shërbimet)
 
