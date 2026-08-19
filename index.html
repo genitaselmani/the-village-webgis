@@ -2662,7 +2662,7 @@
     var localGeoJsonCache = {};
     function loadLocalGeoJSON(name) {
         if (localGeoJsonCache[name]) return localGeoJsonCache[name];
-        var p = fetch(DATA_BASE + name + ".geojson")
+        var p = fetch(DATA_BASE + name + ".geojson", { cache: "no-cache" })
             .then(function(r) {
                 if (!r.ok) throw new Error(name + ": HTTP " + r.status);
                 return r.json();
@@ -2679,7 +2679,7 @@
     var biznisetPhotoInfoPromise = null;
     function loadBiznisetPhotoInfo() {
         if (biznisetPhotoInfoPromise) return biznisetPhotoInfoPromise;
-        biznisetPhotoInfoPromise = fetch(DATA_BASE + "biznisetPhotos.json")
+        biznisetPhotoInfoPromise = fetch(DATA_BASE + "biznisetPhotos.json", { cache: "no-cache" })
             .then(function(r) {
                 if (!r.ok) throw new Error("biznisetPhotos.json: HTTP " + r.status);
                 return r.json();
