@@ -2875,12 +2875,15 @@
         }
     });
 
+    // Harta bazë: OpenStreetMap. CARTO Voyager (e mëparshmja) filloi ta vulosë çdo pllakë me
+    // "API KEY REQUIRED" kur kërkohet pa çelës; OSM mbetet falas, pa çelës, dhe kërkon vetëm atribuim.
     // crossOrigin: pa të, pllakat e hartës bazë ngarkohen pa CORS dhe html2canvas nuk mund t'i vizatojë —
     // "Ruaj si foto" dilte me sfond gri të zbrazët në vend të hartës.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: MAP_MAX_ZOOM,
         maxNativeZoom: 19,
-        crossOrigin: "anonymous"
+        crossOrigin: "anonymous",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     /** Markerët e biznesit (logo reale ose simbol SVG i personalizueshëm), ndërtuar nga data/Bizniset.geojson. */
