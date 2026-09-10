@@ -2875,15 +2875,17 @@
         }
     });
 
-    // Harta bazë: OpenStreetMap. CARTO Voyager (e mëparshmja) filloi ta vulosë çdo pllakë me
-    // "API KEY REQUIRED" kur kërkohet pa çelës; OSM mbetet falas, pa çelës, dhe kërkon vetëm atribuim.
+    // Harta bazë: CARTO Voyager. CARTO filloi ta vulosë çdo pllakë me "API KEY REQUIRED" kur kërkohet
+    // pa çelës; çelësi falas (përdorim jo-komercial, 5 milion pllaka në muaj) shtohet si ?key=.
+    // Kushtet e CARTO-s kërkojnë që atribuimi i CARTO-s dhe i OpenStreetMap të mbetet i dukshëm.
     // crossOrigin: pa të, pllakat e hartës bazë ngarkohen pa CORS dhe html2canvas nuk mund t'i vizatojë —
     // "Ruaj si foto" dilte me sfond gri të zbrazët në vend të hartës.
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var CARTO_BASEMAP_KEY = "cb1_3g5t_1_f15e22822c3cb0b8796239c4";
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=' + CARTO_BASEMAP_KEY, {
         maxZoom: MAP_MAX_ZOOM,
         maxNativeZoom: 19,
         crossOrigin: "anonymous",
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     /** Markerët e biznesit (logo reale ose simbol SVG i personalizueshëm), ndërtuar nga data/Bizniset.geojson. */
