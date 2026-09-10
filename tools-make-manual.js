@@ -65,7 +65,7 @@ const CONTENT = [
         ["Gjej një biznes", "Shkruaj emrin te fusha “Kërko”. Mund të shkruash edhe kategorinë, p.sh. “gastronomi”."],
         ["Shiko listën", "Bizneset janë të grupuara sipas kategorisë, me emrin e kategorisë si titull."],
         ["Zgjidh një biznes", "Kliko emrin në listë — harta zmadhohet mbi të dhe e thekson."],
-        ["Ndrysho pamjen", "Te “Personalizim” ndryshohen ngjyra, transparenca, forma dhe madhësia e simboleve."],
+        ["Ndrysho pamjen", "Te “Personalizim” ndryshohen ngjyrat, transparenca dhe vija e theksimit të biznesit."],
         ["Kthe si ishte", "Butoni “Rivendos standardet” kthen cilësimet fillestare."]
     ]},
 
