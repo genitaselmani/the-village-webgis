@@ -1205,6 +1205,20 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
             box-sizing: border-box;
         }
+        /* Forma alternative e pikës (katror, romb, trekëndësh, yll) — vetëm te niveli 1:4000-1:2000.
+           SVG, sepse trekëndëshi e ylli nuk bëhen me CSS pa clip-path, të cilin html2canvas nuk e vizaton. */
+        .biz-dot-shape {
+            display: block;
+            filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.4));
+        }
+        .biz-dot-shape svg {
+            display: block;
+            overflow: visible;
+        }
+        .bizniset-personalize-reset:disabled {
+            opacity: 0.45;
+            cursor: default;
+        }
         #bizniset-list {
             flex: 1 1 0%;
             min-height: 0;
@@ -2108,6 +2122,18 @@
                         <button type="button" class="bizniset-personalize-reset" id="biz-highlight-reset">Rivendos standardet (theksimi)</button>
 
                     </div>
+                    <div class="bizniset-personalize-row">
+                        <label>Forma e pikave (1:4000 – 1:2000)
+                            <select id="biz-dot-shape" title="Forma">
+                                <option value="circle">Rreth</option>
+                                <option value="square">Katror</option>
+                                <option value="diamond">Romb</option>
+                                <option value="triangle">Trekëndësh</option>
+                                <option value="star">Yll</option>
+                            </select>
+                        </label>
+                        <button type="button" class="bizniset-personalize-reset" id="biz-dot-shape-reset" disabled>Rivendos formën (rreth)</button>
+                    </div>
                 </div>
             </details>
             <div id="bizniset-status">Duke ngarkuar bizneset…</div>
@@ -2272,6 +2298,13 @@
         "Vijë e plotë": "Solid line",
         "Vizë të gjata": "Long dashes",
         "Vizë të shkurtra": "Short dashes",
+        "Forma e pikave (1:4000 – 1:2000)": "Point shape (1:4,000 – 1:2,000)",
+        "Rreth": "Circle",
+        "Katror": "Square",
+        "Romb": "Diamond",
+        "Trekëndësh": "Triangle",
+        "Yll": "Star",
+        "Rivendos formën (rreth)": "Reset shape (circle)",
         "Mbushja": "Fill",
         "Vija": "Line",
         "Forma": "Shape",
@@ -4593,10 +4626,69 @@
         return "logo-large";
     }
 
+    /**
+     * Forma e pikave me ngjyrë të nivelit të përgjithësuar (1:4000-1:2000), e zgjedhur te "Personalizim".
+     * Prek vetëm këtë nivel: distinktivët dhe logot në shkallët më të mëdha mbeten si janë.
+     * "circle" është gjendja origjinale dhe vizatohet me të njëjtin kod si më parë.
+     */
+    var BIZ_DOT_SHAPE_KEY = "webgis_thevillage_biz_dot_shape_v1";
+    var BIZ_DOT_SHAPES = ["circle", "square", "diamond", "triangle", "star"];
+    // Kutia e secilës formë, që të gjitha të kenë afërsisht sipërfaqen e rrethit 11px — përndryshe
+    // katrori do dukej më i rëndë, ndërsa trekëndëshi e ylli më të lehtë.
+    var BIZ_DOT_SHAPE_BOX = { square: 10, diamond: 13, triangle: 14, star: 16 };
+    var bizDotShape = "circle";
+    try {
+        var storedDotShape = localStorage.getItem(BIZ_DOT_SHAPE_KEY);
+        if (BIZ_DOT_SHAPES.indexOf(storedDotShape) !== -1) bizDotShape = storedDotShape;
+    } catch (eDotShape) {}
+
+    function saveBizDotShape() {
+        try {
+            if (bizDotShape === "circle") localStorage.removeItem(BIZ_DOT_SHAPE_KEY);
+            else localStorage.setItem(BIZ_DOT_SHAPE_KEY, bizDotShape);
+        } catch (e) {}
+    }
+
+    // SVG-ja e formës dhe ankora vertikale: te trekëndëshi është qendra e rëndesës (2/3 e lartësisë),
+    // që maja të mos e zhvendosë pikën nga vendi i biznesit.
+    function bizDotShapeSvg(shape, s, color) {
+        var pad = 1, h = s / 2, ay = h, body;
+        var attrs = ' fill="' + color + '" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"';
+        if (shape === "square") {
+            body = '<rect x="' + pad + '" y="' + pad + '" width="' + (s - 2 * pad) + '" height="' + (s - 2 * pad) + '" rx="1.5"' + attrs + '/>';
+        } else if (shape === "diamond") {
+            body = '<polygon points="' + h + ',' + pad + ' ' + (s - pad) + ',' + h + ' ' + h + ',' + (s - pad) + ' ' + pad + ',' + h + '"' + attrs + '/>';
+        } else if (shape === "triangle") {
+            body = '<polygon points="' + h + ',' + pad + ' ' + (s - pad) + ',' + (s - pad) + ' ' + pad + ',' + (s - pad) + '"' + attrs + '/>';
+            ay = (pad + 2 * (s - pad)) / 3;
+        } else {
+            var pts = [], outer = h - pad, inner = outer * 0.45;
+            for (var i = 0; i < 10; i++) {
+                var r = i % 2 === 0 ? outer : inner, a = Math.PI / 5 * i - Math.PI / 2;
+                pts.push((h + r * Math.cos(a)).toFixed(2) + ',' + (h + r * Math.sin(a)).toFixed(2));
+            }
+            body = '<polygon points="' + pts.join(' ') + '"' + attrs + '/>';
+        }
+        return {
+            svg: '<svg xmlns="http://www.w3.org/2000/svg" width="' + s + '" height="' + s + '" viewBox="0 0 ' + s + ' ' + s + '">' + body + '</svg>',
+            anchorY: Math.round(ay)
+        };
+    }
+
     // Niveli i përgjithësuar: pikë e thjeshtë me ngjyrën e kategorisë (pa logo).
     function buildBiznisetDotIcon(style) {
-        var s = 11;
         var color = style.fill || "#8a7b63";
+        if (bizDotShape !== "circle" && BIZ_DOT_SHAPE_BOX[bizDotShape]) {
+            var b = BIZ_DOT_SHAPE_BOX[bizDotShape];
+            var shp = bizDotShapeSvg(bizDotShape, b, color);
+            return L.divIcon({
+                className: "bizniset-dot-divicon",
+                html: '<span class="biz-dot-shape" style="width:' + b + 'px;height:' + b + 'px;">' + shp.svg + '</span>',
+                iconSize: [b, b],
+                iconAnchor: [Math.round(b / 2), shp.anchorY]
+            });
+        }
+        var s = 11;
         var html = '<span class="biz-dot" style="width:' + s + 'px;height:' + s + 'px;background:' + color + ';"></span>';
         return L.divIcon({
             className: "bizniset-dot-divicon",
@@ -4948,9 +5040,30 @@
         updateBizPointResetButtonVisibility();
     }
 
+    // Zgjedhja e formës së pikave (vetëm niveli 1:4000-1:2000) dhe butoni që i kthen në rrathë.
+    function initBizDotShapeControl() {
+        var sel = document.getElementById("biz-dot-shape");
+        var reset = document.getElementById("biz-dot-shape-reset");
+        if (!sel) return;
+        function sync() {
+            sel.value = bizDotShape;
+            if (reset) reset.disabled = bizDotShape === "circle";
+        }
+        function apply(next) {
+            bizDotShape = BIZ_DOT_SHAPES.indexOf(next) !== -1 ? next : "circle";
+            saveBizDotShape();
+            sync();
+            syncBiznisetPointRendering();
+        }
+        sel.addEventListener("change", function() { apply(sel.value); });
+        if (reset) reset.addEventListener("click", function() { apply("circle"); });
+        sync();
+    }
+
     // Inicializon kontrollet e formës së pikës së biznesit dhe butonin e rivendosjes.
     function initBizPointPersonalization() {
         loadBizPointPrefsToUI();
+        initBizDotShapeControl();
         var shape = document.getElementById("biz-point-shape");
         var fill = document.getElementById("biz-point-fill");
         var stroke = document.getElementById("biz-point-stroke");

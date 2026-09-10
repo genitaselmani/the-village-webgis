@@ -65,8 +65,8 @@ const CONTENT = [
         ["Gjej një biznes", "Shkruaj emrin te fusha “Kërko”. Mund të shkruash edhe kategorinë, p.sh. “gastronomi”."],
         ["Shiko listën", "Bizneset janë të grupuara sipas kategorisë, me emrin e kategorisë si titull."],
         ["Zgjidh një biznes", "Kliko emrin në listë — harta zmadhohet mbi të dhe e thekson."],
-        ["Ndrysho pamjen", "Te “Personalizim” ndryshohen ngjyrat, transparenca dhe vija e theksimit të biznesit."],
-        ["Kthe si ishte", "Butoni “Rivendos standardet” kthen cilësimet fillestare."]
+        ["Ndrysho pamjen", "Te “Personalizim” ndryshohen ngjyrat, transparenca dhe vija e theksimit të biznesit, si dhe forma e pikave në shkallën 1:4000 – 1:2000."],
+        ["Kthe si ishte", "“Rivendos standardet” kthen theksimin fillestar; “Rivendos formën” i kthen pikat në rrathë."]
     ]},
 
     { t: "h1", v: "Klikimi mbi hartë" },
