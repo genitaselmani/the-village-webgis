@@ -224,8 +224,8 @@
             box-sizing: border-box; /* <button> e ka si parazgjedhje, <a> jo — pa të del 2px më i gjerë */
         }
 
-        /** Manuali hapet brenda aplikacionit, jo në skedë të re: në telefon skeda e re e PDF-së
-            shpesh s'ka kthim të qartë te harta. Ky mbivendosje ka gjithmonë butonin e mbylljes. */
+        /** Mbivendosja e manualit (PDF) në kompjuter, me butonin e mbylljes gjithmonë të dukshëm.
+            Në telefon PDF-ja hapet në skedë të vetën — shih initManualOverlay(). */
         .manual-overlay {
             position: fixed;
             inset: 0;
@@ -2305,6 +2305,9 @@
         "Trekëndësh": "Triangle",
         "Yll": "Star",
         "Rivendos formën (rreth)": "Reset shape (circle)",
+
+        // Titulli i faqes
+        "QENDRA TREGTARE \"THE VILLAGE SHOPPING & FUN\"": "SHOPPING CENTRE \"THE VILLAGE SHOPPING & FUN\"",
         "Mbushja": "Fill",
         "Vija": "Line",
         "Forma": "Shape",
@@ -3330,9 +3333,12 @@
         });
     }
 
-    /** Manuali: hapet brenda faqes që të ketë gjithmonë një rrugë kthimi te harta.
-     *  Përmbajtja është HTML, jo PDF — shfletuesit në telefon shfaqin vetëm faqen e parë
-     *  të një PDF-je brenda faqes. Skedari PDF mbetet i lidhur brenda manualit, për shtyp. */
+    /** Manuali: PDF-ja e punimit.
+     *  Në kompjuter hapet brenda faqes, me butonin × për kthim te harta — shikuesi i PDF-së
+     *  i shfletuesit i shfaq të gjitha faqet. Në telefon hapet në skedë të vetën: brenda një
+     *  faqeje shfletuesit mobilë shfaqin vetëm faqen e parë (Android asnjë), ndërsa në skedë
+     *  të vetën e hapin të plotë, dhe skeda e hartës mbetet aty ku ishte. */
+    var MANUAL_PDF_URL = "Manuali_i_perdorimit_TheVillage.pdf";
     (function initManualOverlay() {
         var openBtn = document.getElementById("manual-open");
         var overlay = document.getElementById("manual-overlay");
@@ -3340,9 +3346,18 @@
         var frame = document.getElementById("manual-frame");
         if (!openBtn || !overlay || !closeBtn || !frame) return;
 
+        function canShowPdfInline() {
+            var coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+            return navigator.pdfViewerEnabled !== false && !coarse;
+        }
         function open() {
+            if (!canShowPdfInline()) {
+                // Nëse shfletuesi e bllokon skedën e re, hape PDF-në në të njëjtën skedë.
+                if (!window.open(MANUAL_PDF_URL, "_blank")) window.location.href = MANUAL_PDF_URL;
+                return;
+            }
             // Ngarkohet vetëm herën e parë, jo sa herë hapet harta.
-            if (!frame.getAttribute("src")) frame.setAttribute("src", "manual.html");
+            if (!frame.getAttribute("src")) frame.setAttribute("src", MANUAL_PDF_URL);
             overlay.hidden = false;
             closeBtn.focus();
         }
