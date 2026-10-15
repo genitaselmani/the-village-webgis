@@ -13,8 +13,8 @@ const OUT_HTML = process.argv[3];
 
 const META = [
     ["Universiteti", "Universiteti i Prishtinës — Fakulteti i Inxhinierisë së Ndërtimit"],
-    ["Dega / Lënda", "Gjeodezi — WebGIS"],
-    ["Profesori", "Prof. Asoc. Dr. Bashkim Idrizi"],
+    ["Dega / Lënda", "Gjeodezi, Gjeoinformacion dhe Vrojtim i Tokës dhe Hapësirës — UebGIS"],
+    ["Profesori", "Prof. Dr. Bashkim Idrizi"],
     ["Punoi", "Genita Selmani"]
 ];
 
