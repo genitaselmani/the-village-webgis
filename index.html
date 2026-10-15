@@ -66,14 +66,14 @@
 
         header {
             flex-shrink: 0;
-            min-height: 56px;
+            min-height: 50px;
             height: auto;
             background: var(--header-bg);
             display: grid;
             grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            gap: 8px 12px;
-            padding: 10px 16px;
+            gap: 6px 12px;
+            padding: 7px 14px;
             padding-left: max(16px, env(safe-area-inset-left, 0px));
             padding-right: max(16px, env(safe-area-inset-right, 0px));
             border-bottom: 1px solid var(--header-border);
@@ -120,31 +120,33 @@
         .header-title strong { color: var(--mall-text); font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
         .header-title span { font-size: 11px; color: var(--mall-muted); font-weight: 400; }
 
+        /** Blloku akademik mbahet në dy rreshta: po t'i ndaje të dhënat rresht për rresht,
+            koka rritet mbi 110px dhe ia merr lartësinë hartës. */
         .header-academic {
             grid-column: 3;
             justify-self: end;
             align-self: center;
             min-width: 0;
-            max-width: min(500px, 46vw);
+            max-width: min(620px, 50vw);
             background: transparent;
         }
         .header-academic-inner {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-align: left;
         }
         .header-academic-logo {
-            width: 58px;
-            height: 58px;
+            width: 40px;
+            height: 40px;
             flex-shrink: 0;
             object-fit: contain;
         }
         .header-academic-text {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            line-height: 1.28;
+            gap: 2px;
+            line-height: 1.25;
             min-width: 0;
         }
         .header-academic-org,
@@ -1856,8 +1858,8 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto;
                 justify-items: center;
-                padding: max(6px, var(--safe-top)) 12px 6px;
-                gap: 4px;
+                padding: max(4px, var(--safe-top)) 10px 5px;
+                gap: 3px;
             }
             /* Noton në cepin lart-majtas në vend që të zërë një rresht të tërë —
                një rresht i veçantë do t'i hiqte hartës rreth 4% të lartësisë. */
@@ -1889,14 +1891,14 @@
             /* Koka zinte deri në 24% të ekranit në telefona të vegjël. Blloku akademik ruhet
                (është pjesë e identitetit të tezës), por shtypet që hartës t'i mbetet më shumë. */
             .header-academic-logo {
-                width: 34px;
-                height: 34px;
+                width: 26px;
+                height: 26px;
             }
             .header-academic-inner { gap: 8px; }
             .header-academic-text { gap: 1px; line-height: 1.2; }
             .header-academic-org,
             .header-academic-faculty { font-size: 9px; }
-            .header-academic-meta { font-size: 9px; }
+            .header-academic-meta { font-size: 8.5px; }
             .header-title strong { font-size: 13px; letter-spacing: -0.01em; }
             .header-title span { font-size: 10px; }
 
@@ -1982,13 +1984,12 @@
     </div>
     <aside class="header-academic" aria-label="Konteksti akademik">
         <div class="header-academic-inner">
-            <img class="header-academic-logo" src="logos/University_of_Prishtina_logo.svg" width="58" height="58" alt="" decoding="async" aria-hidden="true">
+            <img class="header-academic-logo" src="logos/University_of_Prishtina_logo.svg" width="40" height="40" alt="" decoding="async" aria-hidden="true">
+            <!-- Çdo vlerë rri në elementin e vet: përkthimi i kërkon tekstet një e nga një,
+                 prandaj bashkimi i tyre në një varg të vetëm do ta prishte anglishten. -->
             <div class="header-academic-text">
-                <p class="header-academic-org">Universiteti i Prishtinës</p>
-                <p class="header-academic-faculty">Fakulteti i Inxhinierisë së Ndërtimit</p>
-                <p class="header-academic-meta"><span class="header-academic-k">Dega:</span> Gjeodezi, Gjeoinformacion dhe Vrojtim i Tokës dhe Hapësirës</p>
-                <p class="header-academic-meta"><span class="header-academic-k">Lënda:</span> UebGIS</p>
-                <p class="header-academic-meta"><span class="header-academic-k">Profesori:</span> Prof.&nbsp;Dr.&nbsp;Bashkim Idrizi</p>
+                <p class="header-academic-org"><span>Universiteti i Prishtinës</span> · <span class="header-academic-faculty">Fakulteti i Inxhinierisë së Ndërtimit</span></p>
+                <p class="header-academic-meta"><span class="header-academic-k">Dega:</span> <span>Gjeodezi, Gjeoinformacion dhe Vrojtim i Tokës dhe Hapësirës</span> · <span class="header-academic-k">Lënda:</span> <span>UebGIS</span> · <span class="header-academic-k">Profesori:</span> <span>Prof.&nbsp;Dr.&nbsp;Bashkim Idrizi</span></p>
             </div>
         </div>
     </aside>
