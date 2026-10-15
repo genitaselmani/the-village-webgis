@@ -2124,7 +2124,7 @@
 
                     </div>
                     <div class="bizniset-personalize-row">
-                        <label>Forma e pikave (1:4000 – 1:2000)
+                        <label>Forma e pikave (1:2000)
                             <select id="biz-dot-shape" title="Forma">
                                 <option value="circle">Rreth</option>
                                 <option value="square">Katror</option>
@@ -2300,7 +2300,7 @@
         "Vijë e plotë": "Solid line",
         "Vizë të gjata": "Long dashes",
         "Vizë të shkurtra": "Short dashes",
-        "Forma e pikave (1:4000 – 1:2000)": "Point shape (1:4,000 – 1:2,000)",
+        "Forma e pikave (1:2000)": "Point shape (1:2,000)",
         "Rreth": "Circle",
         "Katror": "Square",
         "Romb": "Diamond",
@@ -3968,6 +3968,10 @@
         "Raportet e problemeve": problemsReportLayer
     };
 
+    // Blloqet ngjyrosen sapo të mbërrijë shtresa e njësive; bizneset mund të ngarkohen më vonë,
+    // prandaj ngjyrosja ritentohet edhe nga rebuildBiznisetSymbolsLayer().
+    loadLocalGeoJSON("Bizneset_ndara").then(function() { syncBiznesetNdaraBlocks(); }).catch(function() {});
+
     /**
      * Qendra e pamjes së The Village. Fillon si vlerë e fiksuar, por zëvendësohet me qendrën reale të
      * shtrirjes së bizneseve sapo të dhënat ngarkohen — pika e fiksuar ishte pranë skajit jugor, kështu
@@ -4636,16 +4640,69 @@
 
     /**
      * Simbolizim sipas shkallës (përgjithësim kartografik), i shprehur në hapa nga shkalla bazë 1:4000:
-     * 1:4000-1:2000 → pikë e thjeshtë me ngjyrë kategorie; 1:1000 → distinktiv (logo + unazë kategorie);
-     * 1:500 e më poshtë → vetëm logo, bazuar tek poligoni i biznesit.
+     * 1:4000 → blloqe të ngjyrosura sipas kategorisë (pa pika); 1:2000 → pikë me ngjyrë kategorie;
+     * 1:1000 → distinktiv (logo + unazë kategorie); 1:500 e më poshtë → vetëm logo mbi poligonin.
      */
-    var BIZ_ZOOM_TIER_DOT_MAX = MAP_INITIAL_ZOOM + 1.5;   // përfshin hapat 0-1 (1:4000, 1:2000)
-    var BIZ_ZOOM_TIER_BADGE_MAX = MAP_INITIAL_ZOOM + 2.5; // përfshin hapin 2 (1:1000)
+    var BIZ_ZOOM_TIER_BLOCK_MAX = MAP_INITIAL_ZOOM + 0.5; // vetëm hapi 0 (1:4000)
+    var BIZ_ZOOM_TIER_DOT_MAX = MAP_INITIAL_ZOOM + 1.5;   // hapi 1 (1:2000)
+    var BIZ_ZOOM_TIER_BADGE_MAX = MAP_INITIAL_ZOOM + 2.5; // hapi 2 (1:1000)
     function getBizMarkerZoomTier() {
         var z = map.getZoom();
+        if (z <= BIZ_ZOOM_TIER_BLOCK_MAX) return "blocks";
         if (z <= BIZ_ZOOM_TIER_DOT_MAX) return "dot";
         if (z <= BIZ_ZOOM_TIER_BADGE_MAX) return "badge";
         return "logo-large";
+    }
+
+    /**
+     * Në 1:4000 pikat e 75 bizneseve binin njëra mbi tjetrën dhe harta bëhej e palexueshme.
+     * Në atë shkallë bizneset paraqiten si blloqe: njësitë e shtresës "Kufiret e Bizneseve"
+     * marrin ngjyrën e kategorisë me transparencë. Pikat nisin nga 1:2000.
+     */
+    var NDARA_BLOCK_FILL_OPACITY = 0.55;
+    var NDARA_MATCH_MIN_SCORE = 0.5;
+    var ndaraBizMatchCache = null;
+    var ndaraBizMatchCacheSource = null;
+
+    /** Lidh një njësi të "Bizneset_ndara" me biznesin e vet. 11 nga 72 njësitë e kanë emrin paksa
+     *  ndryshe ("Viva Fresh Store" ndaj "Vivafresh"), prandaj përdoret krahasuesi i emrave i logove. */
+    function matchBizForNdara(ndaraProps) {
+        var feats = (biznisetGeoJson && biznisetGeoJson.features) ? biznisetGeoJson.features : null;
+        if (!feats || !feats.length) return null;
+        if (ndaraBizMatchCacheSource !== biznisetGeoJson) {
+            ndaraBizMatchCache = {};
+            ndaraBizMatchCacheSource = biznisetGeoJson;
+        }
+        var key = normalizeBizNameForMatch(ndaraProps || {});
+        if (!key) return null;
+        if (Object.prototype.hasOwnProperty.call(ndaraBizMatchCache, key)) return ndaraBizMatchCache[key];
+        var best = null, bestScore = 0, i, sc;
+        for (i = 0; i < feats.length; i++) {
+            sc = bestBizNameMatchScore(ndaraProps || {}, feats[i].properties || {});
+            if (sc > bestScore) { bestScore = sc; best = feats[i]; }
+        }
+        ndaraBizMatchCache[key] = bestScore >= NDARA_MATCH_MIN_SCORE ? best : null;
+        return ndaraBizMatchCache[key];
+    }
+
+    function ndaraBlockStyle(feature) {
+        var biz = matchBizForNdara((feature && feature.properties) || {});
+        if (!biz) return NDARA_STYLE;
+        var props = biz.properties || {};
+        // Nëse kategoria është fikur nga legjenda, njësia kthehet gri si çdo ndërtesë tjetër.
+        if (typeof isBizFeatureEnabledByLegend === "function" && !isBizFeatureEnabledByLegend(props)) return NDARA_STYLE;
+        var c = fillColorForBiznisetProps(props);
+        if (!c) return NDARA_STYLE;
+        return { color: "#5f5f5f", weight: 1.2, fill: true, fillColor: c, fillOpacity: NDARA_BLOCK_FILL_OPACITY };
+    }
+
+    /** Ngjyros blloqet vetëm në 1:4000. Te pamja e shërbimeve harta shkon në 1:8000, ku ngjyrosja
+     *  do të ishte vetëm zhurmë, prandaj aty shtresa mbetet gri. */
+    function syncBiznesetNdaraBlocks() {
+        var grp = (typeof layers !== "undefined") ? layers["Kufiret e Bizneseve"] : null;
+        if (!grp || !grp.geoJsonLayer) return;
+        var ngjyroset = getBizMarkerZoomTier() === "blocks" && map.getZoom() >= MAP_INITIAL_ZOOM - 0.5;
+        grp.geoJsonLayer.setStyle(ngjyroset ? ndaraBlockStyle : function() { return NDARA_STYLE; });
     }
 
     /**
@@ -5017,9 +5074,12 @@
 
     // Rindërton të gjithë markerët e biznesit (logo reale ose formë SVG) sipas legjendës dhe stilit të pikës.
     function rebuildBiznisetSymbolsLayer() {
+        syncBiznesetNdaraBlocks();
         if (!biznisetSymbolsLayer) return;
         biznisetSymbolsLayer.clearLayers();
         if (!biznisetGeoJson || !biznisetGeoJson.features || !biznisetGeoJson.features.length) return;
+        // Në 1:4000 bizneset shfaqen si blloqe të ngjyrosura, pa pika.
+        if (getBizMarkerZoomTier() === "blocks") return;
         var base = getBizPointStyleFromUI();
         biznisetGeoJson.features.forEach(function(f) {
             if (!isBizFeatureEnabledByLegend(f.properties || {})) return;

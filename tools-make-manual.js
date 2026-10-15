@@ -65,7 +65,7 @@ const CONTENT = [
         ["Gjej një biznes", "Shkruaj emrin te fusha “Kërko”. Mund të shkruash edhe kategorinë, p.sh. “gastronomi”."],
         ["Shiko listën", "Bizneset janë të grupuara sipas kategorisë, me emrin e kategorisë si titull."],
         ["Zgjidh një biznes", "Kliko emrin në listë — harta zmadhohet mbi të dhe e thekson."],
-        ["Ndrysho pamjen", "Te “Personalizim” ndryshohen ngjyrat, transparenca dhe vija e theksimit të biznesit, si dhe forma e pikave në shkallën 1:4000 – 1:2000."],
+        ["Ndrysho pamjen", "Te “Personalizim” ndryshohen ngjyrat, transparenca dhe vija e theksimit të biznesit, si dhe forma e pikave në shkallën 1:2000."],
         ["Kthe si ishte", "“Rivendos standardet” kthen theksimin fillestar; “Rivendos formën” i kthen pikat në rrathë."]
     ]},
 
@@ -79,10 +79,11 @@ const CONTENT = [
 
     { t: "h1", v: "Si duken bizneset" },
     { t: "lead", v: "Simboli ndryshon sipas sa afër je, që harta të mbetet e lexueshme." },
-    { t: "table", head: ["Kur je", "Bizneset duken si"], w: [30, 70], rows: [
-        ["Larg (pamja fillestare)", "Pika me ngjyrën e kategorisë."],
-        ["Mesatarisht afër", "Rreth me ngjyrën e kategorisë dhe logon brenda."],
-        ["Shumë afër", "Vetëm logoja, e vendosur mbi objektin."]
+    { t: "table", head: ["Shkalla", "Bizneset duken si"], w: [30, 70], rows: [
+        ["1:4000 (pamja fillestare)", "Blloqet e njësive, të ngjyrosura sipas kategorisë."],
+        ["1:2000", "Pika me ngjyrën e kategorisë."],
+        ["1:1000", "Rreth me ngjyrën e kategorisë dhe logon brenda."],
+        ["1:500 e më afër", "Vetëm logoja, e vendosur mbi objektin."]
     ]},
 
     { t: "h1", v: "Në telefon" },
