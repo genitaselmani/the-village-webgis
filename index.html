@@ -806,16 +806,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             margin: 2px;
             border-radius: 50%;
             border: 2px solid #fff;
             box-sizing: border-box;
         }
         .entry-badge svg {
-            width: 17px;
-            height: 17px;
+            width: 13px;
+            height: 13px;
             fill: #fff;
             transform: rotate(var(--rot, 0deg));
         }
@@ -829,12 +829,12 @@
         }
         @keyframes entryPulseBoth {
             0%   { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(22, 163, 74, 0.55); }
-            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 13px rgba(22, 163, 74, 0); }
+            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 10px rgba(22, 163, 74, 0); }
             100% { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(22, 163, 74, 0); }
         }
         @keyframes entryPulseExit {
             0%   { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(225, 29, 72, 0.55); }
-            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 13px rgba(225, 29, 72, 0); }
+            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 10px rgba(225, 29, 72, 0); }
             100% { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(225, 29, 72, 0); }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -3795,8 +3795,8 @@
             className: "entry-divicon",
             html: '<span class="' + cls + '" style="--rot:' + azimut + 'deg">' +
                   '<svg viewBox="0 0 24 24" aria-hidden="true">' + glif + "</svg></span>",
-            iconSize: [34, 34],
-            iconAnchor: [17, 17]
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
         });
     }
 
