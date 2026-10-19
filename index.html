@@ -794,6 +794,72 @@
             background-position: center;
             background-repeat: no-repeat;
         }
+        /** Hyrjet dhe daljet: distinktiv rrethor me shigjetë të rrotulluar sipas drejtimit real
+            të lëvizjes. Jeshile = hyrje dhe dalje, e kuqe = vetëm dalje. Unaza që pulson e bën
+            shenjën të dallueshme pa e rritur simbolin dhe pa mbuluar bizneset përreth. */
+        .entry-divicon {
+            background: transparent !important;
+            border: none !important;
+        }
+        .entry-badge {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            margin: 2px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-sizing: border-box;
+        }
+        .entry-badge svg {
+            width: 17px;
+            height: 17px;
+            fill: #fff;
+            transform: rotate(var(--rot, 0deg));
+        }
+        .entry-badge--both {
+            background: #16a34a;
+            animation: entryPulseBoth 2.8s ease-out infinite;
+        }
+        .entry-badge--exit {
+            background: #e11d48;
+            animation: entryPulseExit 2.8s ease-out infinite;
+        }
+        @keyframes entryPulseBoth {
+            0%   { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(22, 163, 74, 0.55); }
+            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 13px rgba(22, 163, 74, 0); }
+            100% { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+        @keyframes entryPulseExit {
+            0%   { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(225, 29, 72, 0.55); }
+            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 13px rgba(225, 29, 72, 0); }
+            100% { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(225, 29, 72, 0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .entry-badge--both,
+            .entry-badge--exit { animation: none; }
+        }
+        .legend-sym--entry {
+            position: relative;
+            border-radius: 50%;
+            background: #16a34a;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #9aa3ad;
+        }
+        .legend-sym--entry::after {
+            content: "";
+            position: absolute;
+            right: -6px;
+            bottom: -5px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: #e11d48;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #9aa3ad;
+        }
         .legend-sym--report {
             border-radius: 50%;
             background: #e74c3c;
@@ -2231,6 +2297,15 @@
         "Parkingu": "Parking",
         "Rrugët": "Roads",
         "Kufiret e Bizneseve": "Business Units",
+        "Hyrjet dhe daljet": "Entrances and exits",
+        "Hyrje dhe dalje": "Entrance and exit",
+        "Vetëm dalje": "Exit only",
+        "Qasje për automjete": "Vehicle access",
+        "Veriperëndim": "North-west",
+        "Jugperëndim": "South-west",
+        "Perëndim": "West",
+        "Lindje": "East",
+        "Jug": "South",
         "Hekurudha": "Railway",
         "Raportet e problemeve": "Problem reports",
 
@@ -2872,6 +2947,7 @@
     // Rindërton markerët e biznesit në çdo hap zoom-i (niveli "badge" ndryshon madhësinë brenda vetë diapazonit 19-20).
     map.on("zoomend", function() {
         if (typeof rebuildBiznisetSymbolsLayer === "function") rebuildBiznisetSymbolsLayer();
+        if (typeof syncHyrjetDaljetVisibility === "function") syncHyrjetDaljetVisibility();
         if (typeof rebuildParkinguLabels === "function") rebuildParkinguLabels();
         var rr = typeof layers !== "undefined" ? layers["Rrugët"] : null;
         if (rr && rr.casingLayer && rr.fillLayer) {
@@ -3700,6 +3776,69 @@
         return group;
     }
 
+    /**
+     * Hyrjet dhe daljet e kompleksit. Pozicionet dhe drejtimet dolën nga fotoja me shigjeta e
+     * profesorit: shenjat "P" të parkingjeve shërbyen si pika kontrolli për georeferencim dhe
+     * mospërputhja mbeti nën 1 m. Azimuti është drejtimi i daljes nga kompleksi.
+     */
+    var hyrjetDaljetLayer = null;
+
+    function buildHyrjeDaljeIcon(lloji, azimut) {
+        var dyKahshe = lloji === "Hyrje dhe dalje";
+        // Shigjetë me dy koka për hyrje+dalje, me një kokë për vetëm dalje. Të dyja tregojnë lart,
+        // pastaj rrotullohen me azimutin, prandaj drejtimi në hartë është ai i vërteti.
+        var glif = dyKahshe
+            ? '<path d="M12 2l4 5h-3v10h3l-4 5-4-5h3V7H8z"/>'
+            : '<path d="M12 2l6 8h-4v12h-4V10H6z"/>';
+        var cls = dyKahshe ? "entry-badge entry-badge--both" : "entry-badge entry-badge--exit";
+        return L.divIcon({
+            className: "entry-divicon",
+            html: '<span class="' + cls + '" style="--rot:' + azimut + 'deg">' +
+                  '<svg viewBox="0 0 24 24" aria-hidden="true">' + glif + "</svg></span>",
+            iconSize: [34, 34],
+            iconAnchor: [17, 17]
+        });
+    }
+
+    function buildHyrjetDaljetLayer() {
+        hyrjetDaljetLayer = L.layerGroup();
+        loadLocalGeoJSON("Hyrjet_daljet")
+            .then(function(data) {
+                (data.features || []).forEach(function(f) {
+                    var p = f.properties || {};
+                    var c = (f.geometry && f.geometry.coordinates) || null;
+                    if (!c) return;
+                    var m = L.marker(L.latLng(c[1], c[0]), {
+                        icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0),
+                        zIndexOffset: 800,
+                        riseOnHover: true
+                    });
+                    // Teksti ndërtohet në çastin e hapjes, që ndërrimi i gjuhës ta kapë pa u rindërtuar shtresa.
+                    m.bindTooltip(function() {
+                        return escapeHtmlText(t(p.Lloji || "")) + " — " + escapeHtmlText(t(p.Emri || ""));
+                    }, { direction: "top", offset: [0, -14], className: "entry-tooltip" });
+                    m.bindPopup(function() {
+                        return '<b>' + escapeHtmlText(t(p.Lloji || "")) + "</b><br>" +
+                               escapeHtmlText(t(p.Emri || "")) + " · " + escapeHtmlText(t("Qasje për automjete"));
+                    });
+                    hyrjetDaljetLayer.addLayer(m);
+                });
+                syncHyrjetDaljetVisibility();
+            })
+            .catch(function(err) { console.error("[data] Hyrjet_daljet nuk u ngarkua:", err); });
+        return hyrjetDaljetLayer;
+    }
+
+    /** Te pamja e shërbimeve harta del deri në 1:16 000, ku këto shenja do të ishin vetëm zhurmë. */
+    function syncHyrjetDaljetVisibility() {
+        if (!hyrjetDaljetLayer) return;
+        var duhet = map.getZoom() >= MAP_INITIAL_ZOOM - 0.5;
+        hyrjetDaljetLayer.eachLayer(function(m) {
+            var el = m.getElement && m.getElement();
+            if (el) el.style.display = duhet ? "" : "none";
+        });
+    }
+
     function buildHekurudhaLayer() {
         var group = L.layerGroup();
         loadLocalGeoJSON("RailLines_FR")
@@ -3962,6 +4101,7 @@
             pikaInformueseLayerGroup = L.layerGroup().addTo(map);
             return pikaInformueseLayerGroup;
         })(),
+        "Hyrjet dhe daljet": buildHyrjetDaljetLayer().addTo(map),
         "Sherbimet e Transportit": serviceLayerByKey("Sherbimet e Transportit").layer,
         "Sherbimet e Emergjences": serviceLayerByKey("Sherbimet e Emergjences").layer,
         "Institucionet Administrative": serviceLayerByKey("Institucionet Administrative").layer,
@@ -4052,6 +4192,7 @@
     /** Renditja në legjendë (jo në hartë — atë e cakton rendi i shtimit te `layers`). */
     var ORDERED_LAYER_KEYS = [
         "Pika Informuese",
+        "Hyrjet dhe daljet",
         "Bizneset",
         "Sherbimet e Transportit",
         "Sherbimet e Emergjences",
@@ -4064,6 +4205,7 @@
         "Raportet e problemeve"
     ];
     var LAYER_LEGEND_SYM = {
+        "Hyrjet dhe daljet": "legend-sym--entry",
         "Kufiri": "legend-sym--kufi-v",
         "Parkingu": "legend-sym--parking",
         "Rrugët": "legend-sym--road",
@@ -6475,7 +6617,14 @@
                         });
                         // 2) html2canvas e vizaton box-shadow-in MBI elementin, jo pas tij, çka i nxin
                         //    pikat e bizneseve dhe distinktivët e shërbimeve.
-                        doc.querySelectorAll(".biz-dot, .biz-badge, .service-point-badge").forEach(function(el) {
+                        doc.querySelectorAll(".biz-dot, .biz-badge, .service-point-badge, .entry-badge").forEach(function(el) {
+                            el.style.boxShadow = "none";
+                        });
+                        // 3) Unaza që pulson te hyrjet/daljet vjen nga @keyframes, dhe animacioni
+                        //    mbizotëron mbi stilin inline — pa e ndalur, hija e saj vizatohet mbi
+                        //    distinktiv dhe në foto ai del i nxirë.
+                        doc.querySelectorAll(".entry-badge").forEach(function(el) {
+                            el.style.animation = "none";
                             el.style.boxShadow = "none";
                         });
                     }
