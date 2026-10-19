@@ -795,8 +795,7 @@
             background-repeat: no-repeat;
         }
         /** Hyrjet dhe daljet: distinktiv rrethor me shigjetë të rrotulluar sipas drejtimit real
-            të lëvizjes. Jeshile = hyrje dhe dalje, e kuqe = vetëm dalje. Unaza që pulson e bën
-            shenjën të dallueshme pa e rritur simbolin dhe pa mbuluar bizneset përreth. */
+            të lëvizjes. Jeshile = hyrje dhe dalje, e kuqe = vetëm dalje. */
         .entry-divicon {
             background: transparent !important;
             border: none !important;
@@ -811,6 +810,7 @@
             margin: 2px;
             border-radius: 50%;
             border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
             box-sizing: border-box;
         }
         .entry-badge svg {
@@ -819,28 +819,8 @@
             fill: #fff;
             transform: rotate(var(--rot, 0deg));
         }
-        .entry-badge--both {
-            background: #16a34a;
-            animation: entryPulseBoth 2.8s ease-out infinite;
-        }
-        .entry-badge--exit {
-            background: #e11d48;
-            animation: entryPulseExit 2.8s ease-out infinite;
-        }
-        @keyframes entryPulseBoth {
-            0%   { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(22, 163, 74, 0.55); }
-            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 10px rgba(22, 163, 74, 0); }
-            100% { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(22, 163, 74, 0); }
-        }
-        @keyframes entryPulseExit {
-            0%   { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(225, 29, 72, 0.55); }
-            70%  { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 10px rgba(225, 29, 72, 0); }
-            100% { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(225, 29, 72, 0); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .entry-badge--both,
-            .entry-badge--exit { animation: none; }
-        }
+        .entry-badge--both { background: #16a34a; }
+        .entry-badge--exit { background: #e11d48; }
         .legend-sym--entry {
             position: relative;
             border-radius: 50%;
@@ -6618,13 +6598,6 @@
                         // 2) html2canvas e vizaton box-shadow-in MBI elementin, jo pas tij, çka i nxin
                         //    pikat e bizneseve dhe distinktivët e shërbimeve.
                         doc.querySelectorAll(".biz-dot, .biz-badge, .service-point-badge, .entry-badge").forEach(function(el) {
-                            el.style.boxShadow = "none";
-                        });
-                        // 3) Unaza që pulson te hyrjet/daljet vjen nga @keyframes, dhe animacioni
-                        //    mbizotëron mbi stilin inline — pa e ndalur, hija e saj vizatohet mbi
-                        //    distinktiv dhe në foto ai del i nxirë.
-                        doc.querySelectorAll(".entry-badge").forEach(function(el) {
-                            el.style.animation = "none";
                             el.style.boxShadow = "none";
                         });
                     }
