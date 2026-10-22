@@ -48,8 +48,8 @@ const CONTENT = [
     { t: "lead", v: "Çdo shtresë ka një kuti zgjedhjeje: hiq shenjën dhe shtresa fshihet nga harta." },
     { t: "table", head: ["Shtresa", "Çfarë tregon"], w: [34, 66], rows: [
         ["Pika Informuese", "Pika “TI JE KËTU” — prej saj niset çdo llogaritje rruge."],
-        ["Hyrjet dhe daljet", "Hyrjet e kompleksit për automjete. Shenja jeshile me shigjetë dykahëshe = hyrje dhe dalje; " +
-            "shenja e kuqe me një shigjetë = vetëm dalje. Shigjeta tregon drejtimin e lëvizjes."],
+        ["Hyrjet dhe daljet", "Hyrjet e kompleksit për automjete. Etiketa jeshile “HYRJE / DALJE” shënon vendet ku hyhet dhe dilet, " +
+            "etiketa e kuqe “VETËM DALJE” ato ku vetëm dilet. Shigjeta brenda etiketës tregon drejtimin e lëvizjes."],
         ["Bizneset", "Të gjitha bizneset. Shigjeta hap kategoritë, që mund të fiken veç e veç."],
         ["Shërbimet e Transportit", "Stacioni i autobusëve, i trenit dhe stacionet e taksive."],
         ["Shërbimet e Emergjencës", "Spitali, stacioni policor, zjarrfikësit."],

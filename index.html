@@ -796,31 +796,52 @@
         }
         /** Hyrjet dhe daljet: distinktiv rrethor me shigjetë të rrotulluar sipas drejtimit real
             të lëvizjes. Jeshile = hyrje dhe dalje, e kuqe = vetëm dalje. */
+        /* Kutia e ikonës rri me përmasa zero; etiketa qendërzohet vetë mbi pikë, kështu që
+           gjatësia e ndryshme e tekstit nuk e zhvendos shenjën nga vendi i hyrjes. */
         .entry-divicon {
             background: transparent !important;
             border: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: visible;
         }
-        .entry-badge {
-            position: relative;
+        .entry-chip {
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -50%);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px 2px 3px;
+            border-radius: 999px;
+            border: 1.5px solid #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font: 700 9.5px/1.15 "Segoe UI", system-ui, -apple-system, sans-serif;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .entry-chip__arrow {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            margin: 2px;
+            flex: 0 0 auto;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
-            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.28);
         }
-        .entry-badge svg {
-            width: 13px;
-            height: 13px;
+        .entry-chip__arrow svg {
+            width: 11px;
+            height: 11px;
             fill: #fff;
             transform: rotate(var(--rot, 0deg));
         }
-        .entry-badge--both { background: #16a34a; }
-        .entry-badge--exit { background: #e11d48; }
+        .entry-chip--both { background: #16a34a; }
+        .entry-chip--exit { background: #e11d48; }
         .legend-sym--entry {
             position: relative;
             border-radius: 50%;
@@ -2279,6 +2300,7 @@
         "Kufiret e Bizneseve": "Business Units",
         "Hyrjet dhe daljet": "Entrances and exits",
         "Hyrje dhe dalje": "Entrance and exit",
+        "Hyrje / Dalje": "Entry / Exit",
         "Vetëm dalje": "Exit only",
         "Qasje për automjete": "Vehicle access",
         "Veriperëndim": "North-west",
@@ -2507,6 +2529,7 @@
 
         // Rindërto ato pjesë ku teksti është krijuar nga JS.
         if (typeof rebuildLayersLegend === "function") rebuildLayersLegend();
+        if (typeof populateHyrjetDaljet === "function") populateHyrjetDaljet();
         if (typeof biznisetGeoJson !== "undefined" && biznisetGeoJson && typeof renderBiznisetList === "function") {
             var fi = document.getElementById("bizniset-filter");
             renderBiznisetList(biznisetGeoJson.features, fi ? fi.value : "");
@@ -3762,7 +3785,13 @@
      * mospërputhja mbeti nën 1 m. Azimuti është drejtimi i daljes nga kompleksi.
      */
     var hyrjetDaljetLayer = null;
+    var hyrjetDaljetData = null;
 
+    /**
+     * Etiketë me fjalë, jo vetëm ikonë: vetëm një shigjetë e detyron përdoruesin ta klikojë shenjën
+     * ose ta kërkojë në legjendë për të kuptuar nëse hyhet apo vetëm dilet. Teksti e thotë vetë,
+     * ndërsa shigjeta brenda saj, e rrotulluar me azimutin real, tregon drejtimin e lëvizjes.
+     */
     function buildHyrjeDaljeIcon(lloji, azimut) {
         var dyKahshe = lloji === "Hyrje dhe dalje";
         // Shigjetë me dy koka për hyrje+dalje, me një kokë për vetëm dalje. Të dyja tregojnë lart,
@@ -3770,40 +3799,47 @@
         var glif = dyKahshe
             ? '<path d="M12 2l4 5h-3v10h3l-4 5-4-5h3V7H8z"/>'
             : '<path d="M12 2l6 8h-4v12h-4V10H6z"/>';
-        var cls = dyKahshe ? "entry-badge entry-badge--both" : "entry-badge entry-badge--exit";
+        var cls = dyKahshe ? "entry-chip entry-chip--both" : "entry-chip entry-chip--exit";
+        var teksti = dyKahshe ? t("Hyrje / Dalje") : t("Vetëm dalje");
         return L.divIcon({
             className: "entry-divicon",
-            html: '<span class="' + cls + '" style="--rot:' + azimut + 'deg">' +
-                  '<svg viewBox="0 0 24 24" aria-hidden="true">' + glif + "</svg></span>",
-            iconSize: [28, 28],
-            iconAnchor: [14, 14]
+            html: '<span class="' + cls + '">' +
+                  '<span class="entry-chip__arrow" style="--rot:' + azimut + 'deg">' +
+                  '<svg viewBox="0 0 24 24" aria-hidden="true">' + glif + "</svg></span>" +
+                  '<span class="entry-chip__text">' + escapeHtmlText(teksti) + "</span></span>",
+            iconSize: [0, 0],
+            iconAnchor: [0, 0]
         });
+    }
+
+    /** Teksti rri brenda ikonës, prandaj shenjat rindërtohen kur ndërrohet gjuha. */
+    function populateHyrjetDaljet() {
+        if (!hyrjetDaljetLayer || !hyrjetDaljetData) return;
+        hyrjetDaljetLayer.clearLayers();
+        (hyrjetDaljetData.features || []).forEach(function(f) {
+            var p = f.properties || {};
+            var c = (f.geometry && f.geometry.coordinates) || null;
+            if (!c) return;
+            var m = L.marker(L.latLng(c[1], c[0]), {
+                icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0),
+                zIndexOffset: 800,
+                riseOnHover: true
+            });
+            m.bindPopup(function() {
+                return "<b>" + escapeHtmlText(t(p.Lloji || "")) + "</b><br>" +
+                       escapeHtmlText(t(p.Emri || "")) + " · " + escapeHtmlText(t("Qasje për automjete"));
+            });
+            hyrjetDaljetLayer.addLayer(m);
+        });
+        syncHyrjetDaljetVisibility();
     }
 
     function buildHyrjetDaljetLayer() {
         hyrjetDaljetLayer = L.layerGroup();
         loadLocalGeoJSON("Hyrjet_daljet")
             .then(function(data) {
-                (data.features || []).forEach(function(f) {
-                    var p = f.properties || {};
-                    var c = (f.geometry && f.geometry.coordinates) || null;
-                    if (!c) return;
-                    var m = L.marker(L.latLng(c[1], c[0]), {
-                        icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0),
-                        zIndexOffset: 800,
-                        riseOnHover: true
-                    });
-                    // Teksti ndërtohet në çastin e hapjes, që ndërrimi i gjuhës ta kapë pa u rindërtuar shtresa.
-                    m.bindTooltip(function() {
-                        return escapeHtmlText(t(p.Lloji || "")) + " — " + escapeHtmlText(t(p.Emri || ""));
-                    }, { direction: "top", offset: [0, -14], className: "entry-tooltip" });
-                    m.bindPopup(function() {
-                        return '<b>' + escapeHtmlText(t(p.Lloji || "")) + "</b><br>" +
-                               escapeHtmlText(t(p.Emri || "")) + " · " + escapeHtmlText(t("Qasje për automjete"));
-                    });
-                    hyrjetDaljetLayer.addLayer(m);
-                });
-                syncHyrjetDaljetVisibility();
+                hyrjetDaljetData = data;
+                populateHyrjetDaljet();
             })
             .catch(function(err) { console.error("[data] Hyrjet_daljet nuk u ngarkua:", err); });
         return hyrjetDaljetLayer;
@@ -6597,7 +6633,7 @@
                         });
                         // 2) html2canvas e vizaton box-shadow-in MBI elementin, jo pas tij, çka i nxin
                         //    pikat e bizneseve dhe distinktivët e shërbimeve.
-                        doc.querySelectorAll(".biz-dot, .biz-badge, .service-point-badge, .entry-badge").forEach(function(el) {
+                        doc.querySelectorAll(".biz-dot, .biz-badge, .service-point-badge, .entry-chip").forEach(function(el) {
                             el.style.boxShadow = "none";
                         });
                     }
