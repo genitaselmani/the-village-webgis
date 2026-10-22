@@ -2915,7 +2915,14 @@
      * zmadhimi mbi një biznes) punojnë si më parë.
      */
     function syncPanLock() {
-        var fiksuar = Math.abs(map.getZoom() - MAP_INITIAL_ZOOM) <= 0.5;
+        // Me një shtresë shërbimesh të ndezur harta duhet të lëvizë gjithmonë: pikat e saj shtrihen
+        // jashtë kompleksit dhe pamja mund të mbetet pranë shkallës bazë, ku bllokimi do t'i linte
+        // ato të paarritshme.
+        // Kujdes: ky funksion thirret edhe në nisje, para se të krijohen shtresat e shërbimeve,
+        // prandaj kontrollohet se `serviceLayers` ekziston — përndryshe faqja ndalet me gabim.
+        var meSherbime = (typeof serviceLayers !== "undefined") &&
+                         (typeof anyServiceLayerOn === "function") && anyServiceLayerOn();
+        var fiksuar = !meSherbime && Math.abs(map.getZoom() - MAP_INITIAL_ZOOM) <= 0.5;
         if (fiksuar) {
             map.dragging.disable();
             if (map.keyboard) map.keyboard.disable();
@@ -4644,6 +4651,7 @@
                         svc.applyLegend();
                         map.addLayer(svc.layer);
                         zoomToShowActiveServiceLayers();
+                        if (typeof syncPanLock === "function") syncPanLock();
                         subs.forEach(function(cb) { cb.disabled = false; });
                     }).catch(function() {});
                 } else {
@@ -4653,6 +4661,7 @@
                     // Rifiton pamjen vetëm sipas shtresave që mbeten aktive; kthehet te The Village kur s'ka asnjë.
                     if (anyServiceLayerOn()) zoomToShowActiveServiceLayers();
                     else resetMapToVillageView();
+                    if (typeof syncPanLock === "function") syncPanLock();
                 }
             });
 
