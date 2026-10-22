@@ -811,7 +811,7 @@
             position: absolute;
             left: 0;
             top: 0;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) rotate(var(--rrot, 0deg));
             display: inline-flex;
             align-items: center;
             gap: 3px;
@@ -3792,7 +3792,7 @@
      * ose ta kërkojë në legjendë për të kuptuar nëse hyhet apo vetëm dilet. Teksti e thotë vetë,
      * ndërsa shigjeta brenda saj, e rrotulluar me azimutin real, tregon drejtimin e lëvizjes.
      */
-    function buildHyrjeDaljeIcon(lloji, azimut) {
+    function buildHyrjeDaljeIcon(lloji, azimut, kendiRruges) {
         var dyKahshe = lloji === "Hyrje dhe dalje";
         // Shigjetë me dy koka për hyrje+dalje, me një kokë për vetëm dalje. Të dyja tregojnë lart,
         // pastaj rrotullohen me azimutin, prandaj drejtimi në hartë është ai i vërteti.
@@ -3801,10 +3801,25 @@
             : '<path d="M12 2l6 8h-4v12h-4V10H6z"/>';
         var cls = dyKahshe ? "entry-chip entry-chip--both" : "entry-chip entry-chip--exit";
         var teksti = dyKahshe ? t("Hyrje / Dalje") : t("Vetëm dalje");
+
+        // Etiketa shtrihet përgjatë rrugës: këndi i rrugës matet nga veriu, ndërsa teksti niset
+        // nga lindja, prandaj -90°. Pastaj kthehet brenda ±90° që fjala të mos dalë përmbys.
+        var rrot = (kendiRruges == null ? 90 : kendiRruges) - 90;
+        rrot = ((rrot % 360) + 360) % 360;
+        if (rrot > 180) rrot -= 360;
+        if (rrot > 90) rrot -= 180;
+        if (rrot < -90) rrot += 180;
+        // Rrugët veri-jug do ta nxirrnin etiketën pothuajse vertikale dhe fjala lexohej keq.
+        // Pjerrësia kufizohet në ±45°: drejtimi i saktë mbetet te shigjeta brenda saj.
+        rrot = Math.max(-45, Math.min(45, rrot));
+        // Shigjeta vizatohet brenda etiketës së rrotulluar, prandaj i zbritet rrotullimi i saj
+        // që në hartë të mbetet e drejtuar nga azimuti i vërtetë.
+        var rrotShigjeta = azimut - rrot;
+
         return L.divIcon({
             className: "entry-divicon",
-            html: '<span class="' + cls + '">' +
-                  '<span class="entry-chip__arrow" style="--rot:' + azimut + 'deg">' +
+            html: '<span class="' + cls + '" style="--rrot:' + rrot.toFixed(1) + 'deg">' +
+                  '<span class="entry-chip__arrow" style="--rot:' + rrotShigjeta.toFixed(1) + 'deg">' +
                   '<svg viewBox="0 0 24 24" aria-hidden="true">' + glif + "</svg></span>" +
                   '<span class="entry-chip__text">' + escapeHtmlText(teksti) + "</span></span>",
             iconSize: [0, 0],
@@ -3821,7 +3836,7 @@
             var c = (f.geometry && f.geometry.coordinates) || null;
             if (!c) return;
             var m = L.marker(L.latLng(c[1], c[0]), {
-                icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0),
+                icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0, parseFloat(p.Kendi)),
                 zIndexOffset: 800,
                 riseOnHover: true
             });
@@ -3845,10 +3860,11 @@
         return hyrjetDaljetLayer;
     }
 
-    /** Te pamja e shërbimeve harta del deri në 1:16 000, ku këto shenja do të ishin vetëm zhurmë. */
+    /** Vetëm te shkalla 1:4000 (pamja e parë): aty shërbejnë për orientim. Më afër, rruga duket
+     *  vetë dhe etiketat do të zinin vend kot; më larg, te pamja e shërbimeve, do të ishin zhurmë. */
     function syncHyrjetDaljetVisibility() {
         if (!hyrjetDaljetLayer) return;
-        var duhet = map.getZoom() >= MAP_INITIAL_ZOOM - 0.5;
+        var duhet = Math.abs(map.getZoom() - MAP_INITIAL_ZOOM) <= 0.5;
         hyrjetDaljetLayer.eachLayer(function(m) {
             var el = m.getElement && m.getElement();
             if (el) el.style.display = duhet ? "" : "none";
