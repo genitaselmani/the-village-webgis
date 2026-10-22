@@ -3699,13 +3699,31 @@
                         kputur = dif > KTHESA;
                     }
                     if (!kputur) continue;
-                    var a = pts[fillim], b = pts[i + 1];
-                    var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-                    var gjat = Math.hypot(b.x - a.x, b.y - a.y);
+                    // Etiketa vendoset në gjysmën e gjatësisë PËRGJATË vijës, me këndin e segmentit
+                    // ku bie ajo pikë. Mesi i kordës midis dy skajeve të vargut bie jashtë asfaltit
+                    // sapo rruga ka qoftë edhe një lakim të lehtë.
+                    var varg = pts.slice(fillim, i + 2), k, dx, dy, gjy;
+                    var gjat = 0;
+                    for (k = 0; k < varg.length - 1; k++) {
+                        gjat += Math.hypot(varg[k + 1].x - varg[k].x, varg[k + 1].y - varg[k].y);
+                    }
+                    var mbetur = gjat / 2, mx = varg[0].x, my = varg[0].y, kend = 0;
+                    for (k = 0; k < varg.length - 1; k++) {
+                        dx = varg[k + 1].x - varg[k].x;
+                        dy = varg[k + 1].y - varg[k].y;
+                        gjy = Math.hypot(dx, dy);
+                        if (mbetur <= gjy || k === varg.length - 2) {
+                            var t = gjy ? Math.max(0, Math.min(1, mbetur / gjy)) : 0;
+                            mx = varg[k].x + dx * t;
+                            my = varg[k].y + dy * t;
+                            kend = Math.atan2(dy, dx) * 180 / Math.PI;
+                            break;
+                        }
+                        mbetur -= gjy;
+                    }
                     if (mx > 24 && my > 24 && mx < madh.x - 24 && my < madh.y - 24) {
                         if (!perEmer[emri] || gjat > perEmer[emri].gjat) {
-                            perEmer[emri] = { gjat: gjat, x: mx, y: my,
-                                              kend: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI };
+                            perEmer[emri] = { gjat: gjat, x: mx, y: my, kend: kend };
                         }
                     }
                     fillim = i + 1;
