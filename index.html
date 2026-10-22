@@ -814,16 +814,16 @@
             transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) rotate(var(--rrot, 0deg));
             display: inline-flex;
             align-items: center;
-            gap: 2.5px;
-            padding: 1px 6px 1px 1.5px;
-            border-radius: 999px;
-            border: 1px solid rgba(15, 23, 42, 0.14);
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 1px 2.5px rgba(0, 0, 0, 0.16);
-            color: #334155;
-            font: 600 8px/1.1 "Segoe UI", system-ui, -apple-system, sans-serif;
+            gap: 3px;
+            color: #1f2937;
+            font: 700 8px/1.1 "Segoe UI", system-ui, -apple-system, sans-serif;
             white-space: nowrap;
             cursor: pointer;
+            /* Pa kuti sfondi: teksti qëndron i lexueshëm mbi hartë falë unazës së bardhë
+               rreth shkronjave, si etiketat e rrugëve te harta bazë. */
+            text-shadow:
+                0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff,
+                1px 0 2px #fff, -1px 0 2px #fff, 0 1px 2px #fff, 0 -1px 2px #fff;
         }
         .entry-chip__arrow {
             display: flex;

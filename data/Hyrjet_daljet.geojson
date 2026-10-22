@@ -16,8 +16,8 @@
         "Azimuti": 243,
         "Kendi": 10.9,
         "KendiEtiketes": 9.2,
-        "ZhvX": -2,
-        "ZhvY": -16
+        "ZhvX": 2,
+        "ZhvY": -14
       },
       "geometry": {
         "type": "Point",
@@ -35,8 +35,8 @@
         "Azimuti": 113,
         "Kendi": 112.5,
         "KendiEtiketes": 23,
-        "ZhvX": 16,
-        "ZhvY": -28
+        "ZhvX": 4,
+        "ZhvY": -7
       },
       "geometry": {
         "type": "Point",
@@ -54,8 +54,8 @@
         "Azimuti": 244,
         "Kendi": 90.8,
         "KendiEtiketes": 7.3,
-        "ZhvX": -9,
-        "ZhvY": 13
+        "ZhvX": 0,
+        "ZhvY": 0
       },
       "geometry": {
         "type": "Point",
@@ -73,8 +73,8 @@
         "Azimuti": 223,
         "Kendi": 314.5,
         "KendiEtiketes": -59,
-        "ZhvX": -22,
-        "ZhvY": 33
+        "ZhvX": -6,
+        "ZhvY": 21
       },
       "geometry": {
         "type": "Point",
@@ -92,8 +92,8 @@
         "Azimuti": 204,
         "Kendi": 314,
         "KendiEtiketes": -71.2,
-        "ZhvX": -22,
-        "ZhvY": 28
+        "ZhvX": -2,
+        "ZhvY": 8
       },
       "geometry": {
         "type": "Point",
