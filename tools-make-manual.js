@@ -22,19 +22,17 @@ const CONTENT = [
     { t: "h1", v: "Pamja e ndërfaqes" },
     { t: "table", head: ["Pjesa", "Çfarë përmban"], w: [30, 70], rows: [
         ["Paneli majtas", "Dy skeda: “Shtresat” (çfarë shfaqet në hartë) dhe “Bizneset” (lista e bizneseve)."],
-        ["Shiriti i veglave", "Shtatë butona mbi hartë: ruajtje, shkarkim, matje, raportim, navigim, fshirje rruge, manual."],
+        ["Shiriti i veglave", "Gjashtë butona mbi hartë: ruajtje, matje, raportim, navigim, fshirje rruge, manual."],
         ["Lart-djathtas", "Shigjeta e veriut, butonat + / - për zmadhim dhe, poshtë tyre, butoni i pamjes së plotë: " +
             "e kthen hartën në pamjen fillestare kur je zhvendosur ose zmadhuar shumë."],
         ["Poshtë", "Koordinatat e kursorit (EPSG:9141) dhe shkalla aktuale e hartës."]
     ]},
 
     { t: "h1", v: "Veglat e hartës" },
-    { t: "lead", v: "Shtatë butonat mbi hartë, sipas radhës nga majtas." },
+    { t: "lead", v: "Gjashtë butonat mbi hartë, sipas radhës nga majtas." },
     { t: "table", head: ["Vegla", "Për çfarë shërben", "Si përdoret"], w: [20, 33, 47], rows: [
         ["Ruaj foton", "Ruan pamjen e hartës si figurë PNG.",
             "Kliko një herë. Fotoja shkarkohet me shtresat që janë të ndezura."],
-        ["Shkarko GeoJSON", "Merr të dhënat për punë në QGIS ose ArcGIS.",
-            "Kliko një herë; skedari shkarkohet menjëherë."],
         ["Matja", "Mat distancë ose sipërfaqe mbi hartë.",
             "Kliko » zgjidh “Mat distancën” ose “Mat sipërfaqen” » kliko pikat në hartë. Rezultati del në një kuti; shenja × e fshin."],
         ["Raporto problem", "Shënon një problem në një pikë të caktuar.",

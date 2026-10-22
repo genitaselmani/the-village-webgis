@@ -2118,11 +2118,6 @@
             aria-label="Ruaj hartën si foto PNG">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
         </button>
-        <button type="button" class="map-tool-btn map-tool-btn--outline" id="geojson-download-btn" onclick="downloadWebgisGeoJSON()"
-            title="Shkarkoni shtresat si GeoJSON"
-            aria-label="Shkarkoni shtresat si GeoJSON">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
-        </button>
         <div class="map-tool-menu" id="measure-menu">
             <button type="button" class="map-tool-btn map-tool-btn--state-measure-menu" id="measure-menu-btn" onclick="onMeasureMenuBtnClick()"
                 title="Vegla e matjes (distancë / sipërfaqe)"
@@ -2195,7 +2190,6 @@
                 <!-- <button type="button" class="filter-icon-btn" title="Filtra" aria-label="Filtra">⚙</button> -->
             </div>
         
-            <!-- <button type="button" class="btn-sidebar-geojson" id="geojson-download-btn-sidebar" onclick="downloadWebgisGeoJSON()">⬇ Shkarko GeoJSON (të gjitha shtresat)</button> -->
 
             <div class="section-label layers-legend-heading">Legjenda · shtresat</div>
             <div class="layers-strip-wrap">
@@ -2386,7 +2380,6 @@
         // Veglat e hartës
         "Veprime të hartës": "Map actions",
         "Ruaj hartën si foto PNG": "Save map as PNG image",
-        "Shkarkoni shtresat si GeoJSON": "Download layers as GeoJSON",
         "Vegla e matjes (distancë / sipërfaqe)": "Measure tool (distance / area)",
         "Opsionet e matjes": "Measure options",
         "Mat distancën": "Measure distance",
@@ -2476,7 +2469,6 @@
 
         // Mesazhe
         "Gabim në ruajtjen e hartës. Provoni përsëri.": "Could not save the map. Please try again.",
-        "Gabim gjatë përgatitjes së GeoJSON (shiko console).": "Could not prepare the GeoJSON (see console).",
         "Ju lutem zgjidhni llojin e problemit.": "Please choose the problem type.",
         "Ju lutem klikoni mbi një biznes (ndërtesë gri) për të marrë udhëzimet.":
             "Please click a business (grey building) to get directions.",
@@ -6211,132 +6203,6 @@
         return biznisetFeaturesLoadPromise;
     }
 
-    function cloneGeometryForExport(g) {
-        return g ? JSON.parse(JSON.stringify(g)) : null;
-    }
-
-    /**
-     * Një FeatureCollection (EPSG:4326) me të gjitha vektorët e përdorueshëm nga aplikacioni.
-     * Çdo feature ka properties.webgis_layer për origjinën (Bizniset, Rruget, Bizneset_ndara, problem_reports, Pika_nisjes).
-     */
-    function buildWebgisExportFeatureCollection() {
-        var features = [];
-        function pushLayerFeatures(arr, layerName) {
-            if (!arr || !arr.length) return;
-            arr.forEach(function(f) {
-                if (!f || f.type !== "Feature" || !f.geometry) return;
-                var props = Object.assign({}, f.properties || {});
-                props.webgis_layer = layerName;
-                features.push({
-                    type: "Feature",
-                    geometry: cloneGeometryForExport(f.geometry),
-                    properties: props
-                });
-            });
-        }
-        pushLayerFeatures(biznisetGeoJson && biznisetGeoJson.features, "Bizniset");
-        pushLayerFeatures(roadNetwork && roadNetwork.features, "Rruget");
-        pushLayerFeatures(biznesetNdaraGeoJson && biznesetNdaraGeoJson.features, "Bizneset_ndara");
-        try {
-            var raw = localStorage.getItem(PROBLEMS_STORAGE_KEY);
-            if (raw) {
-                var pr = JSON.parse(raw);
-                if (Array.isArray(pr)) {
-                    pr.forEach(function(item) {
-                        if (item == null || item.lat == null || item.lng == null) return;
-                        features.push({
-                            type: "Feature",
-                            geometry: { type: "Point", coordinates: [item.lng, item.lat] },
-                            properties: {
-                                webgis_layer: "problem_reports",
-                                problem_type: item.type || "",
-                                description: item.desc || "",
-                                date: item.date || "",
-                                id: item.id || "",
-                                saved_at: item.at || ""
-                            }
-                        });
-                    });
-                }
-            }
-        } catch (e1) {}
-        if (pikaNisjes && pikaNisjes.length === 2) {
-            features.push({
-                type: "Feature",
-                geometry: { type: "Point", coordinates: [pikaNisjes[1], pikaNisjes[0]] },
-                properties: { webgis_layer: "Pika_nisjes", label: "TI JE KËTU" }
-            });
-        }
-        return { type: "FeatureCollection", features: features };
-    }
-
-    function ensureExportDataLoaded() {
-        var promises = [];
-        if (!roadNetwork || !roadNetwork.features || !roadNetwork.features.length) {
-            promises.push(
-                loadLocalGeoJSON("Rruget")
-                    .then(function(data) {
-                        roadNetwork = data;
-                    })
-                    .catch(function() {})
-            );
-        }
-        if (!biznisetGeoJson || !biznisetGeoJson.features || !biznisetGeoJson.features.length) {
-            promises.push(
-                loadLocalGeoJSON("Bizniset")
-                    .then(function(data) {
-                        biznisetGeoJson = data;
-                    })
-                    .catch(function() {})
-            );
-        }
-        promises.push(loadBiznesetNdaraWfs().catch(function() {}));
-        return Promise.all(promises);
-    }
-
-    function downloadWebgisGeoJSON() {
-        var btns = [
-            document.getElementById("geojson-download-btn"),
-            document.getElementById("geojson-download-btn-sidebar")
-        ].filter(Boolean);
-        var orig = btns.map(function(b) {
-            return { el: b, html: b.innerHTML, text: b.textContent };
-        });
-        btns.forEach(function(b) {
-            b.disabled = true;
-            b.setAttribute("aria-busy", "true");
-            b.classList.add("is-loading");
-        });
-        ensureExportDataLoaded()
-            .then(function() {
-                var fc = buildWebgisExportFeatureCollection();
-                var json = JSON.stringify(fc, null, 2);
-                var blob = new Blob([json], { type: "application/geo+json;charset=utf-8" });
-                var a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = "TheVillage_webgis_" + new Date().toISOString().slice(0, 19).replace(/:/g, "-") + ".geojson";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(function() {
-                    URL.revokeObjectURL(a.href);
-                }, 2500);
-                console.log("[GeoJSON export] features:", (fc.features && fc.features.length) || 0);
-            })
-            .catch(function(err) {
-                console.error("[GeoJSON export]", err);
-                alert(t("Gabim gjatë përgatitjes së GeoJSON (shiko console)."));
-            })
-            .then(function() {
-                orig.forEach(function(o) {
-                    o.el.disabled = false;
-                    o.el.removeAttribute("aria-busy");
-                    o.el.classList.remove("is-loading");
-                    o.el.innerHTML = o.html;
-                });
-            });
-    }
-    window.downloadWebgisGeoJSON = downloadWebgisGeoJSON;
 
     function switchSidebarTab(tab) {
         var panelLayers = document.getElementById("panel-layers");
