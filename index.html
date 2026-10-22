@@ -798,6 +798,29 @@
             të lëvizjes. Jeshile = hyrje dhe dalje, e kuqe = vetëm dalje. */
         /* Kutia e ikonës rri me përmasa zero; etiketa qendërzohet vetë mbi pikë, kështu që
            gjatësia e ndryshme e tekstit nuk e zhvendos shenjën nga vendi i hyrjes. */
+        /** Emrat e rrugëve: tekst i hollë me unazë të bardhë, shtrirë përgjatë vijës së rrugës.
+            Pa kuti sfondi dhe pa ngjyrë të fortë, që të mos i marrin vëmendjen shtresave. */
+        .road-label-divicon {
+            background: transparent !important;
+            border: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: visible;
+        }
+        .road-label {
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform: translate(-50%, -50%) rotate(var(--rrot, 0deg));
+            white-space: nowrap;
+            color: #6b5f4f;
+            font: 600 9px/1.1 "Segoe UI", system-ui, -apple-system, sans-serif;
+            letter-spacing: 0.01em;
+            pointer-events: none;
+            text-shadow:
+                0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff,
+                1px 0 2px #fff, -1px 0 2px #fff, 0 1px 2px #fff, 0 -1px 2px #fff;
+        }
         .entry-divicon {
             background: transparent !important;
             border: none !important;
@@ -2948,9 +2971,13 @@
     map.whenReady(updateScaleDisplayFinal);
 
     // Rindërton markerët e biznesit në çdo hap zoom-i (niveli "badge" ndryshon madhësinë brenda vetë diapazonit 19-20).
+    map.on("moveend", function() {
+        if (typeof rebuildRoadNameLabels === "function") rebuildRoadNameLabels();
+    });
     map.on("zoomend", function() {
         if (typeof rebuildBiznisetSymbolsLayer === "function") rebuildBiznisetSymbolsLayer();
         if (typeof syncHyrjetDaljetVisibility === "function") syncHyrjetDaljetVisibility();
+        if (typeof rebuildRoadNameLabels === "function") rebuildRoadNameLabels();
         if (typeof rebuildParkinguLabels === "function") rebuildParkinguLabels();
         var rr = typeof layers !== "undefined" ? layers["Rrugët"] : null;
         if (rr && rr.casingLayer && rr.fillLayer) {
@@ -3608,10 +3635,112 @@
                 group.geoJsonData = data;
                 group.casingLayer = casing;
                 group.fillLayer = fillLn;
+                if (typeof rebuildRoadNameLabels === "function") rebuildRoadNameLabels();
             })
             .catch(function(err) { console.error("[data] Rruget nuk u ngarkua:", err); });
         return group;
     }
+    /**
+     * Emrat e rrugëve, marrë nga OpenStreetMap dhe të ruajtur te vetë shtresa (fusha EmriOSM).
+     * Vendosen përgjatë vijës së rrugës dhe vetëm një herë për çdo emër brenda pamjes — përndryshe
+     * e njëjta rrugë, e ndarë në shumë segmente, do ta përsëriste emrin dhjetëra herë.
+     * Etiketat jetojnë brenda vetë shtresës "Rrugët", prandaj fiken bashkë me të.
+     */
+    var rrugetEmratLayer = L.layerGroup();
+
+    function rebuildRoadNameLabels() {
+        var grp = (typeof layers !== "undefined") ? layers["Rrugët"] : null;
+        if (!grp || !grp.geoJsonData) return;
+        if (!grp.hasLayer(rrugetEmratLayer)) grp.addLayer(rrugetEmratLayer);
+        rrugetEmratLayer.clearLayers();
+
+        var madh = map.getSize();
+        var mapRect = map.getContainer().getBoundingClientRect();
+        var zena = [];
+        // Shenjat ekzistuese (hyrjet, parkingjet, pika informuese) nuk duhen mbuluar. Pikat e vogla
+        // të bizneseve përjashtohen: te shkalla 1:2000 janë 75 copë dhe bllokonin çdo vend të lirë,
+        // kështu që asnjë emër rruge nuk dilte fare.
+        [].slice.call(document.querySelectorAll(".leaflet-marker-icon")).forEach(function(el) {
+            if (el.classList.contains("bizniset-dot-divicon")) return;
+            var r = el.getBoundingClientRect();
+            if (!r.width || !r.height) return;
+            zena.push({ x1: r.left - mapRect.left, y1: r.top - mapRect.top,
+                        x2: r.right - mapRect.left, y2: r.bottom - mapRect.top });
+        });
+        function lire(b) {
+            for (var i = 0; i < zena.length; i++) {
+                var o = zena[i];
+                if (!(b.x2 < o.x1 || b.x1 > o.x2 || b.y2 < o.y1 || b.y1 > o.y2)) return false;
+            }
+            return true;
+        }
+
+        // Segmentet e njëpasnjëshme me drejtim të ngjashëm bashkohen në një varg të vetëm, dhe emri
+        // vendoset mbi vargun më të gjatë brenda pamjes. Pa këtë, matej vetëm një segment i vetëm —
+        // te shkalla 1:4000 asnjëri s'është aq i gjatë sa teksti dhe asnjë emër nuk dilte fare.
+        var KTHESA = 25; // gradë; mbi këtë vlerë vargu konsiderohet i këputur
+        var perEmer = {};
+        (grp.geoJsonData.features || []).forEach(function(f) {
+            var emri = f.properties && f.properties.EmriOSM;
+            if (!emri) return;
+            var g = f.geometry;
+            if (!g) return;
+            var vijat = g.type === "LineString" ? [g.coordinates]
+                      : g.type === "MultiLineString" ? g.coordinates : [];
+            vijat.forEach(function(coords) {
+                var pts = coords.map(function(c) { return map.latLngToContainerPoint(L.latLng(c[1], c[0])); });
+                var fillim = 0;
+                for (var i = 0; i < pts.length - 1; i++) {
+                    var kputur = (i === pts.length - 2);
+                    if (!kputur && i + 2 < pts.length) {
+                        var k1 = Math.atan2(pts[i + 1].y - pts[i].y, pts[i + 1].x - pts[i].x);
+                        var k2 = Math.atan2(pts[i + 2].y - pts[i + 1].y, pts[i + 2].x - pts[i + 1].x);
+                        var dif = Math.abs(((k2 - k1) * 180 / Math.PI + 540) % 360 - 180);
+                        kputur = dif > KTHESA;
+                    }
+                    if (!kputur) continue;
+                    var a = pts[fillim], b = pts[i + 1];
+                    var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+                    var gjat = Math.hypot(b.x - a.x, b.y - a.y);
+                    if (mx > 24 && my > 24 && mx < madh.x - 24 && my < madh.y - 24) {
+                        if (!perEmer[emri] || gjat > perEmer[emri].gjat) {
+                            perEmer[emri] = { gjat: gjat, x: mx, y: my,
+                                              kend: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI };
+                        }
+                    }
+                    fillim = i + 1;
+                }
+            });
+        });
+
+        Object.keys(perEmer).forEach(function(emri) {
+            var v = perEmer[emri];
+            var kend = v.kend;
+            if (kend > 90) kend -= 180;
+            if (kend < -90) kend += 180;
+            var w = emri.length * 5.1 + 4, h = 11;
+            // Emri lejohet të dalë pak përtej vargut — ashtu bëjnë edhe hartat e zakonshme — por jo
+            // mbi një copë aq të shkurtër sa të mos kuptohet se cilës rrugë i takon.
+            if (v.gjat < Math.max(26, w * 0.45)) return;
+            var ct = Math.abs(Math.cos(kend * Math.PI / 180)), st = Math.abs(Math.sin(kend * Math.PI / 180));
+            var kutia = { x1: v.x - (w * ct + h * st) / 2, y1: v.y - (w * st + h * ct) / 2,
+                          x2: v.x + (w * ct + h * st) / 2, y2: v.y + (w * st + h * ct) / 2 };
+            if (!lire(kutia)) return;
+            zena.push(kutia);
+            rrugetEmratLayer.addLayer(L.marker(map.containerPointToLatLng(L.point(v.x, v.y)), {
+                interactive: false,
+                keyboard: false,
+                icon: L.divIcon({
+                    className: "road-label-divicon",
+                    html: '<span class="road-label" style="--rrot:' + kend.toFixed(1) + 'deg">' +
+                          escapeHtmlText(emri) + "</span>",
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 0]
+                })
+            }));
+        });
+    }
+
     // Ndërton traversa (segmente pingule me vijën, jo paralele) — simboli klasik i hekurudhës.
     function buildRailTies(data) {
         var ties = [];
