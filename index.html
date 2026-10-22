@@ -1536,6 +1536,31 @@
             color: #444;
         }
 
+        /** Butoni i pamjes së plotë: kontroll i Leaflet-it poshtë +/−, me pamjen e tyre. */
+        .leaflet-bar.webgis-fullview a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            color: #333;
+            background: #fff;
+            cursor: pointer;
+        }
+        .leaflet-bar.webgis-fullview a:hover { background: #f4f4f4; }
+        .leaflet-bar.webgis-fullview svg {
+            width: 17px;
+            height: 17px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        @media (max-width: 768px) {
+            .leaflet-bar.webgis-fullview a { width: 36px; height: 36px; }
+            .leaflet-bar.webgis-fullview svg { width: 20px; height: 20px; }
+        }
         .leaflet-control.webgis-north-icon {
             margin-top: 10px !important;
             margin-right: max(10px, env(safe-area-inset-right, 0px)) !important;
@@ -2136,11 +2161,6 @@
             aria-label="Hiq rrugën e vizatuar nga harta">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
         </button>
-        <button type="button" class="map-tool-btn" id="map-action-fullview"
-            title="Pamja e plotë"
-            aria-label="Pamja e plotë">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><rect x="8.5" y="8.5" width="7" height="7" rx="1"/></svg>
-        </button>
         <button type="button" class="map-tool-btn map-tool-btn--manual" id="manual-open"
             title="Manuali i përdorimit të WebGIS-it"
             aria-label="Manuali i përdorimit të WebGIS-it">
@@ -2559,6 +2579,13 @@
         // Rindërto ato pjesë ku teksti është krijuar nga JS.
         if (typeof rebuildLayersLegend === "function") rebuildLayersLegend();
         if (typeof populateHyrjetDaljet === "function") populateHyrjetDaljet();
+        // Kontrollet e Leaflet-it rrinë brenda #map, të cilin përkthyesi e kapërcen; titulli i këtij
+        // butoni rifreskohet me dorë.
+        var btnPamja = document.getElementById("map-action-fullview");
+        if (btnPamja) {
+            btnPamja.title = t("Pamja e plotë");
+            btnPamja.setAttribute("aria-label", t("Pamja e plotë"));
+        }
         if (typeof biznisetGeoJson !== "undefined" && biznisetGeoJson && typeof renderBiznisetList === "function") {
             var fi = document.getElementById("bizniset-filter");
             renderBiznisetList(biznisetGeoJson.features, fi ? fi.value : "");
@@ -2979,6 +3006,29 @@
     })();
 
     L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Pamja e plotë rri menjëherë poshtë +/− : aty e kërkon dora kur përdoruesi humbet me zoom.
+    (function addFullViewControl() {
+        var ctrl = L.control({ position: "topright" });
+        ctrl.onAdd = function() {
+            var wrap = L.DomUtil.create("div", "leaflet-bar webgis-fullview");
+            var a = L.DomUtil.create("a", "", wrap);
+            a.href = "#";
+            a.id = "map-action-fullview";
+            a.title = "Pamja e plotë";
+            a.setAttribute("role", "button");
+            a.setAttribute("aria-label", "Pamja e plotë");
+            a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><rect x="8.5" y="8.5" width="7" height="7" rx="1"/></svg>';
+            L.DomEvent.disableClickPropagation(wrap);
+            L.DomEvent.on(a, "click", function(ev) {
+                L.DomEvent.stop(ev);
+                if (typeof zoomToFullExtent === "function") zoomToFullExtent();
+            });
+            return wrap;
+        };
+        ctrl.onRemove = function() {};
+        ctrl.addTo(map);
+    })();
 
     // Përditëson shkallën nominale 1:N në footer sipas zoom-it aktual të hartës.
     function updateScaleDisplayFinal() {
@@ -4288,11 +4338,6 @@
         }
         if (typeof syncPanLock === "function") syncPanLock();
     }
-    (function initFullViewButton() {
-        var btn = document.getElementById("map-action-fullview");
-        if (btn) btn.addEventListener("click", zoomToFullExtent);
-    })();
-
     function clearServiceRoute() {
         if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
         if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
