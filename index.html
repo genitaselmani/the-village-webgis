@@ -2136,6 +2136,11 @@
             aria-label="Hiq rrugën e vizatuar nga harta">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
         </button>
+        <button type="button" class="map-tool-btn" id="map-action-fullview"
+            title="Pamja e plotë"
+            aria-label="Pamja e plotë">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><rect x="8.5" y="8.5" width="7" height="7" rx="1"/></svg>
+        </button>
         <button type="button" class="map-tool-btn map-tool-btn--manual" id="manual-open"
             title="Manuali i përdorimit të WebGIS-it"
             aria-label="Manuali i përdorimit të WebGIS-it">
@@ -2371,6 +2376,7 @@
         "Klikoni biznesin e destinacionit në hartë": "Click the destination business on the map",
         "Hiq rrugën e vizatuar nga harta": "Clear the drawn route from the map",
         "Manuali i përdorimit të WebGIS-it": "WebGIS user manual",
+        "Pamja e plotë": "Full view",
         "Manuali i përdorimit": "User manual",
         "Mbyll manualin dhe kthehu te harta": "Close the manual and return to the map",
         "Fshij matjen": "Clear measurement",
@@ -4268,6 +4274,24 @@
         applyVillageView();
         restoreBiznisetAfterServiceView();
     }
+
+    /**
+     * "Pamja e plotë": kthen hartën aty ku duhet të jetë kur përdoruesi humbet pas zmadhimeve.
+     * Me një shtresë shërbimesh të ndezur, pamja e plotë është ajo që nxë edhe qendrën edhe pikat
+     * e asaj shtrese; përndryshe është pamja fillestare e The Village në 1:4000.
+     */
+    function zoomToFullExtent() {
+        if (typeof anyServiceLayerOn === "function" && anyServiceLayerOn()) {
+            zoomToShowActiveServiceLayers();
+        } else {
+            resetMapToVillageView();
+        }
+        if (typeof syncPanLock === "function") syncPanLock();
+    }
+    (function initFullViewButton() {
+        var btn = document.getElementById("map-action-fullview");
+        if (btn) btn.addEventListener("click", zoomToFullExtent);
+    })();
 
     function clearServiceRoute() {
         if (routeLine) { map.removeLayer(routeLine); routeLine = null; }

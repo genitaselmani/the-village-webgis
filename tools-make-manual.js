@@ -28,7 +28,7 @@ const CONTENT = [
     ]},
 
     { t: "h1", v: "Veglat e hartës" },
-    { t: "lead", v: "Shtatë butonat mbi hartë, sipas radhës nga majtas." },
+    { t: "lead", v: "Tetë butonat mbi hartë, sipas radhës nga majtas." },
     { t: "table", head: ["Vegla", "Për çfarë shërben", "Si përdoret"], w: [20, 33, 47], rows: [
         ["Ruaj foton", "Ruan pamjen e hartës si figurë PNG.",
             "Kliko një herë. Fotoja shkarkohet me shtresat që janë të ndezura."],
@@ -41,7 +41,9 @@ const CONTENT = [
         ["Navigim", "Vizaton rrugën deri te një biznes.",
             "Kliko » pastaj kliko biznesin. Del rruga me distancë dhe kohë ecjeje."],
         ["Hiq rrugën", "Pastron rrugën e vizatuar.", "Kliko një herë."],
-        ["Manuali", "Hap këtë dokument.", "Kliko; mbyllet me × lart-djathtas."]
+        ["Manuali", "Hap këtë dokument.", "Kliko; mbyllet me × lart-djathtas."],
+        ["Pamja e plotë", "Kthen hartën në pamjen fillestare të qendrës tregtare.",
+            "Kliko kur je zhvendosur ose zmadhuar shumë. Me një shtresë shërbimesh të ndezur, kthen pamjen që nxë edhe qendrën edhe pikat e asaj shtrese."]
     ]},
 
     { t: "h1", v: "Paneli “Shtresat”" },
