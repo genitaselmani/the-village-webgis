@@ -805,6 +805,8 @@
             height: 0 !important;
             overflow: visible;
         }
+        /* Etiketë e bardhë si etiketat e vendeve në hartë: ngjyra mbahet vetëm te shigjeta e vogël.
+           E gjithë etiketa me ngjyrë të fortë e merrte vëmendjen para vetë hartës. */
         .entry-chip {
             position: absolute;
             left: 0;
@@ -812,15 +814,14 @@
             transform: translate(-50%, -50%);
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 2px 8px 2px 3px;
+            gap: 3px;
+            padding: 1.5px 7px 1.5px 2px;
             border-radius: 999px;
-            border: 1.5px solid #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
-            color: #fff;
-            font: 700 9.5px/1.15 "Segoe UI", system-ui, -apple-system, sans-serif;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+            color: #334155;
+            font: 600 9px/1.15 "Segoe UI", system-ui, -apple-system, sans-serif;
             white-space: nowrap;
             cursor: pointer;
         }
@@ -829,23 +830,22 @@
             align-items: center;
             justify-content: center;
             flex: 0 0 auto;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.28);
         }
         .entry-chip__arrow svg {
-            width: 11px;
-            height: 11px;
+            width: 9px;
+            height: 9px;
             fill: #fff;
             transform: rotate(var(--rot, 0deg));
         }
-        .entry-chip--both { background: #16a34a; }
-        .entry-chip--exit { background: #e11d48; }
+        .entry-chip--both .entry-chip__arrow { background: #15803d; }
+        .entry-chip--exit .entry-chip__arrow { background: #dc2626; }
         .legend-sym--entry {
             position: relative;
             border-radius: 50%;
-            background: #16a34a;
+            background: #15803d;
             border: 2px solid #fff;
             box-shadow: 0 0 0 1px #9aa3ad;
         }
@@ -857,7 +857,7 @@
             width: 11px;
             height: 11px;
             border-radius: 50%;
-            background: #e11d48;
+            background: #dc2626;
             border: 2px solid #fff;
             box-shadow: 0 0 0 1px #9aa3ad;
         }
