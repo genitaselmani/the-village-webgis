@@ -15,7 +15,9 @@
         "Lloji": "Hyrje dhe dalje",
         "Azimuti": 243,
         "Kendi": 10.9,
-        "KendiEtiketes": 9.2
+        "KendiEtiketes": 9.2,
+        "ZhvX": -2,
+        "ZhvY": -16
       },
       "geometry": {
         "type": "Point",
@@ -32,7 +34,9 @@
         "Lloji": "Hyrje dhe dalje",
         "Azimuti": 113,
         "Kendi": 112.5,
-        "KendiEtiketes": 23
+        "KendiEtiketes": 23,
+        "ZhvX": 16,
+        "ZhvY": -28
       },
       "geometry": {
         "type": "Point",
@@ -49,7 +53,9 @@
         "Lloji": "Hyrje dhe dalje",
         "Azimuti": 244,
         "Kendi": 90.8,
-        "KendiEtiketes": 7.3
+        "KendiEtiketes": 7.3,
+        "ZhvX": -9,
+        "ZhvY": 13
       },
       "geometry": {
         "type": "Point",
@@ -66,7 +72,9 @@
         "Lloji": "Vetëm dalje",
         "Azimuti": 223,
         "Kendi": 314.5,
-        "KendiEtiketes": -59
+        "KendiEtiketes": -59,
+        "ZhvX": -22,
+        "ZhvY": 33
       },
       "geometry": {
         "type": "Point",
@@ -83,7 +91,9 @@
         "Lloji": "Vetëm dalje",
         "Azimuti": 204,
         "Kendi": 314,
-        "KendiEtiketes": -71.2
+        "KendiEtiketes": -71.2,
+        "ZhvX": -22,
+        "ZhvY": 28
       },
       "geometry": {
         "type": "Point",

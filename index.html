@@ -811,7 +811,7 @@
             position: absolute;
             left: 0;
             top: 0;
-            transform: translate(-50%, -50%) rotate(var(--rrot, 0deg));
+            transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px))) rotate(var(--rrot, 0deg));
             display: inline-flex;
             align-items: center;
             gap: 2.5px;
@@ -3792,7 +3792,7 @@
      * ose ta kërkojë në legjendë për të kuptuar nëse hyhet apo vetëm dilet. Teksti e thotë vetë,
      * ndërsa shigjeta brenda saj, e rrotulluar me azimutin real, tregon drejtimin e lëvizjes.
      */
-    function buildHyrjeDaljeIcon(lloji, azimut, kendiRruges, kendiEtiketes) {
+    function buildHyrjeDaljeIcon(lloji, azimut, kendiRruges, kendiEtiketes, zhvX, zhvY) {
         var dyKahshe = lloji === "Hyrje dhe dalje";
         // Shigjetë me dy koka për hyrje+dalje, me një kokë për vetëm dalje. Të dyja tregojnë lart,
         // pastaj rrotullohen me azimutin, prandaj drejtimi në hartë është ai i vërteti.
@@ -3820,9 +3820,13 @@
         // që në hartë të mbetet e drejtuar nga azimuti i vërtetë.
         var rrotShigjeta = azimut - rrot;
 
+        // Zhvendosje e vogël nga pika e hyrjes, që etiketa të mos bjerë mbi blloqet e bizneseve
+        // apo mbi shenjat e tjera. Vlerat janë llogaritur një herë te shkalla 1:4000 — e vetmja
+        // ku këto etiketa shfaqen — duke kërkuar pozicionin më të afërt pa mbivendosje.
+        var zhv = "--dx:" + (zhvX || 0) + "px;--dy:" + (zhvY || 0) + "px;";
         return L.divIcon({
             className: "entry-divicon",
-            html: '<span class="' + cls + '" style="--rrot:' + rrot.toFixed(1) + 'deg">' +
+            html: '<span class="' + cls + '" style="' + zhv + '--rrot:' + rrot.toFixed(1) + 'deg">' +
                   '<span class="entry-chip__arrow" style="--rot:' + rrotShigjeta.toFixed(1) + 'deg">' +
                   '<svg viewBox="0 0 24 24" aria-hidden="true">' + glif + "</svg></span>" +
                   '<span class="entry-chip__text">' + escapeHtmlText(teksti) + "</span></span>",
@@ -3840,7 +3844,8 @@
             var c = (f.geometry && f.geometry.coordinates) || null;
             if (!c) return;
             var m = L.marker(L.latLng(c[1], c[0]), {
-                icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0, parseFloat(p.Kendi), parseFloat(p.KendiEtiketes)),
+                icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0, parseFloat(p.Kendi),
+                                          parseFloat(p.KendiEtiketes), parseFloat(p.ZhvX), parseFloat(p.ZhvY)),
                 zIndexOffset: 800,
                 riseOnHover: true
             });
