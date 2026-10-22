@@ -814,14 +814,14 @@
             transform: translate(-50%, -50%) rotate(var(--rrot, 0deg));
             display: inline-flex;
             align-items: center;
-            gap: 3px;
-            padding: 1.5px 7px 1.5px 2px;
+            gap: 2.5px;
+            padding: 1px 6px 1px 1.5px;
             border-radius: 999px;
-            border: 1px solid rgba(15, 23, 42, 0.12);
-            background: rgba(255, 255, 255, 0.94);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 1px 2.5px rgba(0, 0, 0, 0.16);
             color: #334155;
-            font: 600 9px/1.15 "Segoe UI", system-ui, -apple-system, sans-serif;
+            font: 600 8px/1.1 "Segoe UI", system-ui, -apple-system, sans-serif;
             white-space: nowrap;
             cursor: pointer;
         }
@@ -830,13 +830,13 @@
             align-items: center;
             justify-content: center;
             flex: 0 0 auto;
-            width: 14px;
-            height: 14px;
+            width: 11px;
+            height: 11px;
             border-radius: 50%;
         }
         .entry-chip__arrow svg {
-            width: 9px;
-            height: 9px;
+            width: 7px;
+            height: 7px;
             fill: #fff;
             transform: rotate(var(--rot, 0deg));
         }
@@ -3792,7 +3792,7 @@
      * ose ta kërkojë në legjendë për të kuptuar nëse hyhet apo vetëm dilet. Teksti e thotë vetë,
      * ndërsa shigjeta brenda saj, e rrotulluar me azimutin real, tregon drejtimin e lëvizjes.
      */
-    function buildHyrjeDaljeIcon(lloji, azimut, kendiRruges) {
+    function buildHyrjeDaljeIcon(lloji, azimut, kendiRruges, kendiEtiketes) {
         var dyKahshe = lloji === "Hyrje dhe dalje";
         // Shigjetë me dy koka për hyrje+dalje, me një kokë për vetëm dalje. Të dyja tregojnë lart,
         // pastaj rrotullohen me azimutin, prandaj drejtimi në hartë është ai i vërteti.
@@ -3802,16 +3802,20 @@
         var cls = dyKahshe ? "entry-chip entry-chip--both" : "entry-chip entry-chip--exit";
         var teksti = dyKahshe ? t("Hyrje / Dalje") : t("Vetëm dalje");
 
-        // Etiketa shtrihet përgjatë rrugës: këndi i rrugës matet nga veriu, ndërsa teksti niset
-        // nga lindja, prandaj -90°. Pastaj kthehet brenda ±90° që fjala të mos dalë përmbys.
-        var rrot = (kendiRruges == null ? 90 : kendiRruges) - 90;
-        rrot = ((rrot % 360) + 360) % 360;
-        if (rrot > 180) rrot -= 360;
-        if (rrot > 90) rrot -= 180;
-        if (rrot < -90) rrot += 180;
-        // Rrugët veri-jug do ta nxirrnin etiketën pothuajse vertikale dhe fjala lexohej keq.
-        // Pjerrësia kufizohet në ±45°: drejtimi i saktë mbetet te shigjeta brenda saj.
-        rrot = Math.max(-45, Math.min(45, rrot));
+        // Pjerrësia e çdo etikete është ajo e vijave të vizatuara në hartë nga profesori
+        // (fusha KendiEtiketes), e matur drejtpërdrejt nga fotoja. Nëse mungon, nxirret nga
+        // këndi i rrugës: rruga matet nga veriu, teksti niset nga lindja, prandaj -90°.
+        var rrot;
+        if (kendiEtiketes != null && !isNaN(kendiEtiketes)) {
+            rrot = kendiEtiketes;
+        } else {
+            rrot = (kendiRruges == null ? 90 : kendiRruges) - 90;
+            rrot = ((rrot % 360) + 360) % 360;
+            if (rrot > 180) rrot -= 360;
+            if (rrot > 90) rrot -= 180;
+            if (rrot < -90) rrot += 180;
+            rrot = Math.max(-45, Math.min(45, rrot));
+        }
         // Shigjeta vizatohet brenda etiketës së rrotulluar, prandaj i zbritet rrotullimi i saj
         // që në hartë të mbetet e drejtuar nga azimuti i vërtetë.
         var rrotShigjeta = azimut - rrot;
@@ -3836,7 +3840,7 @@
             var c = (f.geometry && f.geometry.coordinates) || null;
             if (!c) return;
             var m = L.marker(L.latLng(c[1], c[0]), {
-                icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0, parseFloat(p.Kendi)),
+                icon: buildHyrjeDaljeIcon(p.Lloji, parseFloat(p.Azimuti) || 0, parseFloat(p.Kendi), parseFloat(p.KendiEtiketes)),
                 zIndexOffset: 800,
                 riseOnHover: true
             });

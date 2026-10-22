@@ -14,7 +14,8 @@
         "Emri": "Veriperëndim",
         "Lloji": "Hyrje dhe dalje",
         "Azimuti": 243,
-        "Kendi": 10.9
+        "Kendi": 10.9,
+        "KendiEtiketes": 9.2
       },
       "geometry": {
         "type": "Point",
@@ -30,7 +31,8 @@
         "Emri": "Lindje",
         "Lloji": "Hyrje dhe dalje",
         "Azimuti": 113,
-        "Kendi": 112.5
+        "Kendi": 112.5,
+        "KendiEtiketes": 23
       },
       "geometry": {
         "type": "Point",
@@ -46,7 +48,8 @@
         "Emri": "Perëndim",
         "Lloji": "Hyrje dhe dalje",
         "Azimuti": 244,
-        "Kendi": 90.8
+        "Kendi": 90.8,
+        "KendiEtiketes": 7.3
       },
       "geometry": {
         "type": "Point",
@@ -62,7 +65,8 @@
         "Emri": "Jugperëndim",
         "Lloji": "Vetëm dalje",
         "Azimuti": 223,
-        "Kendi": 314.5
+        "Kendi": 314.5,
+        "KendiEtiketes": -59
       },
       "geometry": {
         "type": "Point",
@@ -78,7 +82,8 @@
         "Emri": "Jug",
         "Lloji": "Vetëm dalje",
         "Azimuti": 204,
-        "Kendi": 314
+        "Kendi": 314,
+        "KendiEtiketes": -71.2
       },
       "geometry": {
         "type": "Point",
