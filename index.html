@@ -2913,6 +2913,10 @@
      * nga cili fetch kthehej i pari: kur Kufiri_village mbërrinte i fundit, vija e tij me pika
      * dhe mbushja e lehtë binin mbi poligonet e parkingut dhe krijonin paqartësi.
      */
+    // Maska e hartës bazë: mbi pllakat (200), nën kufirin (350) dhe nën të gjitha shtresat e tjera.
+    map.createPane("maskPane");
+    map.getPane("maskPane").style.zIndex = 250;
+
     map.createPane("kufiriPane");
     map.getPane("kufiriPane").style.zIndex = 350;
 
@@ -4383,6 +4387,26 @@
         "Institucionet Administrative": serviceLayerByKey("Institucionet Administrative").layer,
         "Raportet e problemeve": problemsReportLayer
     };
+
+    /**
+     * Brenda kufirit të kompleksit harta bazë mbulohet: ndërtesat e OpenStreetMap-it nuk përputhen
+     * me vektorët e këtij projekti dhe numrat e shtëpive e pengojnë leximin. Maska mban pikërisht
+     * ngjyrën që OSM-ja ka në atë hapësirë (e matur nga vetë pllakat: #f3eadc mbulon 38% të saj),
+     * kështu që kufiri i maskës nuk bie në sy si copë e ngjitur.
+     * Pa klikim: klikimet mbi biznese kalojnë përmes saj si më parë.
+     */
+    var MASKA_NGJYRA = "#f3eadc";
+    loadLocalGeoJSON("Kufiri_village")
+        .then(function(data) {
+            L.geoJSON(data, {
+                pane: "maskPane",
+                interactive: false,
+                style: function() {
+                    return { stroke: false, fill: true, fillColor: MASKA_NGJYRA, fillOpacity: 1 };
+                }
+            }).addTo(map);
+        })
+        .catch(function(err) { console.error("[maska] Kufiri_village nuk u ngarkua:", err); });
 
     // Blloqet ngjyrosen sapo të mbërrijë shtresa e njësive; bizneset mund të ngarkohen më vonë,
     // prandaj ngjyrosja ritentohet edhe nga rebuildBiznisetSymbolsLayer().
