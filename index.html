@@ -3727,6 +3727,24 @@
      */
     var rrugetEmratLayer = L.layerGroup();
 
+    /** Pika dhe këndi në një pjesë të caktuar (0–1) të gjatësisë PËRGJATË vargut. Mesi i kordës
+     *  midis dy skajeve do të binte jashtë asfaltit sapo rruga të ketë qoftë edhe një lakim. */
+    function pikaNeVarg(varg, gjat, pjesa) {
+        var mbetur = gjat * pjesa, k, dx, dy, gjy;
+        for (k = 0; k < varg.length - 1; k++) {
+            dx = varg[k + 1].x - varg[k].x;
+            dy = varg[k + 1].y - varg[k].y;
+            gjy = Math.hypot(dx, dy);
+            if (mbetur <= gjy || k === varg.length - 2) {
+                var t = gjy ? Math.max(0, Math.min(1, mbetur / gjy)) : 0;
+                return { x: varg[k].x + dx * t, y: varg[k].y + dy * t,
+                         kend: Math.atan2(dy, dx) * 180 / Math.PI };
+            }
+            mbetur -= gjy;
+        }
+        return { x: varg[0].x, y: varg[0].y, kend: 0 };
+    }
+
     function rebuildRoadNameLabels() {
         var grp = (typeof layers !== "undefined") ? layers["Rrugët"] : null;
         if (!grp || !grp.geoJsonData) return;
@@ -3736,10 +3754,12 @@
         var madh = map.getSize();
         var mapRect = map.getContainer().getBoundingClientRect();
         var zena = [];
-        // Shenjat ekzistuese (hyrjet, parkingjet, pika informuese) nuk duhen mbuluar. Pikat e vogla
-        // të bizneseve përjashtohen: te shkalla 1:2000 janë 75 copë dhe bllokonin çdo vend të lirë,
-        // kështu që asnjë emër rruge nuk dilte fare.
-        [].slice.call(document.querySelectorAll(".leaflet-marker-icon")).forEach(function(el) {
+        /* Shenjat ekzistuese (parkingjet, pika informuese, hyrjet) nuk duhen mbuluar.
+           Etiketat e hyrjeve merren nga vetë teksti i tyre: ikona që i mban ka përmasa zero dhe
+           nuk do të numërohej fare si pengesë.
+           Pikat e vogla të bizneseve përjashtohen: te shkalla 1:2000 janë 75 copë dhe bllokonin çdo
+           vend të lirë, kështu që asnjë emër rruge nuk dilte. */
+        [].slice.call(document.querySelectorAll(".leaflet-marker-icon, .entry-chip")).forEach(function(el) {
             if (el.classList.contains("bizniset-dot-divicon")) return;
             var r = el.getBoundingClientRect();
             if (!r.width || !r.height) return;
@@ -3754,9 +3774,22 @@
             return true;
         }
 
-        // Segmentet e njëpasnjëshme me drejtim të ngjashëm bashkohen në një varg të vetëm, dhe emri
-        // vendoset mbi vargun më të gjatë brenda pamjes. Pa këtë, matej vetëm një segment i vetëm —
-        // te shkalla 1:4000 asnjëri s'është aq i gjatë sa teksti dhe asnjë emër nuk dilte fare.
+        /* Përmasat e tekstit maten me të vërtetë në vend që të llogariten nga numri i shkronjave:
+           vlerësimi dilte disa piksela më i ngushtë se teksti real dhe etiketa prekte një shenjë që
+           kontrolli i mbivendosjes e kishte quajtur të lirë. */
+        var matesi = document.createElement("span");
+        matesi.className = "road-label";
+        matesi.setAttribute("aria-hidden", "true");
+        matesi.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;transform:none;white-space:nowrap";
+        document.body.appendChild(matesi);
+        function permasatE(teksti) {
+            matesi.textContent = teksti;
+            return { w: matesi.offsetWidth + 2, h: matesi.offsetHeight + 2 };
+        }
+
+        // Segmentet e njëpasnjëshme me drejtim të ngjashëm bashkohen në një varg të vetëm, dhe çdo
+        // varg brenda pamjes mbahet si kandidat për vendosjen e emrit. Pa bashkimin, matej vetëm një
+        // segment i vetëm — te shkalla 1:4000 asnjëri s'është aq i gjatë sa teksti.
         var KTHESA = 25; // gradë; mbi këtë vlerë vargu konsiderohet i këputur
         var perEmer = {};
         (grp.geoJsonData.features || []).forEach(function(f) {
@@ -3778,64 +3811,60 @@
                         kputur = dif > KTHESA;
                     }
                     if (!kputur) continue;
-                    // Etiketa vendoset në gjysmën e gjatësisë PËRGJATË vijës, me këndin e segmentit
-                    // ku bie ajo pikë. Mesi i kordës midis dy skajeve të vargut bie jashtë asfaltit
-                    // sapo rruga ka qoftë edhe një lakim të lehtë.
-                    var varg = pts.slice(fillim, i + 2), k, dx, dy, gjy;
-                    var gjat = 0;
+                    var varg = pts.slice(fillim, i + 2), k, gjat = 0;
                     for (k = 0; k < varg.length - 1; k++) {
                         gjat += Math.hypot(varg[k + 1].x - varg[k].x, varg[k + 1].y - varg[k].y);
                     }
-                    var mbetur = gjat / 2, mx = varg[0].x, my = varg[0].y, kend = 0;
-                    for (k = 0; k < varg.length - 1; k++) {
-                        dx = varg[k + 1].x - varg[k].x;
-                        dy = varg[k + 1].y - varg[k].y;
-                        gjy = Math.hypot(dx, dy);
-                        if (mbetur <= gjy || k === varg.length - 2) {
-                            var t = gjy ? Math.max(0, Math.min(1, mbetur / gjy)) : 0;
-                            mx = varg[k].x + dx * t;
-                            my = varg[k].y + dy * t;
-                            kend = Math.atan2(dy, dx) * 180 / Math.PI;
-                            break;
-                        }
-                        mbetur -= gjy;
-                    }
-                    if (mx > 24 && my > 24 && mx < madh.x - 24 && my < madh.y - 24) {
-                        if (!perEmer[emri] || gjat > perEmer[emri].gjat) {
-                            perEmer[emri] = { gjat: gjat, x: mx, y: my, kend: kend };
-                        }
-                    }
+                    (perEmer[emri] = perEmer[emri] || []).push({ gjat: gjat, varg: varg });
                     fillim = i + 1;
                 }
             });
         });
 
+        // Mesi i rrugës provohet i pari; nëse zihet, etiketa rrëshqet përgjatë saj.
+        var PJESET = [0.5, 0.35, 0.65, 0.22, 0.78];
         Object.keys(perEmer).forEach(function(emri) {
-            var v = perEmer[emri];
-            var kend = v.kend;
-            if (kend > 90) kend -= 180;
-            if (kend < -90) kend += 180;
-            var w = emri.length * 5.1 + 4, h = 11;
+            var pm = permasatE(emri), w = pm.w, h = pm.h;
             // Emri lejohet të dalë pak përtej vargut — ashtu bëjnë edhe hartat e zakonshme — por jo
             // mbi një copë aq të shkurtër sa të mos kuptohet se cilës rrugë i takon.
-            if (v.gjat < Math.max(26, w * 0.45)) return;
-            var ct = Math.abs(Math.cos(kend * Math.PI / 180)), st = Math.abs(Math.sin(kend * Math.PI / 180));
-            var kutia = { x1: v.x - (w * ct + h * st) / 2, y1: v.y - (w * st + h * ct) / 2,
-                          x2: v.x + (w * ct + h * st) / 2, y2: v.y + (w * st + h * ct) / 2 };
-            if (!lire(kutia)) return;
-            zena.push(kutia);
-            rrugetEmratLayer.addLayer(L.marker(map.containerPointToLatLng(L.point(v.x, v.y)), {
-                interactive: false,
-                keyboard: false,
-                icon: L.divIcon({
-                    className: "road-label-divicon",
-                    html: '<span class="road-label" style="--rrot:' + kend.toFixed(1) + 'deg">' +
-                          escapeHtmlText(emri) + "</span>",
-                    iconSize: [0, 0],
-                    iconAnchor: [0, 0]
-                })
-            }));
+            var minGjat = Math.max(26, w * 0.45);
+            /* Provohen me radhë të gjitha vargjet e asaj rruge, nga më i gjati te më i shkurtri, dhe
+               në secilin disa pozicione. Me një provë të vetme, emri hiqej fare nga harta sapo mesi
+               i rrugës së tij zihej nga një shenjë. */
+            var kandidatet = perEmer[emri]
+                .filter(function(v) { return v.gjat >= minGjat; })
+                .sort(function(a, b) { return b.gjat - a.gjat; })
+                .slice(0, 24);
+            for (var ci = 0; ci < kandidatet.length; ci++) {
+                var cand = kandidatet[ci];
+                for (var pi = 0; pi < PJESET.length; pi++) {
+                    var v = pikaNeVarg(cand.varg, cand.gjat, PJESET[pi]);
+                    if (v.x < 24 || v.y < 24 || v.x > madh.x - 24 || v.y > madh.y - 24) continue;
+                    var kend = v.kend;
+                    if (kend > 90) kend -= 180;
+                    if (kend < -90) kend += 180;
+                    var ct = Math.abs(Math.cos(kend * Math.PI / 180)), st = Math.abs(Math.sin(kend * Math.PI / 180));
+                    var kutia = { x1: v.x - (w * ct + h * st) / 2, y1: v.y - (w * st + h * ct) / 2,
+                                  x2: v.x + (w * ct + h * st) / 2, y2: v.y + (w * st + h * ct) / 2 };
+                    if (!lire(kutia)) continue;
+                    zena.push(kutia);
+                    rrugetEmratLayer.addLayer(L.marker(map.containerPointToLatLng(L.point(v.x, v.y)), {
+                        interactive: false,
+                        keyboard: false,
+                        icon: L.divIcon({
+                            className: "road-label-divicon",
+                            html: '<span class="road-label" style="--rrot:' + kend.toFixed(1) + 'deg">' +
+                                  escapeHtmlText(emri) + "</span>",
+                            iconSize: [0, 0],
+                            iconAnchor: [0, 0]
+                        })
+                    }));
+                    return;
+                }
+            }
         });
+        // Matësi hiqet sapo mbaron puna, që të mos mbetet element i fshehur në faqe.
+        matesi.parentNode.removeChild(matesi);
     }
 
     // Ndërton traversa (segmente pingule me vijën, jo paralele) — simboli klasik i hekurudhës.
