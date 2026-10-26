@@ -209,12 +209,6 @@
     "fallback": true,
     "sourceNote": "Small independent service point; no dedicated photo found online. Using existing business logo from repo /logos folder."
   },
-  "Autolarje": {
-    "photo": "logos/Autolarje.png",
-    "description": "Autolarje është një pikë e larjes së automjeteve që ofron shërbime larjeje dhe pastrimi për makina, të disponueshme për vizitorët e qendrës tregtare.",
-    "fallback": true,
-    "sourceNote": "Small independent service point; no dedicated photo found online. Using existing business logo from repo /logos folder."
-  },
   "Optika Moda": {
     "photo": "logos/Optikamoda.png",
     "description": "Optika Moda është një zinxhir optikash i pranishëm në shumë qytete të Kosovës, që ofron syze optike e dielli, lente kontakti dhe kontrolle të shikimit me staf të kualifikuar.",
