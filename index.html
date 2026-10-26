@@ -1242,8 +1242,9 @@
             border-radius: 50%;
             background: #fff;
             border-style: solid;
-            border-width: 3px;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+            /* Gjerësia vendoset inline nga JS (BIZ_BADGE_RING_W) — logoja brenda matet nga e njëjta vlerë. */
+            border-width: 2px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.32);
             overflow: hidden;
         }
         .biz-badge-img {
@@ -2616,7 +2617,10 @@
     /** Vlerat fillestare të simbolit të biznesit (pa logo lokale) — pikë e vogël, pa kufi të trashë. */
     var BIZ_POINT_DEFAULTS = {
         shape: "circle",
-        size: 40,
+        // Diametri i simbolit të biznesit në 1:1000. Ishte 40px: aty mbivendoseshin 18 çifte
+        // distinktivësh, më rëndë në bllokun qendror të lokaleve (Sach Pizza–TEB, Carshia–Gusto,
+        // Mon Ami–Villageshop) dhe te Loris–Bonatti e American Burger–Candy Village.
+        size: 34,
         fill: "#9b59b6",
         stroke: "#2c3e50",
         strokeW: 0
@@ -5368,15 +5372,22 @@
         });
     }
 
+    /** Gjerësia e unazës së kategorisë rreth logos. Ishte 3px — mbi një distinktiv të vogël ajo
+     *  vijë e trashë i bënte simbolet të dukeshin edhe më të ngjeshura se ç'janë. Nën 2px unaza
+     *  rrumbullakoset në një piksel të vetëm pajisjeje dhe ngjyra e kategorisë zbehet aq sa nuk
+     *  dallohet më — pra kjo është vija më e hollë që ende e mban kuptimin e saj. */
+    var BIZ_BADGE_RING_W = 2;
+
     /**
      * Distinktiv (badge) rrethor: logo e barazuar në madhësi (object-fit: contain) + unazë me ngjyrën e kategorisë.
-     * 62% (jo më shumë) që edhe një logo katrore e plotë të mos priten nga skaji i rrumbullakët (rrethi pret
-     * çdo gjë > ~70.7% të diametrit, pasi katrori i brendashkruar ka diagonale më të madhe se diametri përtej kësaj).
+     * Logoja matet nga diametri I BRENDSHËM, jo nga i jashtmi: rrethi pret çdo katror më të gjerë se
+     * ~70.7% të tij (katrori i brendashkruar e ka diagonalen më të madhe se diametri përtej kësaj).
+     * Me unazën e vjetër 3px logoja zinte 73% të brendshmes dhe qoshet e logove katrore priteshin.
      */
     function buildBiznisetLogoBadgeIcon(logoUrl, ringColor, size) {
         var s = Math.max(10, Math.min(84, size || 34));
-        var imgSize = Math.round(s * 0.62); // px eksplicite (jo % mbi flex item) — shmang mospërputhje shkallëzimi të shfletuesit
-        var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;border-color:' + (ringColor || "#8a7b63") + ';">' +
+        var imgSize = Math.round((s - 2 * BIZ_BADGE_RING_W) * 0.70); // px eksplicite (jo % mbi flex item) — shmang mospërputhje shkallëzimi të shfletuesit
+        var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;border-width:' + BIZ_BADGE_RING_W + 'px;border-color:' + (ringColor || "#8a7b63") + ';">' +
             '<img src="' + logoUrl + '" alt="" class="biz-badge-img" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
             '</span>';
         return L.divIcon({
