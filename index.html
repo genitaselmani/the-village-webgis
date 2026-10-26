@@ -1268,24 +1268,6 @@
             display: block;
             filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
         }
-        /** Etiketë vetëm-tekst (pa foto) — p.sh. "Tualet". */
-        .bizniset-text-divicon {
-            background: transparent !important;
-            border: none !important;
-        }
-        .biz-text-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-sizing: border-box;
-            padding: 0;
-            color: #18140f;
-            font-weight: 700;
-            font-family: inherit;
-            line-height: 1.15;
-            text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 5px #fff;
-        }
         /** Niveli i përgjithësuar (zoom i vogël): pikë e thjeshtë me ngjyrën e kategorisë. */
         .bizniset-dot-divicon {
             background: transparent !important;
@@ -5462,71 +5444,16 @@
         }
     }
 
-    /** Vetëm tekst (pa foto, pa sfond) — përdoret p.sh. për "Tualet", ku s'ka kuptim logo/markë tregtare. */
-    function buildBiznisetTextIcon(text, boxW, boxH, angleDeg) {
-        var w = Math.max(50, Math.round(boxW || 80));
-        var h = Math.max(26, Math.round(boxH || 32));
-        var fontSize = Math.max(11, Math.min(20, Math.round(h * 0.34)));
-        var rot = angleDeg || 0;
-        var html = '<span class="biz-text-label" style="width:' + w + 'px;height:' + h + 'px;font-size:' + fontSize + 'px;transform:rotate(' + rot + 'deg);">' + text + '</span>';
-        return L.divIcon({
-            className: "bizniset-text-divicon",
-            html: html,
-            iconSize: [w, h],
-            iconAnchor: [Math.round(w / 2), Math.round(h / 2)]
-        });
-    }
-
-    /** Kthen këndin (gradë, konvencion CSS — rrotullim orar) e brinjës më të gjatë të poligonit Bizneset_ndara të biznesit. */
-    function getBiznisetPolygonAngleDeg(feature) {
-        if (typeof findBiznesetNdaraFeatureByBizniset !== "function") return 0;
-        try {
-            var ndara = findBiznesetNdaraFeatureByBizniset(feature);
-            if (!ndara || !ndara.geometry) return 0;
-            var geom = ndara.geometry;
-            var ring = null;
-            if (geom.type === "Polygon") ring = geom.coordinates[0];
-            else if (geom.type === "MultiPolygon") ring = geom.coordinates[0][0];
-            if (!ring || ring.length < 2) return 0;
-            var meanLat = ring.reduce(function(s, c) { return s + c[1]; }, 0) / ring.length;
-            var mLng = Math.cos(meanLat * Math.PI / 180) || 1;
-            var bestLenSq = -1, bestAngle = 0;
-            for (var i = 0; i < ring.length - 1; i++) {
-                var dx = (ring[i + 1][0] - ring[i][0]) * mLng;
-                var dy = ring[i + 1][1] - ring[i][1];
-                var lenSq = dx * dx + dy * dy;
-                if (lenSq > bestLenSq) {
-                    bestLenSq = lenSq;
-                    // -dy: konverton këndin gjeografik (Y lart) në rrotullim orar CSS (Y poshtë).
-                    bestAngle = Math.atan2(-dy, dx) * 180 / Math.PI;
-                }
-            }
-            // Sillet brenda [-90, 90] që teksti të mos dalë "kokëposhtë".
-            if (bestAngle > 90) bestAngle -= 180;
-            if (bestAngle < -90) bestAngle += 180;
-            return bestAngle;
-        } catch (e) {
-            return 0;
-        }
-    }
-
     /** Marker i biznesit: zgjedh pikë / distinktiv / logo e madhe sipas nivelit të zoom-it aktual. */
     function buildBiznisetMarkerIcon(feature, style) {
         var tier = getBizMarkerZoomTier();
         if (tier === "dot") {
             return buildBiznisetDotIcon(style);
         }
-        // Rast special: "Tualet" shfaqet vetëm si tekst, pa foto — vetëm për këtë biznes, të tjerët si më parë.
-        var bizTitle = biznisetFeatureTitle(feature.properties || {}, 0);
-        if (String(bizTitle).trim().toLowerCase() === "tualet") {
-            var tAngle = getBiznisetPolygonAngleDeg(feature);
-            if (tier === "logo-large") {
-                var tBox = getBiznisetPolygonPixelBox(feature);
-                if (tBox) return buildBiznisetTextIcon("Tualet", tBox.w * 0.62, tBox.h * 0.62, tAngle);
-                return buildBiznisetTextIcon("Tualet", 90, 36, tAngle);
-            }
-            return buildBiznisetTextIcon("Tualet", 68, 28, tAngle);
-        }
+        // Tualeti dilte si kuti teksti 68x28 px — dyfishi i gjerësisë së një distinktivi — dhe
+        // mbivendosej mbi Jumbo-n e Penti-n. Rasti i tij special u hoq: logos/Tualet.png (shenja
+        // ndërkombëtare WC) ekzistonte që nga fillimi, veç kurrë nuk arrihej. Tash kalon nëpër të
+        // njëjtën rrugë si çdo biznes tjetër, pra merr saktësisht përmasat e tyre.
         var logoUrl = resolveLocalLogoUrlForBizniset(feature);
         if (!logoUrl) {
             return buildBiznisetSymbolIcon(style);
