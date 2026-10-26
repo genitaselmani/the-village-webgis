@@ -84,7 +84,7 @@ const CONTENT = [
         ["1:4000 (pamja fillestare)", "Blloqet e njësive, të ngjyrosura sipas kategorisë."],
         ["1:2000", "Pika me ngjyrën e kategorisë."],
         ["1:1000", "Rreth me ngjyrën e kategorisë dhe logon brenda."],
-        ["1:500 e më afër", "Vetëm logoja, e vendosur mbi objektin."]
+        ["1:500 (shkalla më e madhe)", "Vetëm logoja, e vendosur mbi objektin."]
     ]},
 
     { t: "h1", v: "Në telefon" },
