@@ -2756,6 +2756,13 @@
 
     initBizLegendEnabled();
 
+    /**
+     * GitHub Pages i jep logot me `max-age=600`, prandaj kur ndryshohet një skedar logoje vizitorët
+     * e dikurshëm vazhdojnë ta shohin të vjetrën deri në dhjetë minuta — ndryshe nga të dhënat
+     * GeoJSON, që kërkohen me `cache: "no-cache"`. Ngrije këtë numër sa herë zëvendësohet një logo.
+     */
+    var LOGO_CACHE_VERSION = "?v=2";
+
     /** Skedarët PNG në dosjen `logos/` (emri i skedarit ≈ emri i biznesit). */
     var LOCAL_LOGO_FILENAMES = [
         "4Stinet.png", "AM.png", "Americanburger.png", "Aztech.png", "BankomatTEB.png",
@@ -6116,7 +6123,7 @@
             }
         }
         if (best && bestScore >= LOCAL_LOGO_MATCH_MIN_SCORE) {
-            return "logos/" + best;
+            return "logos/" + best + LOGO_CACHE_VERSION;
         }
         return null;
     }
