@@ -295,7 +295,7 @@
   },
   "BankomatTEB": {
     "photo": "logos/BankomatTEB.png",
-    "description": "BankomatTEB është një makinë bankare automatike e Bankës TEB, që mundëson tërheqje dhe depozitim parash, kontrollim të gjendjes së llogarisë dhe shërbime të tjera bankare 24 orë në ditë.",
+    "description": "Pikë vetëm me bankomat të Bankës TEB — jo degë bankare. Shërben për tërheqje dhe depozitim parash, kontroll të gjendjes së llogarisë dhe pagesa, 24 orë në ditë.",
     "fallback": true,
     "sourceNote": "TEB Kosovo official site only exposed card/campaign graphics, not real ATM photography; using existing business logo from repo /logos folder."
   },

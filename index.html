@@ -6325,6 +6325,26 @@
         return null;
     }
 
+    /**
+     * Bizneset me gjeometri pike (bankomati TEB është i vetmi) nuk kanë poligon te "Bizneset_ndara",
+     * prandaj klikimi mbi ta nuk gjente asgjë dhe popup-i nuk hapej fare. Kërkohet biznesi-pikë më i
+     * afërt brenda rrezes së simbolit të tij në ekran.
+     */
+    function findBiznisetPointFeatureAtLatLng(latlng) {
+        if (!biznisetGeoJson || !biznisetGeoJson.features) return null;
+        var RREZJA = 20; // piksela rreth klikimit
+        var qe = map.latLngToContainerPoint(latlng);
+        var best = null, bestD = Infinity;
+        biznisetGeoJson.features.forEach(function(f) {
+            var g = f.geometry;
+            if (!g || g.type !== "Point") return;
+            var p = map.latLngToContainerPoint(L.latLng(g.coordinates[1], g.coordinates[0]));
+            var d = Math.hypot(p.x - qe.x, p.y - qe.y);
+            if (d <= RREZJA && d < bestD) { bestD = d; best = f; }
+        });
+        return best;
+    }
+
     /** Në desktop paneli është gjithnjë i dukshëm; në telefon vetëm kur fleta e poshtme është hapur. */
     function isSidebarVisible() {
         if (window.innerWidth >= 769) return true;
@@ -6681,6 +6701,13 @@
                 var ndaraFeature = findBiznesetNdaraFeatureAtLatLng(e.latlng);
                 if (ndaraFeature) {
                     openBiznisetFromNdaraPolygon(ndaraFeature, e.latlng);
+                    return;
+                }
+                var biznesPike = findBiznisetPointFeatureAtLatLng(e.latlng);
+                if (biznesPike) {
+                    switchSidebarTab("bizniset");
+                    focusBiznisetCardByFeature(biznesPike);
+                    openBiznisetMapPopup(biznesPike, e.latlng);
                 } else {
                     clearBiznisetSelectionUI();
                 }
@@ -6695,7 +6722,8 @@
         }
 
         loadBiznesetNdaraWfs().catch(function() {}).then(function() {
-            var business = findBiznesetNdaraFeatureAtLatLng(e.latlng);
+            // Edhe navigimi duhet ta njohë bankomatin, që të mos mbetet i paarritshëm.
+            var business = findBiznesetNdaraFeatureAtLatLng(e.latlng) || findBiznisetPointFeatureAtLatLng(e.latlng);
             if (business) {
                 // Klikimi është mbi një biznes
                 var businessName = fixGeoServerUtf8String(String(
