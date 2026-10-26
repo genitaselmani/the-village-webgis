@@ -2390,6 +2390,7 @@
         "Hiq rrugën e vizatuar nga harta": "Clear the drawn route from the map",
         "Manuali i përdorimit të WebGIS-it": "WebGIS user manual",
         "Pamja e plotë": "Full view",
+        "Kthimi në fillim": "Back to start",
         "Manuali i përdorimit": "User manual",
         "Mbyll manualin dhe kthehu te harta": "Close the manual and return to the map",
         "Fshij matjen": "Clear measurement",
@@ -2577,6 +2578,11 @@
         if (btnPamja) {
             btnPamja.title = t("Pamja e plotë");
             btnPamja.setAttribute("aria-label", t("Pamja e plotë"));
+        }
+        var btnFillim = document.getElementById("map-action-reset");
+        if (btnFillim) {
+            btnFillim.title = t("Kthimi në fillim");
+            btnFillim.setAttribute("aria-label", t("Kthimi në fillim"));
         }
         if (typeof biznisetGeoJson !== "undefined" && biznisetGeoJson && typeof renderBiznisetList === "function") {
             var fi = document.getElementById("bizniset-filter");
@@ -3019,6 +3025,30 @@
             L.DomEvent.on(a, "click", function(ev) {
                 L.DomEvent.stop(ev);
                 if (typeof zoomToFullExtent === "function") zoomToFullExtent();
+            });
+            return wrap;
+        };
+        ctrl.onRemove = function() {};
+        ctrl.addTo(map);
+    })();
+
+    // "Kthimi në fillim" rri menjëherë poshtë pamjes së plotë: të dy janë dalje nga një gjendje e ngatërruar,
+    // njëri vetëm për zoom-in, tjetri për gjithçka tjetër.
+    (function addResetControl() {
+        var ctrl = L.control({ position: "topright" });
+        ctrl.onAdd = function() {
+            var wrap = L.DomUtil.create("div", "leaflet-bar webgis-fullview webgis-reset");
+            var a = L.DomUtil.create("a", "", wrap);
+            a.href = "#";
+            a.id = "map-action-reset";
+            a.title = "Kthimi në fillim";
+            a.setAttribute("role", "button");
+            a.setAttribute("aria-label", "Kthimi në fillim");
+            a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+            L.DomEvent.disableClickPropagation(wrap);
+            L.DomEvent.on(a, "click", function(ev) {
+                L.DomEvent.stop(ev);
+                if (typeof resetAppToInitialState === "function") resetAppToInitialState();
             });
             return wrap;
         };
@@ -4287,6 +4317,8 @@
     }
 
     var serviceLayers = SERVICE_LAYER_CONFIGS.map(createServiceLayer);
+    // Të vetmet shtresa që janë të fikura kur hapet webgis-i — prandaj mbahen veçmas.
+    var SERVICE_LAYER_KEYS = SERVICE_LAYER_CONFIGS.map(function(cfg) { return cfg.key; });
     function serviceLayerByKey(key) {
         for (var i = 0; i < serviceLayers.length; i++) {
             if (serviceLayers[i].cfg.key === key) return serviceLayers[i];
@@ -4347,6 +4379,12 @@
     function resetMapToVillageView() {
         // minZoom rivendoset PARA setView (dhe pa animacion): ndryshimi i tij në mes të një animacioni
         // e ndërpriste atë dhe harta mbetej në një zoom/pozicion të ndërmjetëm, jo fiks.
+        //
+        // Por vetë ngritja e minZoom-it duhet gjetur hartën tashmë brenda kufirit të ri. Nëse jo,
+        // Leaflet-i nis vetë një setZoom të animuar, dhe ai animacion mbaron PAS setView-it të
+        // applyVillageView(): shkalla kthehej, qendra jo. Dukej kur fikej shtresa e fundit e
+        // shërbimeve — harta mbetej mbi Ferizajin, jo mbi The Village.
+        if (map.getZoom() < MAP_INITIAL_ZOOM) map.setZoom(MAP_INITIAL_ZOOM, { animate: false });
         map.setMinZoom(MAP_INITIAL_ZOOM);
         applyVillageView();
         restoreBiznisetAfterServiceView();
@@ -4368,6 +4406,84 @@
     function clearServiceRoute() {
         if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
         if (destinationMarker) { map.removeLayer(destinationMarker); destinationMarker = null; }
+    }
+
+    /**
+     * "Kthimi në fillim": e sjell webgis-in pikërisht aty ku e gjen përdoruesi kur e hap faqen —
+     * pa pasur nevojë ta rifreskojë atë. "Pamja e plotë" e rregullon vetëm zoom-in; këtu pastrohet
+     * gjithçka që mund të ketë ndryshuar duke klikuar: biznesi i zgjedhur, rruga e navigimit, matja,
+     * raportimi, shtresat e fikura dhe kërkimi.
+     *
+     * Nuk preken tri gjëra që i mbijetojnë edhe një rifreskimi të faqes, pra janë zgjedhje e vetë
+     * përdoruesit dhe jo rrjedhojë e klikimeve në hartë: gjuha, ngjyrat te "Personalizim" (kanë
+     * butonin e vet "Rivendos standardet") dhe raportet e ruajtura të problemeve (të dhëna që do të
+     * humbnin pakthyeshëm).
+     */
+    function resetAppToInitialState() {
+        // 1) Mbyll dritaret dhe fik modet e punës.
+        map.closePopup();
+        if (typeof isMeasuring !== "undefined" && isMeasuring && typeof stopMeasuring === "function") {
+            stopMeasuring();
+        }
+        if (typeof clearMeasurement === "function") clearMeasurement();
+        if (typeof problemReportMode !== "undefined" && problemReportMode) {
+            problemReportMode = false;
+            if (typeof updateProblemReportToggleUi === "function") updateProblemReportToggleUi();
+            if (typeof syncMapCursorAfterProblemExit === "function") syncMapCursorAfterProblemExit();
+        }
+        // resetNav() fshin rrugën, destinacionin dhe theksimin, dhe e fik vetë modin e navigimit.
+        if (typeof resetNav === "function") resetNav();
+        if (typeof clearServiceRoute === "function") clearServiceRoute();
+        if (typeof clearBiznisetSelectionUI === "function") clearBiznisetSelectionUI();
+
+        // 2) Shtresat e shërbimeve janë të fikura kur hapet webgis-i.
+        if (typeof serviceLayers !== "undefined") {
+            serviceLayers.forEach(function(svc) {
+                if (svc.isOn()) map.removeLayer(svc.layer);
+                Object.keys(svc.enabled).forEach(function(lloji) { svc.enabled[lloji] = true; });
+                if (typeof svc.applyLegend === "function" && svc.geoJson) svc.applyLegend();
+            });
+        }
+
+        // 3) Shtresat bazë kthehen të gjitha të ndezura. Flamuri biznisetHiddenForServices duhet
+        //    hequr përmes funksionit të vet, përndryshe mbetet "po" dhe e çorienton ndezjen e radhës.
+        if (typeof restoreBiznisetAfterServiceView === "function") restoreBiznisetAfterServiceView();
+        if (typeof ORDERED_LAYER_KEYS !== "undefined") {
+            ORDERED_LAYER_KEYS.forEach(function(key) {
+                var lyr = layers[key];
+                if (!lyr || SERVICE_LAYER_KEYS.indexOf(key) !== -1) return;
+                if (!map.hasLayer(lyr)) map.addLayer(lyr);
+            });
+        }
+
+        // 4) Të gjitha kategoritë e bizneseve rikthehen të shënuara.
+        if (typeof bizLegendEnabled !== "undefined") {
+            Object.keys(bizLegendEnabled).forEach(function(k) { bizLegendEnabled[k] = true; });
+            if (typeof saveBizLegendEnabled === "function") saveBizLegendEnabled();
+            if (typeof applyBizLegendToMap === "function") applyBizLegendToMap();
+        }
+
+        // 5) Kërkimet pastrohen. Ngjarja "input" lëshohet me dorë sepse vendosja e .value nga kodi
+        //    nuk e nis vetë dëgjuesin që i rifilron rreshtat.
+        ["mall-search", "bizniset-filter"].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el && el.value !== "") {
+                el.value = "";
+                el.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+        });
+
+        // 6) Paneli anësor: fleta e "Personalizim" mbyllet, kthehet skeda "Shtresat" dhe legjenda
+        //    rindërtohet që kutizat të pasqyrojnë gjendjen e re të hartës.
+        var pers = document.getElementById("bizniset-personalize");
+        if (pers) pers.open = false;
+        if (typeof switchSidebarTab === "function") switchSidebarTab("layers");
+        if (typeof rebuildLayersLegend === "function") rebuildLayersLegend();
+        if (typeof closeMobileSidebarPanel === "function") closeMobileSidebarPanel();
+
+        // 7) Në fund pamja: zoom-i fillestar 1:4000 mbi The Village.
+        if (typeof resetMapToVillageView === "function") resetMapToVillageView();
+        if (typeof syncPanLock === "function") syncPanLock();
     }
 
     // Vizaton rrugën më të shkurtër (këmbë) nga "Ti je këtu" (The Village) deri te pika e klikuar.
@@ -6458,6 +6574,9 @@
         }, 0);
     })();
 
+    // Vendoset nga initMobileShell; "Kthimi në fillim" e mbyll fletën e telefonit përmes saj.
+    var closeMobileSidebarPanel = null;
+
     function initMobileShell() {
         var mq = window.matchMedia("(max-width: 768px)");
         var backdrop = document.getElementById("sidebar-backdrop");
@@ -6486,6 +6605,8 @@
         function toggleSidebar() {
             setSidebarOpen(!document.body.classList.contains("app-sidebar-open"));
         }
+
+        closeMobileSidebarPanel = function() { setSidebarOpen(false); };
 
         if (fab) fab.addEventListener("click", toggleSidebar);
         if (closeBtn) closeBtn.addEventListener("click", function() { setSidebarOpen(false); });

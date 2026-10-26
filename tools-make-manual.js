@@ -23,8 +23,9 @@ const CONTENT = [
     { t: "table", head: ["Pjesa", "Çfarë përmban"], w: [30, 70], rows: [
         ["Paneli majtas", "Dy skeda: “Shtresat” (çfarë shfaqet në hartë) dhe “Bizneset” (lista e bizneseve)."],
         ["Shiriti i veglave", "Gjashtë butona mbi hartë: ruajtje, matje, raportim, navigim, fshirje rruge, manual."],
-        ["Lart-djathtas", "Shigjeta e veriut, butonat + / - për zmadhim dhe, poshtë tyre, butoni i pamjes së plotë: " +
-            "e kthen hartën në pamjen fillestare kur je zhvendosur ose zmadhuar shumë."],
+        ["Lart-djathtas", "Shigjeta e veriut, butonat + / - për zmadhim dhe, poshtë tyre, dy butona: " +
+            "“Pamja e plotë” e kthen hartën në shkallën fillestare kur je zhvendosur ose zmadhuar shumë, " +
+            "ndërsa “Kthimi në fillim” e kthen krejt webgis-in ashtu si kur hapet."],
         ["Poshtë", "Koordinatat e kursorit (EPSG:9141) dhe shkalla aktuale e hartës."]
     ]},
 
