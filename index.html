@@ -3821,8 +3821,10 @@
             });
         });
 
-        // Mesi i rrugës provohet i pari; nëse zihet, etiketa rrëshqet përgjatë saj.
-        var PJESET = [0.5, 0.35, 0.65, 0.22, 0.78];
+        // Mesi i rrugës provohet i pari; nëse zihet, etiketa rrëshqet përgjatë saj. Hapat janë të
+        // dendur sepse te shkallët e mëdha distinktivët e dyqaneve e mbulojnë rrugën pothuajse tërë
+        // gjatësisë, dhe me pak prova emri hiqej edhe aty ku kishte vend.
+        var PJESET = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82, 0.1, 0.9];
         Object.keys(perEmer).forEach(function(emri) {
             var pm = permasatE(emri), w = pm.w, h = pm.h;
             // Emri lejohet të dalë pak përtej vargut — ashtu bëjnë edhe hartat e zakonshme — por jo
