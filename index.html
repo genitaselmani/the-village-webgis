@@ -3699,19 +3699,16 @@
             { color: "#f2e4c8", weight: Math.max(0.5, 11 * s), lineCap: "round", lineJoin: "round" } :
             { color: "#e8d5a8", weight: Math.max(0.5, 8 * s), lineCap: "round", lineJoin: "round" };
     }
-    // Shtresa "Rrugët": dy pasazhe stilizimi mbi të njëjtat të dhëna + tooltip me emrin e rrugës.
+    // Shtresa "Rrugët": dy pasazhe stilizimi mbi të njëjtat të dhëna.
+    // Emrat shkruhen drejtpërdrejt mbi asfalt (shih rebuildRoadNameLabels), prandaj rrugët nuk
+    // kanë më tooltip — kutia e bardhë që dilte me mausin vetëm e përsëriste emrin dhe mbulonte
+    // hartën. Pa ngjarje mausi, ato nuk duhen as interaktive: kështu klikimi kalon te harta.
     function buildRruguetLayer() {
         var group = L.layerGroup();
         loadLocalGeoJSON("Rruget")
             .then(function(data) {
-                var casing = L.geoJSON(data, { style: roadCasingStyle });
-                var fillLn = L.geoJSON(data, {
-                    style: roadFillStyle,
-                    onEachFeature: function(feature, lyr) {
-                        var name = feature.properties && feature.properties.RoadName;
-                        if (name) lyr.bindTooltip(String(name), { sticky: true });
-                    }
-                });
+                var casing = L.geoJSON(data, { style: roadCasingStyle, interactive: false });
+                var fillLn = L.geoJSON(data, { style: roadFillStyle, interactive: false });
                 group.addLayer(casing);
                 group.addLayer(fillLn);
                 group.geoJsonData = data;
