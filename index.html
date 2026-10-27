@@ -4602,7 +4602,11 @@
         var fitZoom = map.getBoundsZoom(bounds, false, L.point(50 + covered / 2, 50));
         // Floor, jo round: rrumbullakimi lart do t'i priste disa pika jashtë ekranit.
         var steps = Math.floor(fitZoom - MAP_INITIAL_ZOOM);
-        var target = Math.max(MAP_SERVICE_MIN_ZOOM, Math.min(MAP_INITIAL_ZOOM, MAP_INITIAL_ZOOM + steps));
+        // Së paku një hap prapa, edhe kur pikat do të hynin te 1:4000. Shërbimet e emergjencës janë
+        // vetëm tri dhe të treja afër kompleksit, ndaj harta nuk lëvizte fare: shtresa shfaqej mbi
+        // pamjen e detajuar, ndërsa dy shtresat e tjera zbrisnin te pamja e përmbledhur me logon.
+        // Me një hap të detyruar të tria sillen njësoj, dhe 1:4000 mbetet ashtu siç është.
+        var target = Math.max(MAP_SERVICE_MIN_ZOOM, Math.min(MAP_INITIAL_ZOOM - 1, MAP_INITIAL_ZOOM + steps));
         map.setView(bounds.getCenter(), target, { animate: false });
         panMapForSidebarOverlay();
     }
