@@ -2902,7 +2902,8 @@
      */
     var SCALE_FIXED_BASE_DENOM = 4000;
     var SCALE_FIXED_STEPS_IN = 3;  // zmadhim deri në 1:500; më afër se kaq harta s'ka përmbajtje të dobishme
-    var SCALE_FIXED_STEPS_OUT = 3; // zvogëlim deri në 1:32000 (lejohet vetëm në pamjen e shtresave të shërbimeve)
+    var SCALE_FIXED_STEPS_OUT = 2; // zvogëlim deri në 1:16000 (lejohet vetëm në pamjen e shtresave të shërbimeve);
+                                   // 1:32000 nuk i shtonte asgjë — të gjitha pikat e shërbimeve nxihen te 1:16000
 
     // Emëruesi i shkallës në zoom 0, i matur me TË NJËJTËN matematikë distancash si treguesi i shkallës
     // në footer (L.latLng.distanceTo → rreze mesatare e Tokës). Formula standarde e Web Mercator përdor
@@ -3316,6 +3317,7 @@
     map.on("zoomend", function() {
         if (typeof syncPanLock === "function") syncPanLock();
         if (typeof syncVillageOverview === "function") syncVillageOverview();
+        if (typeof shmangMbivendosjenEShenjave === "function") shmangMbivendosjenEShenjave();
         if (typeof rebuildBiznisetSymbolsLayer === "function") rebuildBiznisetSymbolsLayer();
         if (typeof syncHyrjetDaljetVisibility === "function") syncHyrjetDaljetVisibility();
         if (typeof rebuildRoadNameLabels === "function") rebuildRoadNameLabels();
@@ -4485,10 +4487,13 @@
                 return styleByLloji[lloji] || { color: "#7f8c8d", icon: "📍" };
             },
             // Distinktivi (rreth me ngjyrë + simbol) — i njëjti HTML për markerin në hartë dhe për legjendën.
-            badgeHtml: function(lloji) {
+            badgeHtml: function(lloji, madhesia) {
                 var st = svc.styleFor(lloji);
                 var border = st.borderColor ? ";border-color:" + st.borderColor : "";
-                return '<span class="service-point-badge" style="background:' + st.color + border + ';">' +
+                // Pa madhësi vlen ajo e CSS-së (30px) — kështu e përdor legjenda.
+                var perm = madhesia ? ";width:" + madhesia + "px;height:" + madhesia + "px;font-size:" +
+                    Math.round(madhesia * 0.5) + "px" : "";
+                return '<span class="service-point-badge" style="background:' + st.color + border + perm + ';">' +
                     st.icon + '</span>';
             },
             applyLegend: function() {
@@ -4576,6 +4581,141 @@
         var cb = document.getElementById(layerIdForKey("Bizneset"));
         if (cb) cb.checked = true;
         biznisetHiddenForServices = false;
+    }
+
+    /**
+     * Shmang mbivendosjen e distinktivëve të shërbimeve.
+     *
+     * Në shkallët ku shfaqen shërbimet, një distinktiv 33px mbulon rreth 140 m terren, ndaj objekte
+     * që në të vërtetë janë fqinje — zjarrfikësit me gjykatën, stacioni i trenit me komunën — dalin
+     * njëri mbi tjetrin. Simbolet shtyhen larg njëri-tjetrit derisa të ndahen, me zhvendosje të
+     * kufizuar në SHMANGJA_MAX piksela: më pak se gjysma e vetë distinktivit, pra brenda saktësisë
+     * që ka një simbol i kësaj madhësie në këtë shkallë.
+     *
+     * Zhvendoset vetëm VIZATIMI, përmes ankorës së ikonës; koordinata e markerit mbetet e paprekur,
+     * prandaj rrugët e navigimit dhe popup-et vazhdojnë të nisen nga vendi i vërtetë. Logoja e
+     * kompleksit llogaritet si pengesë e palëvizshme, që asnjë shenjë të mos i bjerë sipër.
+     */
+    var SHMANGJA_MAX = 15;       // piksela nga vendi i vërtetë
+
+    /**
+     * Sa më larg shkalla, aq më i vogël distinktivi: në 1:16000 një shenjë 30px mbulon 140 m terren
+     * dhe katër objekte fqinje s'ndahen dot pa i lëvizur larg nga vendi. Zvogëlimi e zgjidh pjesën
+     * më të madhe të ngjeshjes pa prekur asnjë koordinatë.
+     */
+    function madhesiaEShenjes() {
+        var hapa = Math.round(MAP_INITIAL_ZOOM - map.getZoom());
+        return [30, 25, 21][Math.max(0, Math.min(2, hapa))];
+    }
+    /** Largësia më e vogël e pranueshme mes dy qendrave: distinktivi + buza + pak frymë. */
+    function largesiaMesShenjave() { return madhesiaEShenjes() + 8; }
+
+    function shenjatAktiveTeSherbimeve() {
+        var lista = [];
+        if (typeof serviceLayers === "undefined") return lista;
+        serviceLayers.forEach(function(svc) {
+            if (!svc.isOn()) return;
+            svc.markers.forEach(function(hyrja) {
+                if (!svc.layer.hasLayer(hyrja.marker)) return;
+                var p = map.latLngToContainerPoint(hyrja.marker.getLatLng());
+                lista.push({ svc: svc, hyrja: hyrja, x0: p.x, y0: p.y, x: p.x, y: p.y });
+            });
+        });
+        return lista;
+    }
+
+    function vendosShenjenEServisit(njesia, dx, dy, madhesia) {
+        var h = njesia.hyrja;
+        if (h.zhvX === dx && h.zhvY === dy && h.perm === madhesia) return;
+        h.zhvX = dx; h.zhvY = dy; h.perm = madhesia;
+        var gjysma = madhesia / 2;
+        h.marker.setIcon(L.divIcon({
+            className: "service-point-divicon",
+            html: njesia.svc.badgeHtml(h.lloji, madhesia),
+            iconSize: [madhesia, madhesia],
+            iconAnchor: [Math.round(gjysma - dx), Math.round(gjysma - dy)],
+            popupAnchor: [0, -Math.round(gjysma - 1)]
+        }));
+    }
+
+    function shmangMbivendosjenEShenjave() {
+        var njesite = shenjatAktiveTeSherbimeve();
+        if (!njesite.length) return;
+
+        // Te 1:4000 pikat janë aq larg njëra-tjetrës sa nuk përplasen; aty vizatohen në vendin e saktë.
+        var perm = madhesiaEShenjes();
+        if (map.getZoom() >= MAP_INITIAL_ZOOM) {
+            njesite.forEach(function(n) { vendosShenjenEServisit(n, 0, 0, perm); });
+            return;
+        }
+        var SHENJA_DIAMETRI = largesiaMesShenjave();
+
+        // Logoja e kompleksit: drejtkëndësh i palëvizshëm që shenjat duhet ta lënë të qetë.
+        var logoKutia = null;
+        if (villageOverviewLogo) {
+            var el = villageOverviewLogo.getElement && villageOverviewLogo.getElement();
+            if (el) {
+                var r = el.getBoundingClientRect();
+                var mapR = map.getContainer().getBoundingClientRect();
+                logoKutia = { x1: r.left - mapR.left, y1: r.top - mapR.top,
+                              x2: r.right - mapR.left, y2: r.bottom - mapR.top };
+            }
+        }
+
+        var rrezja = SHENJA_DIAMETRI / 2;
+        for (var it = 0; it < 80; it++) {
+            var levizi = false;
+            for (var i = 0; i < njesite.length; i++) {
+                for (var j = i + 1; j < njesite.length; j++) {
+                    var a = njesite[i], b = njesite[j];
+                    var dx = b.x - a.x, dy = b.y - a.y;
+                    var d = Math.hypot(dx, dy);
+                    if (d >= SHENJA_DIAMETRI) continue;
+                    // Dy pika krejt mbi njëra-tjetrën s'kanë drejtim shtytjeje: zgjidhet një i qëndrueshëm.
+                    if (d < 0.01) { dx = Math.cos(i + j); dy = Math.sin(i + j); d = 1; }
+                    var shtyrja = (SHENJA_DIAMETRI - d) / 2 + 0.2;
+                    a.x -= dx / d * shtyrja; a.y -= dy / d * shtyrja;
+                    b.x += dx / d * shtyrja; b.y += dy / d * shtyrja;
+                    levizi = true;
+                }
+            }
+            if (logoKutia) {
+                njesite.forEach(function(n) {
+                    var cx = Math.max(logoKutia.x1, Math.min(n.x, logoKutia.x2));
+                    var cy = Math.max(logoKutia.y1, Math.min(n.y, logoKutia.y2));
+                    var dx2 = n.x - cx, dy2 = n.y - cy;
+                    var d2 = Math.hypot(dx2, dy2);
+                    if (d2 >= rrezja) return;
+                    if (d2 < 0.01) {
+                        // Qendra brenda drejtkëndëshit: nxirret nga ana më e afërt.
+                        var dal = [n.x - logoKutia.x1, logoKutia.x2 - n.x, n.y - logoKutia.y1, logoKutia.y2 - n.y];
+                        var m = Math.min.apply(null, dal);
+                        if (m === dal[0]) n.x = logoKutia.x1 - rrezja;
+                        else if (m === dal[1]) n.x = logoKutia.x2 + rrezja;
+                        else if (m === dal[2]) n.y = logoKutia.y1 - rrezja;
+                        else n.y = logoKutia.y2 + rrezja;
+                    } else {
+                        n.x = cx + dx2 / d2 * rrezja;
+                        n.y = cy + dy2 / d2 * rrezja;
+                    }
+                    levizi = true;
+                });
+            }
+            // Kufizimi mbahet brenda ciklit: ndryshe shtytjet do të grumbulloheshin pa fund dhe
+            // prerja e vetme në fund do t'i kthente simbolet mbi njëra-tjetrën.
+            njesite.forEach(function(n) {
+                var dx3 = n.x - n.x0, dy3 = n.y - n.y0;
+                var d3 = Math.hypot(dx3, dy3);
+                if (d3 <= SHMANGJA_MAX) return;
+                n.x = n.x0 + dx3 / d3 * SHMANGJA_MAX;
+                n.y = n.y0 + dy3 / d3 * SHMANGJA_MAX;
+            });
+            if (!levizi) break;
+        }
+
+        njesite.forEach(function(n) {
+            vendosShenjenEServisit(n, Math.round(n.x - n.x0), Math.round(n.y - n.y0), perm);
+        });
     }
 
     // Zbret në shkallën fikse më të afërt që i nxë të gjitha pikat e shtresave aktive + The Village.
@@ -5101,6 +5241,8 @@
                 subCb.addEventListener("change", function() {
                     svc.enabled[lloji] = this.checked;
                     svc.applyLegend();
+                    // Me një nën-kategori më pak bie edhe ngjeshja: shenjat rikthehen më afër vendit.
+                    if (typeof shmangMbivendosjenEShenjave === "function") shmangMbivendosjenEShenjave();
                 });
                 svcSubs.appendChild(subLbl);
             });
@@ -5120,11 +5262,13 @@
                         map.addLayer(svc.layer);
                         zoomToShowActiveServiceLayers();
                         if (typeof syncPanLock === "function") syncPanLock();
+                        if (typeof shmangMbivendosjenEShenjave === "function") shmangMbivendosjenEShenjave();
                         subs.forEach(function(cb) { cb.disabled = false; });
                     }).catch(function() {});
                 } else {
                     map.removeLayer(svc.layer);
                     clearServiceRoute();
+                    if (typeof shmangMbivendosjenEShenjave === "function") shmangMbivendosjenEShenjave();
                     subs.forEach(function(cb) { cb.disabled = true; });
                     // Rifiton pamjen vetëm sipas shtresave që mbeten aktive; kthehet te The Village kur s'ka asnjë.
                     if (anyServiceLayerOn()) zoomToShowActiveServiceLayers();
