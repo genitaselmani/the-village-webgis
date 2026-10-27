@@ -2471,8 +2471,6 @@
         "Kthimi në fillim": "Back to start",
         "Hartë": "Map",
         "Satelit": "Satellite",
-        "Satelit me emra": "Satellite with labels",
-        "Hibrid": "Hybrid",
         "Harta bazë": "Base map",
         "Manuali i përdorimit": "User manual",
         "Mbyll manualin dhe kthehu te harta": "Close the manual and return to the map",
@@ -3421,13 +3419,6 @@
      * Leaflet-i e zmadhon fotografinë e nivelit 18 — pak më e butë, por fotografi e vërtetë.
      */
     var ESRI_SATELIT_MAX_NATYROR = 18;
-    /**
-     * Emrat e rrugëve për pamjen hibride vijnë nga CARTO, jo nga shtresat "Reference" të Esri-t:
-     * ato të fundit u matën mbi Ferizaj dhe dolën praktikisht bosh (nën 1% mbulim nga 1:8000 e tutje),
-     * pra hibridi do të ishte i padallueshëm nga sateliti i thjeshtë. Kjo shtresë ka tekst në çdo
-     * shkallë dhe vjen nga i njëjti çelës që përdor harta vizatimore.
-     */
-    var CARTO_EMRA_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png?key=' + CARTO_BASEMAP_KEY;
     var ESRI_ATRIBUIMI = 'Pamje satelitore &copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics';
     var CARTO_ATRIBUIMI = '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
@@ -3474,21 +3465,6 @@
                 return L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({
                     attribution: ESRI_ATRIBUIMI, maxNativeZoom: ESRI_SATELIT_MAX_NATYROR
                 }));
-            }
-        },
-        {
-            id: "hibrid",
-            emri: "Hibrid",
-            pamjet: [pamjaEVogel(ESRI_SATELIT_URL), pamjaEVogel(CARTO_EMRA_URL)],
-            krijo: function() {
-                // zIndex, jo renditja e shtimit: emrat duhet të bien mbi pamjen, pavarësisht se cila
-                // pllakë mbërrin e para.
-                return L.layerGroup([
-                    L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({
-                        attribution: ESRI_ATRIBUIMI, zIndex: 1, maxNativeZoom: ESRI_SATELIT_MAX_NATYROR
-                    })),
-                    L.tileLayer(CARTO_EMRA_URL, opsionetEBazes({ attribution: CARTO_ATRIBUIMI, zIndex: 2 }))
-                ]);
             }
         }
     ];
