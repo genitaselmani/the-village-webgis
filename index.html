@@ -3138,29 +3138,171 @@
             }).addTo(map);
         }
 
-        // Madhësia e logos rillogaritet në çdo shkallë: sa më afër, aq më i madh poligoni.
-        var kufijte = villageOverviewLayer.getBounds();
-        if (!kufijte.isValid()) return;
-        var nw = map.latLngToContainerPoint(kufijte.getNorthWest());
-        var se = map.latLngToContainerPoint(kufijte.getSouthEast());
-        var gjer = Math.abs(se.x - nw.x), lart = Math.abs(se.y - nw.y);
-        // 0.62, jo më shumë: kompleksi është një katërkëndësh i pjerrët, ndaj qoshet e kutisë
-        // kufitare bien jashtë vetë poligonit. 34px është kufiri ku logoja ende lexohet.
-        var h = Math.max(34, Math.min(lart * 0.62, (gjer * 0.62) / VILLAGE_LOGO_RAPORTI));
-        var w = h * VILLAGE_LOGO_RAPORTI;
-        h = Math.round(h); w = Math.round(w);
+        var unazat = unazatNePiksela(kufiriOverviewData);
+        if (!unazat.length) return;
+        var vendi = vendiILogos(unazat, VILLAGE_LOGO_RAPORTI);
+        if (!vendi) return;
 
+        // Poshtë, jo rrumbullakim: një gjysmë piksel më shumë e nxjerr qoshen mbi vijën e kufirit.
+        // Ankora mbahet e paprerë, që qendra të mos zhvendoset as me gjysmë piksel.
+        var h = Math.max(1, Math.floor(vendi.h)), w = Math.max(1, Math.floor(h * VILLAGE_LOGO_RAPORTI));
         if (villageOverviewLogo) map.removeLayer(villageOverviewLogo);
-        villageOverviewLogo = L.marker(kufijte.getCenter(), {
+        villageOverviewLogo = L.marker(map.containerPointToLatLng(L.point(vendi.x, vendi.y)), {
             interactive: false,
             keyboard: false,
             icon: L.divIcon({
                 className: "village-overview-logo",
                 html: '<img src="' + VILLAGE_LOGO_URL + LOGO_CACHE_VERSION + '" alt="The Village Shopping & Fun">',
                 iconSize: [w, h],
-                iconAnchor: [Math.round(w / 2), Math.round(h / 2)]
+                iconAnchor: [w / 2, h / 2]
             })
         }).addTo(map);
+    }
+
+    /** Unazat e poligonit të kufirit, të kthyera në piksela ekrani për zoom-in aktual. */
+    function unazatNePiksela(geojson) {
+        var dalje = [];
+        (geojson.features || []).forEach(function(f) {
+            var g = f.geometry;
+            if (!g) return;
+            var shumefishta = g.type === "MultiPolygon" ? g.coordinates : (g.type === "Polygon" ? [g.coordinates] : []);
+            shumefishta.forEach(function(poligoni) {
+                poligoni.forEach(function(unaza) {
+                    var pikat = unaza.map(function(c) {
+                        return map.latLngToContainerPoint(L.latLng(c[1], c[0]));
+                    });
+                    if (pikat.length > 2) dalje.push(pikat);
+                });
+            });
+        });
+        return dalje;
+    }
+
+    /** Ray casting mbi të gjitha unazat njëherësh (rregulli çift-tek mban edhe vrimat). */
+    function brendaUnazave(x, y, unazat) {
+        var brenda = false;
+        unazat.forEach(function(u) {
+            for (var i = 0, j = u.length - 1; i < u.length; j = i++) {
+                if (((u[i].y > y) !== (u[j].y > y)) &&
+                    (x < (u[j].x - u[i].x) * (y - u[i].y) / (u[j].y - u[i].y) + u[i].x)) {
+                    brenda = !brenda;
+                }
+            }
+        });
+        return brenda;
+    }
+
+    function largesiaPikeSegment(px, py, ax, ay, bx, by) {
+        var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+        var t = l2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l2)) : 0;
+        return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+    }
+
+    /** Sa larg nga vija më e afërt e kufirit bie një pikë. */
+    function largesiaNgaKufiri(x, y, unazat) {
+        var min = Infinity;
+        unazat.forEach(function(u) {
+            for (var i = 0, j = u.length - 1; i < u.length; j = i++) {
+                var d = largesiaPikeSegment(x, y, u[i].x, u[i].y, u[j].x, u[j].y);
+                if (d < min) min = d;
+            }
+        });
+        return min;
+    }
+
+    function segmentetPriten(p1, p2, p3, p4) {
+        function ana(a, b, c) { return Math.sign((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)); }
+        var d1 = ana(p3, p4, p1), d2 = ana(p3, p4, p2), d3 = ana(p1, p2, p3), d4 = ana(p1, p2, p4);
+        return d1 !== d2 && d3 !== d4;
+    }
+
+    /** A rri krejt brenda poligonit një drejtkëndësh me qendër (cx,cy)? */
+    function drejtkendeshiBrenda(cx, cy, w, h, unazat) {
+        var hw = w / 2, hh = h / 2;
+        var qoshet = [
+            L.point(cx - hw, cy - hh), L.point(cx + hw, cy - hh),
+            L.point(cx + hw, cy + hh), L.point(cx - hw, cy + hh)
+        ];
+        for (var i = 0; i < 4; i++) {
+            if (!brendaUnazave(qoshet[i].x, qoshet[i].y, unazat)) return false;
+        }
+        // Me qoshe të lira mjafton të mos e presë asnjë brinjë: te një poligon konkav një brinjë
+        // e kufirit mund të futet mes dy qosheve pa i përfshirë ato.
+        for (var k = 0; k < 4; k++) {
+            var a = qoshet[k], b = qoshet[(k + 1) % 4];
+            for (var u = 0; u < unazat.length; u++) {
+                var un = unazat[u];
+                for (var m = 0, n = un.length - 1; m < un.length; n = m++) {
+                    if (segmentetPriten(a, b, un[m], un[n])) return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Lartësia më e madhe e një drejtkëndëshi me atë raport që rri brenda, me qendër te (cx,cy). */
+    function lartesiaMeEMadheAty(cx, cy, raporti, unazat, kufiriSiperm) {
+        var lo = 0, hi = kufiriSiperm;
+        for (var i = 0; i < 16; i++) {
+            var mid = (lo + hi) / 2;
+            if (drejtkendeshiBrenda(cx, cy, mid * raporti, mid, unazat)) lo = mid; else hi = mid;
+        }
+        return lo;
+    }
+
+    /**
+     * Vendi dhe madhësia e logos: kërkohet drejtkëndëshi më i madh me raportin e logos që rri
+     * TËRËSISHT brenda poligonit. Mesi i kutisë kufitare nuk vlen — kompleksi është katërkëndësh i
+     * pjerrët, ndaj ai mes bie jashtë vetë poligonit dhe logoja i dilte përtej kufirit.
+     *
+     * Qendra nuk fiksohet te pika më e brendshme: ajo e jep rrethin më të madh, jo drejtkëndëshin
+     * më të madh. Prandaj provohen me radhë të gjitha pikat e një rrjete, dhe te secila kërkohet me
+     * përgjysmim lartësia më e madhe. Pikat ku as rrethi i brendashkruar s'e kalon më të mirën e
+     * gjetur deri atëherë kapërcehen pa llogaritje — kjo e mban punën nën dhjetë mijë prova.
+     */
+    function vendiILogos(unazat, raporti) {
+        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        unazat.forEach(function(u) {
+            u.forEach(function(p) {
+                if (p.x < minX) minX = p.x;
+                if (p.x > maxX) maxX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.y > maxY) maxY = p.y;
+            });
+        });
+        if (!isFinite(minX) || maxX - minX < 4 || maxY - minY < 4) return null;
+
+        var mx = 0, my = 0, mH = 0;
+        function provo(x, y) {
+            if (!brendaUnazave(x, y, unazat)) return;
+            // Kufi i sigurt dhe i lirë: drejtkëndëshi, me qendër aty, duhet të hyjë së paku brenda
+            // kutisë kufitare. Pikat ku as kaq nuk e kalon më të mirën e gjetur, kapërcehen.
+            var hi = 2 * Math.min(y - minY, maxY - y, Math.min(x - minX, maxX - x) / raporti);
+            if (hi <= mH) return;
+            var h = lartesiaMeEMadheAty(x, y, raporti, unazat, hi);
+            if (h > mH) { mH = h; mx = x; my = y; }
+        }
+
+        var hapi = Math.max(1, Math.min(maxX - minX, maxY - minY) / 20);
+        for (var x = minX + hapi / 2; x <= maxX; x += hapi) {
+            for (var y = minY + hapi / 2; y <= maxY; y += hapi) provo(x, y);
+        }
+        if (mH <= 0) return null;
+        // Tri rrathë përsosjeje rreth fituesit, secili me hap gjysmë.
+        for (var r = 0; r < 3; r++) {
+            hapi /= 2;
+            var bx = mx, by = my;
+            for (var dx = -1; dx <= 1; dx++) {
+                for (var dy = -1; dy <= 1; dy++) {
+                    if (dx || dy) provo(bx + dx * hapi, by + dy * hapi);
+                }
+            }
+        }
+
+        // Frymëmarrje mes logos dhe kufirit: 5%, por së paku një piksel nga secila anë.
+        var h = Math.min(mH * 0.95, mH - 2);
+        if (h < 14) return null; // më e vogël se kaq nuk njihet më — më mirë fare pa logo
+        return { x: mx, y: my, h: h };
     }
 
     loadLocalGeoJSON("Kufiri_village")
