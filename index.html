@@ -2761,7 +2761,7 @@
      * e dikurshëm vazhdojnë ta shohin të vjetrën deri në dhjetë minuta — ndryshe nga të dhënat
      * GeoJSON, që kërkohen me `cache: "no-cache"`. Ngrije këtë numër sa herë zëvendësohet një logo.
      */
-    var LOGO_CACHE_VERSION = "?v=2";
+    var LOGO_CACHE_VERSION = "?v=3";
 
     /** Skedarët PNG në dosjen `logos/` (emri i skedarit ≈ emri i biznesit). */
     var LOCAL_LOGO_FILENAMES = [
@@ -5375,9 +5375,11 @@
      */
     function buildBiznisetLogoBadgeIcon(logoUrl, ringColor, size) {
         var s = Math.max(10, Math.min(84, size || 34));
-        var imgSize = Math.round((s - 2 * BIZ_BADGE_RING_W) * 0.70); // px eksplicite (jo % mbi flex item) — shmang mospërputhje shkallëzimi të shfletuesit
+        var brenda = s - 2 * BIZ_BADGE_RING_W;
+        var imgSize = Math.round(brenda * 0.70); // px eksplicite (jo % mbi flex item) — shmang mospërputhje shkallëzimi të shfletuesit
         var html = '<span class="biz-badge" style="width:' + s + 'px;height:' + s + 'px;border-width:' + BIZ_BADGE_RING_W + 'px;border-color:' + (ringColor || "#8a7b63") + ';">' +
-            '<img src="' + logoUrl + '" alt="" class="biz-badge-img" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
+            '<img src="' + logoUrl + '" alt="" class="biz-badge-img" data-brenda="' + brenda +
+            '" onload="fitBizBadgeLogo(this)" style="width:' + imgSize + 'px;height:' + imgSize + 'px;">' +
             '</span>';
         return L.divIcon({
             className: "bizniset-badge-divicon",
@@ -5385,6 +5387,25 @@
             iconSize: [s, s],
             iconAnchor: [Math.round(s / 2), Math.round(s / 2)]
         });
+    }
+
+    /**
+     * Kutia e logos brenda distinktivit merr formën e vetë logos: drejtkëndëshi më i madh me atë
+     * raport brinjësh që hyn brenda rrethit. Me kuti katrore fikse një wordmark i gjerë — "FORMA
+     * BIJOUTERIE", "Aztech", "Luxee" — shtrydhej në një shirit sa një e pesta e lartësisë, shkronjat
+     * binin nën një piksel dhe dilnin thuajse të bardha.
+     *
+     * Thirret nga `onload` sepse raporti i logos njihet vetëm pasi të jetë ngarkuar figura; derisa
+     * të vijë, vlen katrori i sigurt i vendosur inline. Për një logo katrore formula jep pikërisht
+     * 0.707 të diametrit, pra saktësisht atë që kishte më parë — ato nuk lëvizin fare.
+     */
+    function fitBizBadgeLogo(img) {
+        var d = parseFloat(img.getAttribute("data-brenda"));
+        var nw = img.naturalWidth, nh = img.naturalHeight;
+        if (!d || !nw || !nh) return;
+        var kend = Math.atan(nh / nw); // w = d·cos(kend), h = d·sin(kend)  =>  w/h = nw/nh
+        img.style.width = (d * Math.cos(kend)).toFixed(1) + "px";
+        img.style.height = (d * Math.sin(kend)).toFixed(1) + "px";
     }
 
     /** Vetëm logo, pa sfond/rreth — siç është foto origjinale, e zmadhuar (kuti katrore, madhësi fikse). */
