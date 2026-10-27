@@ -3414,6 +3414,14 @@
     // Esri World Imagery: pa çelës, mjafton atribuimi.
     var ESRI_SATELIT_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
     /**
+     * Mbi Ferizajin Esri ka fotografi deri në nivelin 18 të pllakave. Më lart nuk kthen gabim — kthen
+     * një pllakë gri me shkrimin "Map data not yet available", të njëjtën për çdo x/y (u mat: mesatare
+     * 205, variancë 17, identike me fqinjën, kundrejt variancës 2100-4100 të fotografive të vërteta).
+     * Prandaj nga 1:1000 e tutje pamja satelitore zëvendësohej me atë sfond bosh. Me këtë kufi
+     * Leaflet-i e zmadhon fotografinë e nivelit 18 — pak më e butë, por fotografi e vërtetë.
+     */
+    var ESRI_SATELIT_MAX_NATYROR = 18;
+    /**
      * Emrat e rrugëve për pamjen hibride vijnë nga CARTO, jo nga shtresat "Reference" të Esri-t:
      * ato të fundit u matën mbi Ferizaj dhe dolën praktikisht bosh (nën 1% mbulim nga 1:8000 e tutje),
      * pra hibridi do të ishte i padallueshëm nga sateliti i thjeshtë. Kjo shtresë ka tekst në çdo
@@ -3462,7 +3470,11 @@
             id: "satelit",
             emri: "Satelit",
             pamjet: [pamjaEVogel(ESRI_SATELIT_URL)],
-            krijo: function() { return L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({ attribution: ESRI_ATRIBUIMI })); }
+            krijo: function() {
+                return L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({
+                    attribution: ESRI_ATRIBUIMI, maxNativeZoom: ESRI_SATELIT_MAX_NATYROR
+                }));
+            }
         },
         {
             id: "hibrid",
@@ -3472,7 +3484,9 @@
                 // zIndex, jo renditja e shtimit: emrat duhet të bien mbi pamjen, pavarësisht se cila
                 // pllakë mbërrin e para.
                 return L.layerGroup([
-                    L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({ attribution: ESRI_ATRIBUIMI, zIndex: 1 })),
+                    L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({
+                        attribution: ESRI_ATRIBUIMI, zIndex: 1, maxNativeZoom: ESRI_SATELIT_MAX_NATYROR
+                    })),
                     L.tileLayer(CARTO_EMRA_URL, opsionetEBazes({ attribution: CARTO_ATRIBUIMI, zIndex: 2 }))
                 ]);
             }
