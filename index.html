@@ -693,6 +693,32 @@
             letter-spacing: -0.02em;
             user-select: none;
         }
+        /**
+         * Shkallët e përmbledhura (1:8000 e më larg): brenda kompleksit mbetet vetëm një poligon me
+         * logon. Shenjat e brendshme janë elementë DOM, prandaj hiqen me CSS; poligonet (blloqet,
+         * parkingu, rrugët) i mbulon vetë poligoni i përmbledhjes nga shtresa e vet.
+         */
+        #map.village-overview .parking-p-divicon,
+        #map.village-overview .pika-informuese-leaflet-marker,
+        #map.village-overview .road-label-divicon,
+        #map.village-overview .entry-chip,
+        #map.village-overview .bizniset-dot-divicon,
+        #map.village-overview .bizniset-badge-divicon,
+        #map.village-overview .bizniset-raw-logo-divicon,
+        #map.village-overview .bizniset-sym-divicon {
+            display: none !important;
+        }
+        .village-overview-logo {
+            background: transparent !important;
+            border: none !important;
+        }
+        .village-overview-logo img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+
         /** Shenja "P" në mes të poligonit të parkimit; i njëjti pamje si swatch-i i legjendës. */
         .parking-p-divicon {
             background: transparent !important;
@@ -2919,6 +2945,11 @@
     map.createPane("kufiriPane");
     map.getPane("kufiriPane").style.zIndex = 350;
 
+    // Përmbledhja e kompleksit: mbi çdo poligon (overlayPane 400), por nën shenjat (markerPane 600),
+    // që pikat e shërbimeve pranë qendrës të mos mbulohen prej saj.
+    map.createPane("overviewPane");
+    map.getPane("overviewPane").style.zIndex = 560;
+
     // Rrota e miut: një hap = një shkallë fikse (1:4000 → 1:2000 → …), pa vlera të ndërmjetme.
     map.getContainer().addEventListener("wheel", function(ev) {
         ev.preventDefault();
@@ -3071,12 +3102,78 @@
     map.on("moveend", updateScaleDisplayFinal);
     map.whenReady(updateScaleDisplayFinal);
 
+    /**
+     * Kur ndizet një shtresë shërbimesh, harta zvogëlohet deri në 1:16000. Në ato shkallë i gjithë
+     * kompleksi bie në rreth 55x60 piksela, dhe brenda tij blloqet e bizneseve, parkingjet, rrugët,
+     * "P"-të dhe etiketat e hyrjeve shndërrohen në një njollë të palexueshme. Prandaj nga 1:8000 e
+     * tutje gjithçka brenda kufirit zëvendësohet me një poligon të vetëm me logon e The Village-it,
+     * ashtu si e tregojnë hartat e qytetit një qendër tregtare. Shkalla 1:4000 nuk preket.
+     */
+    var OVERVIEW_MAX_ZOOM = MAP_INITIAL_ZOOM - 0.5;
+    var VILLAGE_LOGO_URL = "logos/TheVillage.png";
+    var VILLAGE_LOGO_RAPORTI = 285 / 331; // gjerësi/lartësi e skedarit, që logoja të mos shtrembërohet
+    var kufiriOverviewData = null;
+    var villageOverviewLayer = null;
+    var villageOverviewLogo = null;
+
+    function heqVillageOverview() {
+        if (villageOverviewLayer) { map.removeLayer(villageOverviewLayer); villageOverviewLayer = null; }
+        if (villageOverviewLogo) { map.removeLayer(villageOverviewLogo); villageOverviewLogo = null; }
+    }
+
+    function syncVillageOverview() {
+        var aktiv = map.getZoom() <= OVERVIEW_MAX_ZOOM;
+        var kont = map.getContainer();
+        if (aktiv) L.DomUtil.addClass(kont, "village-overview");
+        else L.DomUtil.removeClass(kont, "village-overview");
+        if (!aktiv || !kufiriOverviewData) { heqVillageOverview(); return; }
+
+        if (!villageOverviewLayer) {
+            villageOverviewLayer = L.geoJSON(kufiriOverviewData, {
+                pane: "overviewPane",
+                interactive: false,
+                style: function() {
+                    return { color: "#3a3a3a", weight: 1.6, fill: true, fillColor: "#f4efe6", fillOpacity: 1 };
+                }
+            }).addTo(map);
+        }
+
+        // Madhësia e logos rillogaritet në çdo shkallë: sa më afër, aq më i madh poligoni.
+        var kufijte = villageOverviewLayer.getBounds();
+        if (!kufijte.isValid()) return;
+        var nw = map.latLngToContainerPoint(kufijte.getNorthWest());
+        var se = map.latLngToContainerPoint(kufijte.getSouthEast());
+        var gjer = Math.abs(se.x - nw.x), lart = Math.abs(se.y - nw.y);
+        // 0.62, jo më shumë: kompleksi është një katërkëndësh i pjerrët, ndaj qoshet e kutisë
+        // kufitare bien jashtë vetë poligonit. 34px është kufiri ku logoja ende lexohet.
+        var h = Math.max(34, Math.min(lart * 0.62, (gjer * 0.62) / VILLAGE_LOGO_RAPORTI));
+        var w = h * VILLAGE_LOGO_RAPORTI;
+        h = Math.round(h); w = Math.round(w);
+
+        if (villageOverviewLogo) map.removeLayer(villageOverviewLogo);
+        villageOverviewLogo = L.marker(kufijte.getCenter(), {
+            interactive: false,
+            keyboard: false,
+            icon: L.divIcon({
+                className: "village-overview-logo",
+                html: '<img src="' + VILLAGE_LOGO_URL + LOGO_CACHE_VERSION + '" alt="The Village Shopping & Fun">',
+                iconSize: [w, h],
+                iconAnchor: [Math.round(w / 2), Math.round(h / 2)]
+            })
+        }).addTo(map);
+    }
+
+    loadLocalGeoJSON("Kufiri_village")
+        .then(function(data) { kufiriOverviewData = data; syncVillageOverview(); })
+        .catch(function() {});
+
     // Rindërton markerët e biznesit në çdo hap zoom-i (niveli "badge" ndryshon madhësinë brenda vetë diapazonit 19-20).
     map.on("moveend", function() {
         if (typeof rebuildRoadNameLabels === "function") rebuildRoadNameLabels();
     });
     map.on("zoomend", function() {
         if (typeof syncPanLock === "function") syncPanLock();
+        if (typeof syncVillageOverview === "function") syncVillageOverview();
         if (typeof rebuildBiznisetSymbolsLayer === "function") rebuildBiznisetSymbolsLayer();
         if (typeof syncHyrjetDaljetVisibility === "function") syncHyrjetDaljetVisibility();
         if (typeof rebuildRoadNameLabels === "function") rebuildRoadNameLabels();

@@ -82,6 +82,7 @@ const CONTENT = [
     { t: "h1", v: "Si duken bizneset" },
     { t: "lead", v: "Simboli ndryshon sipas sa afër je, që harta të mbetet e lexueshme." },
     { t: "table", head: ["Shkalla", "Bizneset duken si"], w: [30, 70], rows: [
+        ["1:8000 e më larg", "Vetëm kufiri i kompleksit me logon e The Village — shkallë ku shfaqen shërbimet e qytetit."],
         ["1:4000 (pamja fillestare)", "Blloqet e njësive, të ngjyrosura sipas kategorisë."],
         ["1:2000", "Pika me ngjyrën e kategorisë."],
         ["1:1000", "Rreth me ngjyrën e kategorisë dhe logon brenda."],
