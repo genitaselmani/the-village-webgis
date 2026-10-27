@@ -719,6 +719,75 @@
             object-fit: contain;
         }
 
+        /**
+         * Zgjedhësi i hartës bazë: tri pamje të vogla poshtë-majtas, mbi të cilat klikohet.
+         * Secila pamje është vetë një pllakë e kompleksit nga ai burim, prandaj tregon saktësisht
+         * se çfarë do të dalë — jo një ikonë që e përshkruan.
+         */
+        .basemap-picker {
+            display: flex;
+            gap: 6px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+            /* Paneli anësor rri mbi hartën, prandaj kontrolli zhvendoset përtej tij. */
+            margin-left: 392px !important;
+            margin-bottom: 14px !important;
+        }
+        .basemap-opt {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font: inherit;
+            color: #444;
+        }
+        .basemap-thumb {
+            position: relative;
+            display: block;
+            width: 54px;
+            height: 54px;
+            border-radius: 9px;
+            overflow: hidden;
+            background: #e9e4da;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.12);
+            transition: box-shadow 0.15s;
+        }
+        .basemap-thumb img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .basemap-name {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            line-height: 1;
+        }
+        .basemap-opt:hover .basemap-thumb { box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3); }
+        .basemap-opt.is-active .basemap-thumb { box-shadow: 0 0 0 3px #2563eb; }
+        .basemap-opt.is-active .basemap-name { color: #1d4ed8; }
+        @media (max-width: 768px) {
+            .basemap-picker {
+                margin-left: 10px !important;
+                /* Në telefon atribuimi shtrihet në dy rreshta në tërë gjerësinë e fundit të hartës;
+                   pa këtë hapësirë emrat e opsioneve do të mbuloheshin prej tij. */
+                margin-bottom: 42px !important;
+                padding: 5px;
+                gap: 5px;
+            }
+            .basemap-thumb { width: 44px; height: 44px; }
+            .basemap-name { font-size: 10px; }
+        }
+
         /** Shenja "P" në mes të poligonit të parkimit; i njëjti pamje si swatch-i i legjendës. */
         .parking-p-divicon {
             background: transparent !important;
@@ -2400,6 +2469,11 @@
         "Manuali i përdorimit të WebGIS-it": "WebGIS user manual",
         "Pamja e plotë": "Full view",
         "Kthimi në fillim": "Back to start",
+        "Hartë": "Map",
+        "Satelit": "Satellite",
+        "Satelit me emra": "Satellite with labels",
+        "Hibrid": "Hybrid",
+        "Harta bazë": "Base map",
         "Manuali i përdorimit": "User manual",
         "Mbyll manualin dhe kthehu te harta": "Close the manual and return to the map",
         "Fshij matjen": "Clear measurement",
@@ -2593,6 +2667,7 @@
             btnFillim.title = t("Kthimi në fillim");
             btnFillim.setAttribute("aria-label", t("Kthimi në fillim"));
         }
+        if (typeof perditesoEtiketatEBazes === "function") perditesoEtiketatEBazes();
         if (typeof biznisetGeoJson !== "undefined" && biznisetGeoJson && typeof renderBiznisetList === "function") {
             var fi = document.getElementById("bizniset-filter");
             renderBiznisetList(biznisetGeoJson.features, fi ? fi.value : "");
@@ -3335,15 +3410,171 @@
     // crossOrigin: pa të, pllakat e hartës bazë ngarkohen pa CORS dhe html2canvas nuk mund t'i vizatojë —
     // "Ruaj si foto" dilte me sfond gri të zbrazët në vend të hartës.
     var CARTO_BASEMAP_KEY = "cb1_3g5t_1_f15e22822c3cb0b8796239c4";
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=' + CARTO_BASEMAP_KEY, {
-        // Math.ceil: zoom-i ynë maksimal është fraksional (19.736) dhe Leaflet-i e rrumbullakos kur
-        // zgjedh nivelin e pllakave — 20 do të kalonte kufirin e shtresës dhe ajo i hiqte të gjitha
-        // pllakat, duke e lënë shkallën më të madhe pa hartë bazë fare.
-        maxZoom: Math.ceil(MAP_MAX_ZOOM),
-        maxNativeZoom: 19,
-        crossOrigin: "anonymous",
-        attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+    var CARTO_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=' + CARTO_BASEMAP_KEY;
+    // Esri World Imagery: pa çelës, mjafton atribuimi.
+    var ESRI_SATELIT_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    /**
+     * Emrat e rrugëve për pamjen hibride vijnë nga CARTO, jo nga shtresat "Reference" të Esri-t:
+     * ato të fundit u matën mbi Ferizaj dhe dolën praktikisht bosh (nën 1% mbulim nga 1:8000 e tutje),
+     * pra hibridi do të ishte i padallueshëm nga sateliti i thjeshtë. Kjo shtresë ka tekst në çdo
+     * shkallë dhe vjen nga i njëjti çelës që përdor harta vizatimore.
+     */
+    var CARTO_EMRA_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png?key=' + CARTO_BASEMAP_KEY;
+    var ESRI_ATRIBUIMI = 'Pamje satelitore &copy; <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics';
+    var CARTO_ATRIBUIMI = '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+
+    /**
+     * Opsionet e përbashkëta të çdo harte bazë. Math.ceil: zoom-i ynë maksimal është fraksional
+     * (19.736) dhe Leaflet-i e rrumbullakos kur zgjedh nivelin e pllakave — 20 do të kalonte kufirin
+     * e shtresës dhe ajo i hiqte të gjitha pllakat, duke e lënë shkallën më të madhe pa hartë bazë.
+     * crossOrigin duhet që "Ruaj foton" të mos e ndotë canvas-in.
+     */
+    function opsionetEBazes(shtese) {
+        var o = {
+            maxZoom: Math.ceil(MAP_MAX_ZOOM),
+            maxNativeZoom: 19,
+            crossOrigin: "anonymous"
+        };
+        for (var k in shtese) o[k] = shtese[k];
+        return o;
+    }
+
+    /**
+     * Pllaka e kompleksit në zoom 16 — e njëjta copë terreni nga secili burim, si foto e vogël
+     * zgjedhjeje. Numrat llogariten nga vetë harta e jo me dorë: një pllakë gabim do ta çonte pamjen
+     * mbi lagjen fqinje, dhe ajo e para do të dilte thuajse bosh.
+     */
+    var PAMJA_Z = 15; // më e gjerë se shkalla e punës: te harta vizatimore duken edhe rrugët e parku
+    function pamjaEVogel(url) {
+        var p = map.project(L.latLng(MAP_INITIAL_CENTER[0], MAP_INITIAL_CENTER[1]), PAMJA_Z).divideBy(256).floor();
+        return url.replace("{z}", PAMJA_Z).replace("{x}", p.x).replace("{y}", p.y)
+                  .replace("{s}", "a").replace("{r}", "");
+    }
+
+    var HARTAT_BAZE = [
+        {
+            id: "osm",
+            emri: "Hartë",
+            pamjet: [pamjaEVogel(CARTO_URL)],
+            krijo: function() { return L.tileLayer(CARTO_URL, opsionetEBazes({ attribution: CARTO_ATRIBUIMI })); }
+        },
+        {
+            id: "satelit",
+            emri: "Satelit",
+            pamjet: [pamjaEVogel(ESRI_SATELIT_URL)],
+            krijo: function() { return L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({ attribution: ESRI_ATRIBUIMI })); }
+        },
+        {
+            id: "hibrid",
+            emri: "Hibrid",
+            pamjet: [pamjaEVogel(ESRI_SATELIT_URL), pamjaEVogel(CARTO_EMRA_URL)],
+            krijo: function() {
+                // zIndex, jo renditja e shtimit: emrat duhet të bien mbi pamjen, pavarësisht se cila
+                // pllakë mbërrin e para.
+                return L.layerGroup([
+                    L.tileLayer(ESRI_SATELIT_URL, opsionetEBazes({ attribution: ESRI_ATRIBUIMI, zIndex: 1 })),
+                    L.tileLayer(CARTO_EMRA_URL, opsionetEBazes({ attribution: CARTO_ATRIBUIMI, zIndex: 2 }))
+                ]);
+            }
+        }
+    ];
+
+    var BAZA_STORAGE_KEY = "webgis_thevillage_basemap_v1";
+    var bazaAktive = null;
+    var bazaShtresa = null;
+    var maskaShtresa = null;
+
+    /**
+     * Maska brenda kufirit ekziston vetëm që ndërtesat e OpenStreetMap-it të mos përplasen me
+     * vektorët tanë. Mbi pamjen satelitore ajo do të fshihte pikërisht atë që përdoruesi erdhi të
+     * shohë — vetë kompleksin — prandaj vlen vetëm për hartën vizatimore.
+     */
+    function syncMaskaSipasBazes() {
+        if (!maskaShtresa) return;
+        var duhet = bazaAktive === "osm";
+        if (duhet && !map.hasLayer(maskaShtresa)) map.addLayer(maskaShtresa);
+        else if (!duhet && map.hasLayer(maskaShtresa)) map.removeLayer(maskaShtresa);
+    }
+
+    function vendosBazen(id) {
+        var zgjedhur = null;
+        HARTAT_BAZE.forEach(function(b) { if (b.id === id) zgjedhur = b; });
+        if (!zgjedhur) zgjedhur = HARTAT_BAZE[0];
+        if (bazaAktive === zgjedhur.id) return;
+        if (bazaShtresa) map.removeLayer(bazaShtresa);
+        bazaShtresa = zgjedhur.krijo().addTo(map);
+        bazaAktive = zgjedhur.id;
+        try { localStorage.setItem(BAZA_STORAGE_KEY, bazaAktive); } catch (e) {}
+        syncMaskaSipasBazes();
+        var rrenja = document.getElementById("basemap-picker");
+        if (rrenja) {
+            [].slice.call(rrenja.querySelectorAll(".basemap-opt")).forEach(function(el) {
+                el.classList.toggle("is-active", el.getAttribute("data-baza") === bazaAktive);
+                el.setAttribute("aria-checked", el.getAttribute("data-baza") === bazaAktive ? "true" : "false");
+            });
+        }
+    }
+
+    (function nisBazen() {
+        var ruajtur = null;
+        try { ruajtur = localStorage.getItem(BAZA_STORAGE_KEY); } catch (e) {}
+        vendosBazen(ruajtur || "osm");
+    })();
+
+    /** Titujt e kontrollit rrinë brenda #map, të cilin përkthyesi e kapërcen; rifreskohen me dorë. */
+    function perditesoEtiketatEBazes() {
+        var rrenja = document.getElementById("basemap-picker");
+        if (!rrenja) return;
+        rrenja.setAttribute("aria-label", t("Harta bazë"));
+        [].slice.call(rrenja.querySelectorAll(".basemap-opt")).forEach(function(el) {
+            var emri = el.getAttribute("data-emri");
+            var et = el.querySelector(".basemap-name");
+            if (et) et.textContent = t(emri);
+            el.title = t(emri);
+        });
+    }
+
+    (function shtoZgjedhesinEBazes() {
+        var ctrl = L.control({ position: "bottomleft" });
+        ctrl.onAdd = function() {
+            var wrap = L.DomUtil.create("div", "basemap-picker");
+            wrap.id = "basemap-picker";
+            wrap.setAttribute("role", "radiogroup");
+            HARTAT_BAZE.forEach(function(b) {
+                var btn = L.DomUtil.create("button", "basemap-opt", wrap);
+                btn.type = "button";
+                btn.setAttribute("role", "radio");
+                btn.setAttribute("data-baza", b.id);
+                btn.setAttribute("data-emri", b.emri);
+                var thumb = L.DomUtil.create("span", "basemap-thumb", btn);
+                b.pamjet.forEach(function(u) {
+                    var im = L.DomUtil.create("img", "", thumb);
+                    im.src = u;
+                    im.alt = "";
+                    im.loading = "lazy";
+                });
+                L.DomUtil.create("span", "basemap-name", btn);
+                L.DomEvent.on(btn, "click", function(ev) {
+                    L.DomEvent.stop(ev);
+                    vendosBazen(b.id);
+                });
+            });
+            L.DomEvent.disableClickPropagation(wrap);
+            L.DomEvent.disableScrollPropagation(wrap);
+            return wrap;
+        };
+        ctrl.onRemove = function() {};
+        ctrl.addTo(map);
+        // Gjendja fillestare u vendos para se kontrolli të ekzistonte.
+        var e = document.getElementById("basemap-picker");
+        if (e) {
+            [].slice.call(e.querySelectorAll(".basemap-opt")).forEach(function(el) {
+                el.classList.toggle("is-active", el.getAttribute("data-baza") === bazaAktive);
+                el.setAttribute("aria-checked", el.getAttribute("data-baza") === bazaAktive ? "true" : "false");
+            });
+        }
+        perditesoEtiketatEBazes();
+    })();
 
     /** Markerët e biznesit (logo reale ose simbol SVG i personalizueshëm), ndërtuar nga data/Bizniset.geojson. */
     var biznisetSymbolsLayer = L.layerGroup();
@@ -4921,13 +5152,14 @@
     var MASKA_NGJYRA = "#f3eadc";
     loadLocalGeoJSON("Kufiri_village")
         .then(function(data) {
-            L.geoJSON(data, {
+            maskaShtresa = L.geoJSON(data, {
                 pane: "maskPane",
                 interactive: false,
                 style: function() {
                     return { stroke: false, fill: true, fillColor: MASKA_NGJYRA, fillOpacity: 1 };
                 }
-            }).addTo(map);
+            });
+            syncMaskaSipasBazes();
         })
         .catch(function(err) { console.error("[maska] Kufiri_village nuk u ngarkua:", err); });
 
